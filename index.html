@@ -21,13 +21,11 @@
  
     <py-script> 
  
-        from datetime import date
+        from datetime import datetime
  
-        today = date.today()
-        date = today.strftime("%d - %m - %Y")
-        print('Hoy es:', date)
-        # x = input('Ingrese su nombre: ')
-        # print('hola ' + x)
+        now = datetime.now()
+        date = now.strftime("%d - %m - %Y, %H:%M:%S")
+        print('Ingreso:', date)
  
      </py-script> 
  

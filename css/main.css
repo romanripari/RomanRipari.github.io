@@ -9,11 +9,11 @@ h1 {
 /* BODY */
 
 body {
-	padding-top: 40px; /* Relleno superior igual a la altura de la cabecera*/
+	padding-top: 50px; /* Relleno superior igual a la altura de la cabecera*/
     font-family: 'Trebuchet MS', sans-serif; 
     margin: 0;
     text-align: center;
-    background-color: rgb(246, 235, 235);
+    background-color: rgb(255, 255, 255);
     background-size: cover;
     color:rgb(25, 5, 75);
     /* VARIABLES */
@@ -42,6 +42,10 @@ body {
 
 /* CONTENEDOR */
 
+section {
+    padding-top: 50px
+}
+
 #contenedor {
     display: flex;
     flex-direction: row;
@@ -61,20 +65,26 @@ body {
     width: 0%;
 }
 
+/************ 
+//-------------------------------
+// CABECERA
+//-------------------------------
+************/
 #main-header {
 	background: rgb(232, 194, 194);
 	color: white;
 	height: 40px;
-
-	width: 100%; /* hacemos que la cabecera ocupe el ancho completo de la página */
-	left: 0; /* Posicionamos la cabecera al lado izquierdo */
-	top: 0; /* Posicionamos la cabecera pegada arriba */
-	position: fixed; /* Hacemos que la cabecera tenga una posición fija */
+	
+	width: 100%;
+	left: 0;
+	top: 0;
+	position: fixed;
 }	
 	#main-header a {
 		color: rgb(0, 0, 0);
         font-size:medium;
 	}
+	
 
 navsup {
     float: right;
@@ -96,7 +106,6 @@ navsup ul li a {
     text-decoration: none;
 }
 
-
 /* LINKS AL COSTADO */
 nav {
     height: 160px;
@@ -107,7 +116,7 @@ nav {
     position: sticky;
     justify-content: center;
     align-items: center;
-    user-select: none;
+    user-select: all;
 }
 
 #navbar1 {
@@ -144,7 +153,6 @@ ul li a{
     color: rgb(25, 5, 75);
 }
 
-
 #presentacion {
 /*    background-image: url("https://romanripari.ar//resources/fondo.jpg"); */
     opacity: .8;
@@ -163,7 +171,7 @@ ul li a{
 .ImagenAsuperPoner{
     position:absolute;
     top: 60px;
-    left : 160px;
+    left : 240px;
     display: flex;
     justify-content:center;
     align-items:center;
@@ -204,7 +212,7 @@ ul li a{
   }
   .typed-out{
     overflow: hidden;
-    border-right: .01em  solid rgb(255, 255, 255);
+    border-right: .01em ;
     white-space: nowrap;
     animation: typing 0.5s forwards;
     font-size: 1.6rem;
@@ -226,45 +234,65 @@ ul li a{
   }
 
   
-
-/* CONTACT STYLES */
-#contact {
-    margin-top: 50px;
-}
-
-#contact-info {
+  .grid-container {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-row: auto auto;
+    grid-gap: 1em;
+  }
+  
+  /* hover styles */
+  .location-listing {
+    position: relative;
+  }
+  
+  .location-image {
+    line-height: 0;
+    overflow: hidden;
+  }
+  
+  .location-image img {
+    filter: blur(0px);
+    transition: filter 0.3s ease-in;
+    transform: scale(1.1);
+  }
+  
+  .location-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-decoration: none;
+    z-index: 1;
+    position: absolute;
+    height: 100%;
     width: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity .5s;
+    background: rgba(90,0,10,0.4);
+    color: white;
+    
+    /* position the text in t’ middle*/
     display: flex;
-}
-
-#contact-form {
-    width: 100%;
-    height: 75%;
-    display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: flex-start;
-}
-
-#contact-form form {
-    width: 45%;
-}
-
-#contact-form  input, textarea {
-    width: 100%;
-    margin-bottom: 10px;
-    margin-left: 5px;
-    height: 60px; 
-    padding-right: 0px;
-    color: #777;
-    padding-left: 0px;
-    font-size: 18px;
-    border-radius: 8px;
-    border-color: var(--dark-pink);
-    background-color: var(--nav-bg);
-    border-width: 0;
-}
-
-#contact-form textarea {
-    height: 140px;
-    resize:both;
-}
+  }
+  
+  .location-listing:hover .location-title {
+    opacity: 1;
+  }
+  
+  .location-listing:hover .location-image img {
+    filter: blur(2px);
+  }
+  
+  
+  /* for touch screen devices */
+  @media (hover: none) { 
+    .location-title {
+      opacity: 1;
+    }
+    .location-image img {
+      filter: blur(2px);
+    }
+  }

@@ -9,9 +9,9 @@ h1 {
 /* BODY */
 
 body {
+	padding-top: 40px; /* Relleno superior igual a la altura de la cabecera*/
     font-family: 'Trebuchet MS', sans-serif; 
     margin: 0;
-    padding: 0;
     text-align: center;
     background-color: rgb(246, 235, 235);
     background-size: cover;
@@ -49,7 +49,7 @@ body {
 }
 
 #BarraCentral {
-    width: 90%;
+    width: 70%;
     margin: auto auto;
 }
 
@@ -60,6 +60,42 @@ body {
 #BarraDerecha {
     width: 0%;
 }
+
+#main-header {
+	background: rgb(232, 194, 194);
+	color: white;
+	height: 40px;
+
+	width: 100%; /* hacemos que la cabecera ocupe el ancho completo de la página */
+	left: 0; /* Posicionamos la cabecera al lado izquierdo */
+	top: 0; /* Posicionamos la cabecera pegada arriba */
+	position: fixed; /* Hacemos que la cabecera tenga una posición fija */
+}	
+	#main-header a {
+		color: rgb(0, 0, 0);
+        font-size:medium;
+	}
+
+navsup {
+    float: right;
+}
+
+navsup ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+navsup ul li {
+    display: inline-block;
+    line-height: 15px;
+}
+
+navsup ul li a {
+    display: block;
+    text-decoration: none;
+}
+
 
 /* LINKS AL COSTADO */
 nav {
@@ -73,6 +109,7 @@ nav {
     align-items: center;
     user-select: none;
 }
+
 #navbar1 {
     top: 0px;
 }
@@ -85,6 +122,7 @@ nav {
 #navbar4 {
     top: 270px;
 }
+    
 ul {
     display: flex;
     width: 15%;
@@ -106,8 +144,6 @@ ul li a{
     color: rgb(25, 5, 75);
 }
 
-/* BOTON DE SUBIR */
-
 
 #presentacion {
 /*    background-image: url("https://romanripari.ar//resources/fondo.jpg"); */
@@ -125,16 +161,21 @@ ul li a{
 }
 
 .ImagenAsuperPoner{
+    position:absolute;
+    top: 60px;
+    left : 160px;
     display: flex;
     justify-content:center;
     align-items:center;
     font-size: x-large;
     color: rgb(0, 0, 0);
-    height:30%;
-    width:30%;
+    height:200px;
+    width:200px;
     z-index: 1;
-    border-radius:100%;
+    border-radius:40%;
   }
+
+/* BOTON DE SUBIR */
 
 #myBtn {
     display: none; /* Hidden by default */

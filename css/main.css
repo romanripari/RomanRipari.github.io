@@ -217,6 +217,8 @@ ul li a{
     animation: typing 0.5s forwards;
     font-size: 3rem;
     width: 0;
+    padding-top: 20px;
+    padding-bottom: 60px;
   }
 
   .typed-out-head{
@@ -285,5 +287,13 @@ ul li a{
   .location-listing:hover .location-image img {
     filter: blur(2px);
   }
-  
+  /* for touch screen devices */
+@media (hover: none) { 
+    .location-title {
+      opacity: 1;
+    }
+    .location-image img {
+      filter: blur(2px);
+    }
+  }
  

@@ -215,16 +215,16 @@ ul li a{
     border-right: .01em ;
     white-space: nowrap;
     animation: typing 0.5s forwards;
-    font-size: 1.6rem;
+    font-size: 3rem;
     width: 0;
   }
 
   .typed-out-head{
     overflow: hidden;
-    border-right: .15em solid rgb(255, 255, 255);
+    border-right: .05em;
     white-space: nowrap;
     animation: typing 1s forwards;
-    font-size: 3rem;
+    font-size: 5rem;
     width: 100;
   }
 

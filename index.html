@@ -11,9 +11,7 @@
 	<script defer src="https://pyscript.net/alpha/pyscript.js"></script> -->
 	</head>
 
-
-
-	 <body>
+	<body>
 		<h1> Román Ariel Ripari  </h1> 
 		<br>
 		<div id="contenedor">
@@ -21,14 +19,14 @@
 				<nav id="navbar">
 					<ul id="misc-links">
 					  <li><a class="pi-links" href="https://www.linkedin.com/in/romanripari/" title="Linkedin Profile" target="_blank">
-						<img src="resources/linkedin.png"></img>
+						<img src="resources/linkedin.png"></img> Linkedin
 					  </a></li>
 					</ul>
 				 </nav>
 				 <nav id="navbar2">
 					<ul id="misc-links">
 					  <li><a class="pi-links" href="https://github.com/romanripari" title="GitHub Profile" target="_blank">
-						<img src="resources/GitHub.png"></img>
+						<img src="resources/GitHub.png"></img> GitHub
 					  </a></li>
 					</ul>
 				 </nav>
@@ -36,7 +34,7 @@
 					<ul id="misc-links">
 					  <li><a class="pi-links" href="resources/CV%20Rom%C3%A1n%20Ripari.pdf"
 						title="Download CV" download="CV Román Ripari" target="_blank">
-						<img width="64px" height="64px" src="resources/download.png"></img>
+						<img width="64px" height="64px" src="resources/download.png"></img> Download CV
 					  </a></li>
 					</ul>
 				 </nav>			
@@ -47,11 +45,22 @@
 			</div>
 
 			<div id="BarraDerecha">
-			<!--			
-				<a href="resources/CV%20Rom%C3%A1n%20Ripari.pdf" download="CV">
-					<img src="resources/download.png" alt="CV" width="64" height="64">
-				</a>
-			-->
+				<button onclick="topFunction()" id="myBtn" title="Go to top">↑</button>
+				<script>
+				let mybutton = document.getElementById("myBtn");
+				window.onscroll = function() {scrollFunction()};
+				function scrollFunction() {
+				  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+					mybutton.style.display = "block";
+				  } else {
+					mybutton.style.display = "none";
+				  }
+				}
+				function topFunction() {
+				  document.body.scrollTop = 0;
+				  document.documentElement.scrollTop = 0;
+				}
+				</script>
 			</div>
 		</div>
 	</body>

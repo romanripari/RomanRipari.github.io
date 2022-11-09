@@ -13,7 +13,7 @@ body {
     font-family: 'Trebuchet MS', sans-serif; 
     margin: 0;
     text-align: center;
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(201, 201, 201);
     background-size: cover;
     color:rgb(25, 5, 75);
     /* VARIABLES */
@@ -71,7 +71,7 @@ section {
 //-------------------------------
 ************/
 #main-header {
-	background: rgb(232, 194, 194);
+	background: rgb(255, 255, 255);
 	color: white;
 	height: 40px;
 	
@@ -286,13 +286,4 @@ ul li a{
     filter: blur(2px);
   }
   
-  
-  /* for touch screen devices */
-  @media (hover: none) { 
-    .location-title {
-      opacity: 1;
-    }
-    .location-image img {
-      filter: blur(2px);
-    }
-  }
+ 

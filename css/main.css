@@ -112,6 +112,13 @@ ul li a{
 
 /* BOTON DE SUBIR */
 
+#presentacion {
+    height: 100%;
+    background-repeat: no-repeat;
+    background: url("resources/fondo.jpg") no-repeat center center fixed;
+    background-size: 100% 100%;
+}
+
 #myBtn {
     display: none; /* Hidden by default */
     position: fixed; /* Fixed/sticky position */

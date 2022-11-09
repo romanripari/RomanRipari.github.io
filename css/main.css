@@ -15,6 +15,7 @@ body {
     background-color: rgb(246, 235, 235);
     color:rgb(25, 5, 75)
 }
+
 #contenedor {
     display: flex;
     flex-direction: row;
@@ -34,7 +35,6 @@ body {
     width: 10%;
 }
 
-
 nav {
     height: 160;
     top: 0;
@@ -48,7 +48,6 @@ nav {
     user-select: none;
 }
 
-
 #navbar1 {
     top: 0px;
 }
@@ -60,7 +59,6 @@ nav {
 #navbar3 {
     top: 180px;
 }
-
 
 ul {
     display: flex;

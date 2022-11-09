@@ -46,19 +46,20 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+
 }
 
 #BarraCentral {
-    width: 80%;
+    width: 75%;
     margin: 0 auto;
 }
 
 #BarraLateral {
-    width: 5%;
+    width: 10%;
 }
 
 #BarraDerecha {
-    width: 5%;
+    width: 0%;
 }
 
 /* LINKS AL COSTADO */
@@ -113,22 +114,29 @@ ul li a{
 #presentacion {
 /*    background-image: url("https://romanripari.ar//resources/fondo.jpg"); */
     opacity: .8;
-    height: 50%;
+    height: 75%;
     background-repeat: no-repeat;
-    background-size: 100% 100%;
-    display: flex;
-    align-items:center;
-    justify-content:center;
-    font-size: x-large;
-    color: rgb(0, 0, 0);
 /*    -webkit-text-stroke: 1px rgb(0, 0, 0);*/
 }
 
 #presentacion-texto {
     margin-right: 15%;
     margin-left: 15%;
-    opacity:100;
+    opacity:1;
+    font-size: large;
 }
+
+.ImagenAsuperPoner{
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    font-size: x-large;
+    color: rgb(0, 0, 0);
+    height:30%;
+    width:30%;
+    z-index: 1;
+    border-radius:100%;
+  }
 
 #myBtn {
     display: none; /* Hidden by default */
@@ -140,7 +148,7 @@ ul li a{
     outline: none; /* Remove outline */
     background-color: rgb(25, 5, 75); /* Set a background color */
     color: white; /* Text color */
-    cursor: pointer; /* Add a mouse pointer on hover */
+    cursor:  pointer; /* Add a mouse pointer on hover */
     padding: 15px; /* Some padding */
     border-radius: 10px; /* Rounded corners */
     font-size: 18px; /* Increase font size */

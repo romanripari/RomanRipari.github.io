@@ -1,1 +1,1 @@
-<a href="https://romanripari.ar/" target="_blank">https://romanripari.ar/</a>
+<a href="https://romanripari.ar/" target="_blank">romanripari.ar</a>

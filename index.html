@@ -6,24 +6,22 @@
 		<link rel="icon" type="image/jpeg" href="resources/favicon.jpg" />
 		<link href="https://fonts.googleapis.com/css?family=Inter&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="css/main.css" media="screen">
+
 		<!-- Instanciamos los archivos de PyScript desde su mismo Servidor 
 		<link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
 		<script defer src="https://pyscript.net/alpha/pyscript.js"></script> -->
 	</head>
 	<body>
-		<!--
 		<header id="main-header">
 			<navsup>
 				<ul>
-					<li><a href="#">Home</a></li>
-					<li><a href="#cv">CV</a></li>
-					<li><a href="#Certifications">Certifications</a></li>
-					<li><a href="#Portfolio">Portfolio</a></li>
+					<li><a href="pages/page1.html" target="_blank" >>Cards 1</a></li>
+					<li><a href="pages/page2.html" target="_blank" >>Cards 2</a></li>
+					<li><a href="pages/page3.html" target="_blank" >>Cards 3</a></li>
 				</ul>
 		</navsup>
 			
 		</header>
-		-->
 			<div id="contenedor">
 				<div id="BarraLateral">
 					<nav id="navbar1">
@@ -60,6 +58,11 @@
 					<div class="titulo"><div class="typed-out-head">Román Ariel Ripari</div></div>
 					<br>
 					<div class="titulo"><div class="typed-out">Buenos Aires, Argentina</div></div>
+
+					<div class="parallax"></div>
+
+
+
 					<section id="presentacion"> 
 							<div id="presentacion-texto"> 
 								<br>+10 years of experience in Data Analyst positions
@@ -68,12 +71,6 @@
 								<br>
 								<br>I recently started studying the Bachelor of Data Sciences at UBA (ARG).
 							</div>
-					</section>
-					<section id="cv">
-						<div class="titulo"><div class="typed-out">Curriculum Vitae</div></div>
-						<br>
-						<iframe src="https://drive.google.com/file/d/1BWHE3h3TuRqasS99GbAtWNxpyBfwYHhJ/preview"
-						width="100%" height="1600" allow="autoplay" frameborder="0"></iframe>
 					</section>
 					<section id="Portfolio">
 						<div class="titulo"><div class="typed-out">Portfolio</div></div>
@@ -103,6 +100,7 @@
 						<div class="titulo"><div class="typed-out">Certifications</div></div>
 						<div class="child-page-listing">
 							<div class="grid-container">
+
 							<article id="3694" class="location-listing">
 								<a class="location-title" href="https://verify.openedg.org/?id=8OCq.UMzQ.QFuQ" target="_blank">
 									PCEP Python           </a>
@@ -111,6 +109,7 @@
 									  <img width="60%" height="60%" src="resources/PCEPPython.png" alt="PCEP Python">  </a>
 								</div>
 							</article>
+
 							<article id="3697" class="location-listing">
 								<a class="location-title" href="https://www.efset.org/cert/kLUd31"  target="_blank">
 									EF SET           </a>
@@ -119,10 +118,17 @@
 									  <img width="60%" height="60%" src="resources/efset.png" alt="EF SET English">    </a>
 								</div>
 							</article>
+
 							</div>
 						</div>
 					</section>
 
+					<section id="cv">
+						<div class="titulo"><div class="typed-out">Curriculum Vitae</div></div>
+						<br>
+						<iframe src="https://drive.google.com/file/d/1BWHE3h3TuRqasS99GbAtWNxpyBfwYHhJ/preview"
+						width="100%" height="1600" allow="autoplay" frameborder="0"></iframe>
+					</section>
 
 				</div>
 				<button onclick="topFunction()" id="myBtn" title="Go to top">↑</button>

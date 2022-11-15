@@ -4,7 +4,7 @@
 body {
   margin: 0;
   background: #1C1A30;
-  height: 100vh;
+  height: 90vh;
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: center; 
@@ -43,7 +43,7 @@ body {
   -webkit-transform-style: preserve-3d;
   -moz-transform-style: preserve-3d; 
   transform-style: preserve-3d;
-  transition: .1s ease-in-out;
+  transition: .5s ease-in-out;
 }
 .logo {
   width: 200px;

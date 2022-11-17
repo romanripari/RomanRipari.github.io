@@ -1322,7 +1322,7 @@ input, select, textarea {
 				-webkit-transition: max-height 0.75s ease, padding 0.75s ease, opacity 0.325s ease-in-out;
 				-ms-transition: max-height 0.75s ease, padding 0.75s ease, opacity 0.325s ease-in-out;
 				transition: max-height 0.75s ease, padding 0.75s ease, opacity 0.325s ease-in-out;
-				-moz-transition-delay: 0.25s;
+				-moz-transition-delay: 0.55s;
 				-webkit-transition-delay: 0.25s;
 				-ms-transition-delay: 0.25s;
 				transition-delay: 0.25s;

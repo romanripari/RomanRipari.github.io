@@ -1819,3 +1819,7 @@ input, select, textarea {
 		  display: flex;
 		}
 
+
+	.python {
+		font-size: 0.75rem;
+		}

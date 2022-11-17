@@ -1764,7 +1764,7 @@ input, select, textarea {
 			border-right: .05em;
 			white-space: nowrap;
 			animation: typing 1s forwards;
-			font-size: 5rem;
+			font-size: 3rem;
 		  }
 		
 		  .typed-out-title{
@@ -1772,7 +1772,7 @@ input, select, textarea {
 			border-right: .05em;
 			white-space: nowrap;
 			animation: typing 1s forwards;
-			font-size: 3rem;
+			font-size: 2rem;
 
 		}
 		

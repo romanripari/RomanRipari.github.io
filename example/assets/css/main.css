@@ -601,38 +601,40 @@ input, select, textarea {
 
 /* Icon */
 
-	.icon {
-		text-decoration:none ;
-		border-bottom: none;
-		width: 1500px ;
+.icon {
+	text-decoration: none;
+	border-bottom: none;
+	position: relative;
+}
+
+	.icon:before {
+		-moz-osx-font-smoothing: grayscale;
+		-webkit-font-smoothing: antialiased;
+		display: inline-block;
+		font-style: normal;
+		font-variant: normal;
+		text-rendering: auto;
+		line-height: 1;
+		text-transform: none !important;
+		font-family: 'Font Awesome 5 Free';
+		font-weight: 400;
 	}
 
-		.icon:before {
-			-webkit-font-smoothing: antialiased;
-			display: inline-block;
-			font-style: normal;
-			font-variant: normal;
-			text-rendering: auto;
-			line-height: 1;
-			text-transform: none !important;
-			font-family: 'Font Awesome 5 Free';
-		}
+	.icon > .label {
+		display: none;
+	}
 
-		.icon > .label {
-			display: none;
-		}
+	.icon:before {
+		line-height: inherit;
+	}
 
-		.icon:before {
-			line-height: inherit;
-		}
+	.icon.solid:before {
+		font-weight: 900;
+	}
 
-		.icon.solid:before {
-			font-weight: 900;
-		}
-
-		.icon.brands:before {
-			font-family: 'Font Awesome 5 Brands';
-		}
+	.icon.brands:before {
+		font-family: 'Font Awesome 5 Brands';
+	}
 
 /* Image */
 
@@ -908,7 +910,6 @@ input, select, textarea {
 	}
 
 		ul.icons li {
-			display: inline-block;
 			padding: 0 0.75em 0 0;
 		}
 

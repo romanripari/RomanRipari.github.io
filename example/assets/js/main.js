@@ -4,6 +4,22 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
 
+  
+
+$(document).mouseup(function(e) {
+	if (e.which != 1) return false;
+  
+	$('.card--front').toggleClass('card--front--flip');
+	$('.card--back').toggleClass('card--back--flip');
+  });
+  
+  
+  $('a').mouseup(function(e) {
+	e.stopPropagation();
+  });
+  
+
+  
 (function($) {
 
 	var	$window = $(window),

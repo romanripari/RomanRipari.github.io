@@ -52,34 +52,36 @@
 								<br>
 								<label for="demo-category">Mes Inicio</label>
 								<select name="demo-category" id="MesInicio">
-									<option value="1">Enero 2022</option>
-									<option value="2">Febrero 2022</option>
-									<option value="3">Marzo 2022</option>
-									<option value="4">Abril 2022</option>
-									<option value="5">Mayo 2022</option>
-									<option value="6">Junio 2022</option>
-									<option value="7">Julio 2022</option>
-									<option value="8">Agosto 2022</option>
-									<option value="9">Septiembre 2022</option>
-									<option value="10">Octubre 2022</option>
-									<option value="11">Noviembre 2022</option>
-									<option value="12">Diciembre 2022</option>
+									<option value="1">Octubre 2021</option>
+									<option value="2">Noviembre 2021</option>
+									<option value="3">Diciembre 2021</option>
+									<option value="4">Enero 2022</option>
+									<option value="5">Febrero 2022</option>
+									<option value="6">Marzo 2022</option>
+									<option value="7">Abril 2022</option>
+									<option value="8">Mayo 2022</option>
+									<option value="9">Junio 2022</option>
+									<option value="10">Julio 2022</option>
+									<option value="11">Agosto 2022</option>
+									<option value="12">Septiembre 2022</option>
+									<option value="13">Octubre 2022</option>
 								</select>
 								<br>
 								<label for="demo-category">Mes Fin</label>
 								<select name="demo-category" id="MesFin">
-									<option value="1">Enero 2022</option>
-									<option value="2">Febrero 2022</option>
-									<option value="3">Marzo 2022</option>
-									<option value="4">Abril 2022</option>
-									<option value="5">Mayo 2022</option>
-									<option value="6">Junio 2022</option>
-									<option value="7">Julio 2022</option>
-									<option value="8">Agosto 2022</option>
-									<option value="9">Septiembre 2022</option>
-									<option value="10">Octubre 2022</option>
-									<option value="11">Noviembre 2022</option>
-									<option value="12">Diciembre 2022</option>
+									<option value="1">Octubre 2021</option>
+									<option value="2">Noviembre 2021</option>
+									<option value="3">Diciembre 2021</option>
+									<option value="4">Enero 2022</option>
+									<option value="5">Febrero 2022</option>
+									<option value="6">Marzo 2022</option>
+									<option value="7">Abril 2022</option>
+									<option value="8">Mayo 2022</option>
+									<option value="9">Junio 2022</option>
+									<option value="10">Julio 2022</option>
+									<option value="11">Agosto 2022</option>
+									<option value="12">Septiembre 2022</option>
+									<option value="13">Octubre 2022</option>
 								</select>
 								<br>
 								<button id="submit-button" type="submit" aria-pressed="my_function" pys-onClick="my_function">
@@ -96,11 +98,11 @@
 									mes1 =  int(Element('MesInicio').element.value)
 									mes2 =  int(Element('MesFin').element.value)
 
-									dicInfl = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, ]
+									dicInfl = [1.035, 1.025, 1.038, 1.039, 1.047, 1.067, 1.061, 1.051, 1.053, 1.074, 1.07, 1.062, 1.064]
 									try:
 										dMes = int(text)
 										for i in range(mes1-1, mes2-1):
-											dMes = dMes * (1+ dicInfl[i])
+											dMes = dMes * (dicInfl[i])
 										Element('test-output').element.innerText =  "$ {:.2f}".format(dMes)
 									except:
 										Element('test-output').element.innerText = "Escriba un valor numérico"

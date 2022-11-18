@@ -1836,6 +1836,7 @@ input, select, textarea {
 	}
 	.check{
 		position: relative;
+		top:5px;
 		width:30px;
 		height: 15px;
 	

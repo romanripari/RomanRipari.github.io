@@ -1825,12 +1825,12 @@ input, select, textarea {
 	}
 
 .en {
-		color:rgb(196, 101, 101);
+		color:rgb(164,164,164);
 		height: 15px;
 		width: 50px
 	}
 	.es {
-		color:rgb(127, 136, 255);
+		color:rgb(255,255,255);
 		height: 15px;
 		width: 50px
 	}
@@ -1846,7 +1846,7 @@ input, select, textarea {
 		position: absolute;
 		width:30px;
 		height: 15px;
-		background-color: rgb(196, 101, 101);
+		background-color: rgb(164,164,164);
 		border-radius: 15px;
 	}
 	.check:after{
@@ -1856,7 +1856,7 @@ input, select, textarea {
 		background: #fff;
 		border-radius: 15px;
 		transition: 0.25s;
-		border: 2px solid rgb(196, 101, 101);
+		border: 2px solid rgb(164, 163, 163);
 		box-sizing: border-box;
 		height: 15px;
 	
@@ -1868,6 +1868,6 @@ input, select, textarea {
 	
 	}
 	.check:checked:before{
-		background-color:  rgb(127, 136, 255);
+		background-color:  rgb(255,255,255);
 		height: 15px;
 	}

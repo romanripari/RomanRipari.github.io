@@ -1,0 +1,225 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="es">
+	<head>
+		<title>Román Ariel Ripari</title>
+		<meta charset="utf-8" />
+
+		<link rel="icon" type="image/jpeg" href="../resources/favicon.jpg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<div id='barra-superior'>
+			<span class="en">Inglés</span>
+			<input type="checkbox" class ="check" checked>
+			<span class="en">Español<span>
+				
+		</div>
+				
+		</div>
+
+
+	<!-- Wrapper -->
+			<div id="wrapper">
+				<!-- Header -->
+				<header id="header">
+						<div class="content">
+							<div class="inner">
+								<h1>Román Ariel Ripari</h1>
+							</div>
+						</div>
+						<div class="content">
+							<div class="inner">
+								<h1>Analista de Datos</h1>
+								<h3>Buenos Aires, Argentina</h3>
+								<p>~ Excel VBA ~ Alteryx ~ Python ~ </p>
+							</div>
+						</div>
+						<nav>
+							<ul>
+								<li><a href="#About">Sobre mí</a></li>
+								<li><a href="#Experience">Experiencia</a></li>
+								<li><a href="#Certifications">Certificationes</a></li>
+								<li><a href="#Resume">CV</a></li>
+								<li><a href="#Contact">Contacto</a></li>
+							</ul>
+						</nav>
+						<div class="content">
+							<div class="inner">
+								<a href="../projects.html">
+								<h1>&lt;Proyectos&gt;
+								</h1>
+							</a>
+							</div>
+						</div>
+					</header>
+
+				<!-- Main -->
+					<div id="main">
+						<!-- about -->
+						<article id="About">
+							<div class="noticia">
+								<div class="typed-out-head">About me 💡</div>
+								<img class="izquierda" src="../resources/profile.jpg" width=120 height=120>
+									<aside>
+										<p>~ Excel VBA ~ Alteryx ~ Python ~</p>
+										<p>+10 de años de experiencia en posiciones de Analista de Datos.</p>
+										<p>Mis principales puestos laborales fueron desarrollando aplicaciones de Excel (VBA), flujos de transformación de datos en Alteryx, creación de Bases de Datos con SQL y códigos de Python.</p>
+										<p>Recientemente comencé a estudiar la Licenciatura en Ciencias de Datos en la UBA (ARG)</p>
+										</aside>
+									<br>
+								</div>
+
+						</article>
+						<!-- Resume -->
+							<article id="Resume">
+								<div class="titulo"><div class="typed-out-head">CV 📄</div></div>
+									<p>	
+										<iframe src="https://drive.google.com/file/d/1BWHE3h3TuRqasS99GbAtWNxpyBfwYHhJ/preview"
+										width="100%" height="800" allow="autoplay" frameborder="0"></iframe>
+									</p>
+								<CENTER>
+									<button>
+										<a href="../resources/Resume%20Rom%C3%A1n%20Ripari.pdf" title="Download Resume" download="Resume Román Ripari" target="_blank">Descargar</a>
+									</button>
+								</CENTER>
+							</article>
+						<!-- Experience -->
+							<article id="Experience">
+									<div class="titulo"><div class="typed-out-head">Experiencia 💻</div></div>
+									<div class="noticia">
+										<div class="typed-out-title">PGD Latam</div>
+											<img class="izquierda" src="../resources/imgPGD.jpg" width=80 height=80>
+												<aside>
+												Analista de Datos Senior. 
+													<i>(Jun 2021 - Al presente)</i>
+											</aside>
+											<br>
+										</div>
+									<hr>
+									<div class="noticia">
+										<div class="typed-out-title">Ernst & Young</div>
+											<img class="izquierda" src="../resources/imgEY.jpg" width=80 height=80>
+												<aside>
+													Analista Senior VBA - Alteryx. <i>(Jun 2019 - Jul 2021)</i>
+											</aside>
+											<br>								
+									</div>
+									<hr>
+									<div class="noticia">
+										<div class="typed-out-title">IPG Mediabrands</div>
+											<img class="izquierda" src="../resources/imgMB.jpg" width=80 height=80>
+												<aside>
+													Analista de Proyecto de Datos . <i>(Sep 2018 - Jun 2019)</i>
+											</aside>
+											<br>
+										</div>
+									<hr>
+									<div class="noticia">
+										<div class="typed-out-title">Nielsen</div>
+											<img class="izquierda" src="../resources/imgNielsen.jpg" width=80 height=80>
+												<aside>
+													Analista Senior. <i>(Dic 2011 - Abr 2018)</i>
+											</aside>
+											<br>
+										</div>
+							</article>
+						<!-- Portfolio -->
+						<article id="Portfolio">
+							<div class="titulo"><div class="typed-out-head">Portfolio 💻</div></div>
+							<div class="noticia">
+								<div class="typed-out-title">Proyecto A</div>
+									<img class="izquierda" src="../resources/portfolio1.jpg" width=80 height=80>
+										<aside>
+										Detalles sobre el proycto A 😀
+									</aside>
+									<br>
+								</div>
+							<hr>
+							<div class="noticia">
+								<div class="typed-out-title">Proyecto B</div>
+									<img class="izquierda" src="../resources/portfolio2.jpg" width=80 height=80>
+										<aside>
+											Detalles sobre el proycto B 😀
+										</aside>
+									<br>
+								</div>
+
+						</article>
+						<!-- Portfolio -->
+						<article id="Certifications">
+							<div class="titulo"><div class="typed-out-head">Certificationes 👨‍🏫</div></div>
+
+							<div class="noticia">
+								<div class="typed-out-title">Python PCEP</div>
+								<a href="https://verify.openedg.org/?id=8OCq.UMzQ.QFuQ" target="_blank">
+									<img class="izquierda" src="../resources/PCEPPython.png" width=120 height=120>
+										<aside>
+										Python PCEP
+										
+										<i> 
+											PCEP: la Certificación de Entry-Level Python es una credencial profesional que mide la capacidad para realizar tareas de codificación relacionadas con los elementos esenciales de la programación en el lenguaje Python.
+										</i>
+									</aside>
+									<br>
+								</div>
+							</a>
+							<hr>
+							<div class="noticia">
+								<a href="https://www.efset.org/cert/kLUd31" target="_blank">
+								<div class="typed-out-title">EF SET</div>
+									<img class="izquierda" src="../resources/efset.png" width=120 height=120>
+										<aside>
+										English EFSET Certification
+										<i>The EF Standard English Test (EF SET) es el primer examen de inglés estandarizado en línea completamente gratuito del mundo para estudiantes de todos los niveles, desde principiante hasta avanzado. Como parte de EF Education First, nos basamos en un legado de excelencia académica de 50 años, habiendo ayudado a más de 20 millones de personas en todo el mundo a aprender inglés con éxito.</i>
+									</aside>
+								</div>
+							</a>
+						</article>
+
+					<!-- Contact -->
+							<article id="Contact" > 
+								<div class="titulo"><div class="typed-out-head">Contáctame 📲</div></div>
+									<ul class="icons">
+									<div class="typed-out-title">Linkedin</div>
+									<li><a href="https://www.linkedin.com/in/romanripari/" class="icon brands fa-linkedin"></a></li>
+									<br> 
+									<div class="typed-out-title">GitHub</div>
+									<li><a href="https://github.com/romanripari" target="_blank" class="icon brands fa-github"></a></li>
+									<br> 
+									<div class="typed-out-title">E-mail</div>
+									<li><a href="mailto:romanripari@gmail.com" class="icon fa-envelope"></a></li>
+									<br> 
+								</ul>
+						</article>
+
+					</div>
+
+				<!-- Footer-->
+					<footer id="footer">
+						<p class="copyright">&copy; Sitio inspirado en un diseño de <a href="https://html5up.net">HTML5 UP</a>.</p>
+					</footer>
+ 				
+			</div>
+
+		<!-- BG -->
+		<div id="bg"></div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script type="text/javascript" src="../js/functions.js"></script>
+
+	</body>
+</html>

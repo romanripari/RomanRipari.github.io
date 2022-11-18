@@ -465,7 +465,6 @@ input, select, textarea {
 		padding: 0.75rem 1rem;
 	}
 
-	input[type="checkbox"],
 	input[type="radio"] {
 		-moz-appearance: none;
 		-webkit-appearance: none;
@@ -479,7 +478,6 @@ input, select, textarea {
 		z-index: -1;
 	}
 
-		input[type="checkbox"] + label,
 		input[type="radio"] + label {
 			text-decoration: none;
 			-moz-user-select: none;
@@ -497,7 +495,6 @@ input, select, textarea {
 			position: relative;
 		}
 
-			input[type="checkbox"] + label:before,
 			input[type="radio"] + label:before {
 				-moz-osx-font-smoothing: grayscale;
 				-webkit-font-smoothing: antialiased;
@@ -511,7 +508,6 @@ input, select, textarea {
 				font-weight: 900;
 			}
 
-			input[type="checkbox"] + label:before,
 			input[type="radio"] + label:before {
 				-moz-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
 				-webkit-transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
@@ -530,7 +526,6 @@ input, select, textarea {
 				width: 1.65rem;
 			}
 
-		input[type="checkbox"]:checked + label:before,
 		input[type="radio"]:checked + label:before {
 			background: #ffffff !important;
 			border-color: #ffffff !important;
@@ -538,16 +533,12 @@ input, select, textarea {
 			content: '\f00c';
 		}
 
-		input[type="checkbox"]:focus + label:before,
 		input[type="radio"]:focus + label:before {
 			background: rgba(255, 255, 255, 0.075);
 			border-color: #ffffff;
 			box-shadow: 0 0 0 1px #ffffff;
 		}
 
-	input[type="checkbox"] + label:before {
-		border-radius: 4px;
-	}
 
 	input[type="radio"] + label:before {
 		border-radius: 100%;
@@ -1823,3 +1814,53 @@ input, select, textarea {
 	.python {
 		font-size: 0.75rem;
 		}
+
+#barra-superior {
+	margin:auto;
+	width:100%;
+	height:30px; /*Anchura de la barra*/
+	position:fixed; /*Para que la barra se quede fija*/
+	z-index:101; /*Para que la barra se quede fija*/
+	}
+
+.en {
+		color:#333;
+		
+	}
+	.es {
+		color:aquamarine;
+		
+	}
+	.check{
+		position: relative;
+		width:50px;
+	
+	}
+	.check:before{
+		content: '';
+		position: absolute;
+		width:50px;
+		height: 25px;
+		background-color: #333;
+		border-radius: 25px;
+	}
+	.check:after{
+		content: '';
+		position: absolute;
+		width: 25px;
+		background: #fff;
+		border-radius: 25px;
+		transition: 0.25s;
+		border: 2px solid #333;
+		box-sizing: border-box;
+	
+	}
+	.check:checked:after{
+		left:25px;
+		border: 2px solid aquamarine;
+	
+	}
+	.check:checked:before{
+		background-color: aquamarine;
+		
+	}

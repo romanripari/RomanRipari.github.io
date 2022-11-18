@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<!--
+	Dimension by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html lang="en">
+	<head>
+		<title>Román Ariel Ripari</title>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/jpeg" href="../resources/favicon.jpg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython.min.js"></script>
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript> <link rel="stylesheet" href="../assets/css/noscript.css" /> </noscript>
+		
+
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+
+		<div id="wrapper">
+			<!-- Header -->
+			<header id="header">
+				<div class="content">
+					<div class="inner">
+						<ul class="icons">
+							<h1><a href="../" class="fa fa-home"></a></h1>
+						</ul>
+							<h1>Román Ariel Ripari</h1>
+						<h3>Apps</h3>
+					</div>
+				</div>
+				<nav>
+					<ul>
+						<li><a href="#1">#1 Inflación</a></li>
+					</ul>
+				</nav>
+
+			</header>				<!-- Main -->
+					<div id="main">
+						<!-- 1 -->
+						<article id="1">
+							<div class="noticia">
+								<h2>Inflación</h2>
+								<p>
+									 
+								</p>
+								<label for="demo-category">$ Inicio</label>
+								<input type="text" id="test-input"/>
+								<br>
+								<label for="demo-category">Mes Inicio</label>
+								<select name="demo-category" id="MesInicio">
+									<option value="1">Enero 2022</option>
+									<option value="2">Febrero 2022</option>
+									<option value="3">Marzo 2022</option>
+									<option value="4">Abril 2022</option>
+									<option value="5">Mayo 2022</option>
+									<option value="6">Junio 2022</option>
+									<option value="7">Julio 2022</option>
+									<option value="8">Agosto 2022</option>
+									<option value="9">Septiembre 2022</option>
+									<option value="10">Octubre 2022</option>
+									<option value="11">Noviembre 2022</option>
+									<option value="12">Diciembre 2022</option>
+								</select>
+								<br>
+								<label for="demo-category">Mes Fin</label>
+								<select name="demo-category" id="MesFin">
+									<option value="1">Enero 2022</option>
+									<option value="2">Febrero 2022</option>
+									<option value="3">Marzo 2022</option>
+									<option value="4">Abril 2022</option>
+									<option value="5">Mayo 2022</option>
+									<option value="6">Junio 2022</option>
+									<option value="7">Julio 2022</option>
+									<option value="8">Agosto 2022</option>
+									<option value="9">Septiembre 2022</option>
+									<option value="10">Octubre 2022</option>
+									<option value="11">Noviembre 2022</option>
+									<option value="12">Diciembre 2022</option>
+								</select>
+								<br>
+								<button id="submit-button" type="submit" aria-pressed="my_function" pys-onClick="my_function">
+									Calcular Inflación
+								</button>
+								<br>
+								<br>
+								<label for="demo-category">$ según inflación:</label>
+								<div id="test-output"></div>
+							  <py-script>
+								from js import console
+								def my_function(*args, **kwargs):
+									text = Element('test-input').element.value
+									mes1 =  int(Element('MesInicio').element.value)
+									mes2 =  int(Element('MesFin').element.value)
+
+									dicInfl = [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, ]
+									try:
+										dMes = int(text)
+										for i in range(mes1-1, mes2-1):
+											dMes = dMes * (1+ dicInfl[i])
+										Element('test-output').element.innerText =  "$ {:.2f}".format(dMes)
+									except:
+										Element('test-output').element.innerText = "Escriba un valor numérico"
+								      
+							  </py-script>
+							</div>
+						</article>
+						<!-- 2 -->
+						<article id="2">
+							<div class="noticia">
+								<div class="titulo"><div class="typed-out-head">#2 App</div></div>
+								<h2>App Title</h2>
+								<p>
+									Details. 
+								</p>
+							</div>
+						</article>
+					</div>
+				<!-- Footer-->
+					<footer id="footer">
+					</footer>
+				</div>
+
+		<!-- BG -->
+		<div id="bg"></div>
+
+		<!-- Scripts -->
+			<script src="../assets/js/jquery.min.js"></script>
+			<script src="../assets/js/browser.min.js"></script>
+			<script src="../assets/js/breakpoints.min.js"></script>
+			<script src="../assets/js/util.js"></script>
+			<script src="../assets/js/main.js"></script>
+			<script type="text/javascript" src="../js/functions.js"></script>
+			<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+
+	</body>
+</html>

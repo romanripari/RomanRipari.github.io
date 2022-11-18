@@ -3,22 +3,6 @@
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
-
-
-var check=document.querySelector(".check");
-
-check.addEventListener('click', idioma);
-
-function idioma(){
-	let id = check.checked;
-	if (id == true){
-		location.href="es/es.html"
-	} else {
-		location.href="../"
-	}
-
-}
-
 $(document).mouseup(function(e) {
 	if (e.which != 1) return false;
   

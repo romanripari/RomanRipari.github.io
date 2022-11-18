@@ -23,7 +23,6 @@
 			<header id="header">
 				<div class="content">
 					<div class="inner">
-
 						<ul class="icons">
 							<h1><a href="es.html" class="fa fa-home"></a></h1>
 						</ul>
@@ -31,66 +30,223 @@
 						<h3>Proyectos</h3>
 					</div>
 				</div>
-			</header>
-			<header id="header">
 				<nav>
 					<ul>
-						<li><a href="#1">#1</a></li>
-						<li><a href="#2">#2</a></li>
-						<li><a href="#3">#3</a></li>
+						<li><a href="#1">#1 Álbum de figuritas del Mundial QATAR 2022</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#4">#4</a></li>
-						<li><a href="#5">#5</a></li>
-						<li><a href="#6">#6</a></li>
+						<li><a href="#2">#2 Funciones de Álgebra en Haskell</a></li>
 					</ul>
 				</nav>
+				<nav>
+					<ul>
+						<li><a href="#3">#3 Curso de Programación en Python de la UNSAM</a></li>
+					</ul>
+				</nav>
+
 			</header>
+
 				<!-- Main -->
 					<div id="main">
-
 						<!-- 1 -->
 						<article id="1">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">Proyecto 1</div></div>
-									<py-script>
-										print("Hola Mundo!")
-									</py-script>
+								<div class="titulo"><div class="typed-out-head">#1</div></div>
+								<h2>Álbum de figuritas del Mundial QATAR 2022</h2>
+								<p>
+									¿Cuánto cuesta llenar el Álbum de la Copa Mundial Qatar 2022 en Argentina?
+									<br>
+									<br>
+									Para responder esto, armé un algoritmo con Python que simula cientos de casos de llenado de álbumes, y nos responde, entre otras cosas: ¿Cuánto es lo mínimo que podría gastar para llenar el álbum?
+									<br>
+									<br>
+									A continuación se encuentra una parte del código.
+									<br>
+									<br>
+									Se puede ver completo
+									<a href="https://github.com/romanripari/Practices/tree/main/%C3%81lbum"  target="_blank">en GitHub, en este link</a>
+								</p>
+								<pre>
+									<code class="python">
+# figuritas_roman.py
+
+import random
+import numpy as np
+
+def nuevo_album(fig_en_el_album):
+	return np.zeros(fig_en_el_album)
+
+def esta_incompleto(A):
+	return 0 in A
+
+def nuevo_paquete(fig_en_el_album, fig_en_paquete):
+	return random.choices(range(fig_en_el_album),k=fig_en_paquete)
+
+def paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiazo):
+	album = nuevo_album(fig_en_el_album)
+	comprados = 0
+	while esta_incompleto(album):
+		comprados +=1
+		paquete = nuevo_paquete(fig_en_el_album, fig_en_paquete)
+
+		for p in paquete:
+			album[p - 1] = 1
+	return comprados
+
+def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
+	Tests = [paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiafigu) for i in range(n)]
+	return np.mean(Tests)
+
+									</code>
+									</pre>
 							</div>
 						</article>
 						<!-- 2 -->
 						<article id="2">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">Proyecto 2</div></div>
+								<div class="titulo"><div class="typed-out-head">#2</div></div>
+								<h2>Funciones de Álgebra en Haskell</h2>
+
+								<p>
+									Funciones y ejercicios realizados en el Taller de Álgebra en la Facultad de Exactas (UBA)
+									<br>
+									<br>
+									A continuación se encuentran algunos ejemplos, y los códigos completos se pueden ver
+									<a href="https://github.com/romanripari/Taller-Algebra-I/tree/main/00%20-%20Clases" target="_blank">en GitHub, en este link</a>
+								</p>
 								<pre>
 									<code class="python">
-def fib(n):
-	a, b = 0, 1
-	while a < n:
-	print(a, end=' ')
-	a, b = b, a+b
-	print()
-	fib(1000)
+# functions.hs
+
+division :: Int -> Int -> ( Int , Int )
+division a d
+ | a < 0 = (-q-1, d-r) --Si el primero es negativo
+ | d < 0 = (-q', r')   --Si el segundo es negativo
+ | a < d = (0 , a )
+ | otherwise = ( fst ( division (a - d ) d ) + 1, snd ( division (a - d ) d ))
+ where (q,r) = division (-a) d 
+       (q',r') = division a (-d) 
+
+mcd :: Int -> Int -> Int
+mcd a 0 = a
+mcd a b  = mcd b (snd (division a b))
+
+
+todosLosDivisores :: Int -> [Int]
+todosLosDivisores x = todosLosDivisoresAux x x
+--todosLosDivisores x = 1 : auxiliarDivisor x 2
+
+todosLosDivisoresAux :: Int -> Int -> [Int]
+todosLosDivisoresAux x x'
+ | x == 0 = []
+ | x == 1 = [1] 
+ | mod x' x == 0 = x : (todosLosDivisoresAux (x-1) x')
+ | otherwise = (todosLosDivisoresAux (x-1) x')
+
+auxiliarDivisor :: Int -> Int -> [Int]
+auxiliarDivisor x y 
+ | x == y = [x]
+ | mod x y == 0 = y : auxiliarDivisor x (y+1)
+ | otherwise = auxiliarDivisor x (y+1)
+
+mayorDivisorComun :: Int -> Int -> Int
+mayorDivisorComun a b = elemento_comun ((todosLosDivisores a)) ((todosLosDivisores b)) 
+
+elemento_comun :: [Int] -> [Int] -> Int
+elemento_comun as bs 
+ | elem (head as) bs = head as
+ | otherwise =  elemento_comun (tail as) bs
 									</code>
-									</pre>
+								</pre>
+									
 							</div>
 						</article>
 						<article id="3">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">Proyecto 3</div></div>
+								<div class="titulo"><div class="typed-out-head">#3</div></div>
+								<h2>Curso de Programación en Python de la UNSAM</h2>
+								<p>
+									Proyecto completo realizado durante el Curso de programación en Python de la Universidad Nacional de San Martín
+									<br>
+									<br>
+									<a href="https://github.com/python-unsam/Programacion_en_Python_UNSAM/blob/master/Notas/Contenidos.md" >En este link </a>
+									se encuentra todo el programa oficial y los detalles del Seminario
+									<br>
+									<br>
+									El curso estuvo a cargo de dos profesores de la ECyT-UNSAM que son también investigadores del CONICET: Oscar Filevich es Lic. en Biología, Dr. en Química y trabaja en neurofisiología; Rafael Grimson es Lic. en Matemática, Dr. en Computación y trabaja en temas ambientales.
+									<br>
+									También participaron Manuela Cerdiero como JTP e Iván Pedrón y Daniela Alban como ayudantes. Además, Matias López-Rosenfeld fue profesor invitado, y José Crespo y José Clemente, docentes invitados.
+									<br>
+									<br>
+									A continuación se encuentra un pequeño ejemplo, y los códigos completos se pueden ver
+									<a href="https://github.com/romanripari/UNSAMPython" target="_blank">en GitHub, en este link</a>
+								</p>
 								<pre>
 									<code class="python">
-def fib(n):
-	a, b = 0, 1
-	while a < n:
-	print(a, end=' ')
-	a, b = b, a+b
-	print()
-	fib(1000)
+
+# fileparse.py
+
+import csv
+
+#%% ejercicio 7.6
+def parse_csv(lines, select = None, types = None, has_headers = True, silence_errors = False):
+    '''
+    Parsea un archivo CSV en una lista de registros.
+    Se puede seleccionar sólo un subconjunto de las columnas, determinando el parámetro select,
+    que debe ser una lista de nombres de las columnas a considerar.
+    '''
+    if select and not has_headers:
+        raise RuntimeError('Para seleccionar, necesito encabezados.')
+    filas = csv.reader(lines)
+
+    # Lee los encabezados del archivo
+    if has_headers:
+        encabezados = next(filas)
+    else:
+        encabezados = []
+
+    # Si se indicó un selector de columnas,
+    #    buscar los índices de las columnas especificadas.
+    # Y en ese caso achicar el conjunto de encabezados para diccionarios
+
+    if select:
+        indices = [encabezados.index(nombre_columna) for nombre_columna in select]
+        encabezados = select
+    else:
+        indices = []
+
+    registros = []
+    for n_fila, fila in enumerate(filas, start = 1):
+        if not fila:    # Saltear filas vacías
+            continue
+        # Filtrar la fila si se especificaron columnas
+        if indices:
+            fila = [fila[index] for index in indices]
+        
+        try:
+            if types:
+            
+                fila = [func(val) for func, val in zip(types, fila)]
+                
+            # Armar el diccionario
+            if encabezados:
+                registro = dict(zip(encabezados, fila))
+            else:
+                registro = tuple(fila)
+
+            registros.append(registro)
+        
+        except ValueError as e:
+            if not silence_errors:
+                print(f'Fila {n_fila}: No pude convertir {fila}')
+                print(f'Fila {n_fila}: Motivo: {e}')
+                
+    return registros
 									</code>
-									</pre>
+								</pre>
+									
 							</div>
 						</article>
 
@@ -103,7 +259,6 @@ def fib(n):
 					</footer>
  				
 				</div>
-
 		<!-- BG -->
 		<div id="bg"></div>
 

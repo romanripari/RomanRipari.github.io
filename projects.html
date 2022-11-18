@@ -23,7 +23,6 @@
 			<header id="header">
 				<div class="content">
 					<div class="inner">
-
 						<ul class="icons">
 							<h1><a href="../" class="fa fa-home"></a></h1>
 						</ul>
@@ -43,7 +42,7 @@
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#3">#3 UNSAM's Python classes </a></li>
+						<li><a href="#3">#3 UNSAM: Python Programming Course </a></li>
 					</ul>
 				</nav>
 
@@ -57,27 +56,21 @@
 								<div class="titulo"><div class="typed-out-head">#1</div></div>
 								<h2>FIFA World Cup Qatar 2022 Sticker Collection</h2>
 								<p>
-									¿Cuánto cuesta llenar el Álbum de la Copa Mundial Qatar 2022 en Argentina?
+									How much does it cost to fill out the Qatar 2022 World Cup Album in Argentina?
 									<br>
 									<br>
-									Para responder esto, armé un algoritmo con Python que simula cientos de casos de llenado de álbumes, y nos responde:
+									To answer this, I wrote an algorithm with Python that simulates hundreds of cases, and returns us: How much is the least you could spend to fill the album?
 									<br>
 									<br>
-									¿Cuánto es lo mínimo que podría gastar para llenar el álbum?
+									Here is a part of the code.
 									<br>
 									<br>
-									A continuación se encuentra el código completo, también se puede ver <a href="https://github.com/romanripari/Practices/tree/main/%C3%81lbum">en GitHub, en este link</a>
+									You can look it complete 
+									<a href="https://github.com/romanripari/Practices/tree/main/%C3%81lbum"  target="_blank">in GitHub, in this link</a>
 								</p>
 								<pre>
 									<code class="python">
 # figuritas_roman.py
-
-'''
-Código hecho por Roma
-https://romanripari.ar
-RomanRipari@gmail.com
-En base a ejercicios del Curso de Python de la UNSAM.
-'''
 
 import random
 import numpy as np
@@ -98,24 +91,6 @@ def paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiazo):
 		comprados +=1
 		paquete = nuevo_paquete(fig_en_el_album, fig_en_paquete)
 
-		
-		# Bloque Repetidas ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-		# En este bloque determinamos la lógica con la que se realizarían los intercambios.
-		# En este caso, optamos por realizar un cambio por paquete, siempre que 
-		# haya tocado al menos una repetida en el sobre.
-		if cambiazo:
-			repetidas = 0
-			for p in paquete:
-				if album[p - 1] == 1:
-					repetidas +=1
-			#Si hay repetidas, se puede cambiar UNA por paquete
-			if repetidas > 0:
-				for i,a in enumerate(list(album)):
-					if a == 0:
-						paquete.append(i+1)
-						break
-		# Bloque Repetidas ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-
 		for p in paquete:
 			album[p - 1] = 1
 	return comprados
@@ -124,61 +99,6 @@ def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
 	Tests = [paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiafigu) for i in range(n)]
 	return np.mean(Tests)
 
-def run():
-	#Datos Figuritas de Qatar (En septiembre de 2022)
-	fig_en_el_album = 638
-	fig_en_paquete = 5
-	precio_paquete = 150
-	precio_album = 650
-
-	print("Si no se cambia ninguna figurita:")
-	paquetes = int(test_paquetes(1000, fig_en_el_album, fig_en_paquete))
-	print(f'Un álbum de {fig_en_el_album} figuritas se llena, en promedio,',
-		f'comprando {paquetes:0.0f} paquetes.',
-		f'Esto costaría ${(((paquetes) * precio_paquete) + precio_album):.2f}\n')
-	
-	print("Si se cambia una figurita cada vez que sale alguna repetida en el sobre:")
-	paquetes = int(test_paquetes(1000, fig_en_el_album, fig_en_paquete, cambiafigu = True))
-	print(f'Un álbum de {fig_en_el_album} figuritas se llena, en promedio,',
-		f'comprando {paquetes:0.0f} paquetes.',
-		f'Esto costaría ${(((paquetes) * precio_paquete) + precio_album):.2f}')
-	
-	#gráficos:
-	# Se puede descomentar todo el siguiente bloque para ver en pantalla
-	# un gráfico que muestra cómo se va llenando el álbum. 
-	# Se nota una gran desaceleración al final.
-'''
-	import matplotlib.pyplot as plt
-	
-	plt.plot(calcular_historia_figus_pegadas(fig_en_el_album, precio_paquete))
-	plt.xlabel("Cantidad de paquetes comprados.")
-	plt.ylabel("Cantidad de figuritas pegadas.")
-	plt.title("La curva de llenado se desacelera al final")
-	plt.show()
-def grafico_llenado(fig_en_el_album, fig_en_paquete):
-	album = nuevo_album(fig_en_el_album)
-	historia_figus_pegadas = [0]
-	while esta_incompleto(album):
-		paquete = nuevo_paquete(fig_en_el_album, fig_en_paquete)
-		while paquete:
-			album[paquete.pop()] = 1
-		figus_pegadas = (album>0).sum()
-		historia_figus_pegadas.append(figus_pegadas)        
-	return historia_figus_pegadas
-def calcular_historia_figus_pegadas(fig_en_el_album, precio_paquete):
-	album = nuevo_album(fig_en_el_album)
-	historia_figus_pegadas = [0]
-	while esta_incompleto(album):
-		paquete = nuevo_paquete(fig_en_el_album, precio_paquete)
-		while paquete:
-			album[paquete.pop()] = 1
-		figus_pegadas = (album>0).sum()
-		historia_figus_pegadas.append(figus_pegadas)        
-	return historia_figus_pegadas
-'''
-
-if __name__ == "__main__":
-	run()
 									</code>
 									</pre>
 							</div>
@@ -188,33 +108,145 @@ if __name__ == "__main__":
 							<div class="noticia">
 								<div class="titulo"><div class="typed-out-head">#2</div></div>
 								<h2>Algebra functions made in Haskell</h2>
+
+								<p>
+									Functions and exercises written by me in the Algebra Workshop at the Faculty of Exact Sciences (UBA)
+									<br>
+									<br>
+									Below are some examples, and the full codes can be seen
+									<a href="https://github.com/romanripari/Taller-Algebra-I/tree/main/00%20-%20Clases" target="_blank">in GitHub, in this link</a>
+								</p>
 								<pre>
 									<code class="python">
-def fib(n):
-	a, b = 0, 1
-	while a < n:
-	print(a, end=' ')
-	a, b = b, a+b
-	print()
-	fib(1000)
+# functions.hs
+
+division :: Int -> Int -> ( Int , Int )
+division a d
+ | a < 0 = (-q-1, d-r) --Si el primero es negativo
+ | d < 0 = (-q', r')   --Si el segundo es negativo
+ | a < d = (0 , a )
+ | otherwise = ( fst ( division (a - d ) d ) + 1, snd ( division (a - d ) d ))
+ where (q,r) = division (-a) d 
+       (q',r') = division a (-d) 
+
+mcd :: Int -> Int -> Int
+mcd a 0 = a
+mcd a b  = mcd b (snd (division a b))
+
+
+todosLosDivisores :: Int -> [Int]
+todosLosDivisores x = todosLosDivisoresAux x x
+--todosLosDivisores x = 1 : auxiliarDivisor x 2
+
+todosLosDivisoresAux :: Int -> Int -> [Int]
+todosLosDivisoresAux x x'
+ | x == 0 = []
+ | x == 1 = [1] 
+ | mod x' x == 0 = x : (todosLosDivisoresAux (x-1) x')
+ | otherwise = (todosLosDivisoresAux (x-1) x')
+
+auxiliarDivisor :: Int -> Int -> [Int]
+auxiliarDivisor x y 
+ | x == y = [x]
+ | mod x y == 0 = y : auxiliarDivisor x (y+1)
+ | otherwise = auxiliarDivisor x (y+1)
+
+mayorDivisorComun :: Int -> Int -> Int
+mayorDivisorComun a b = elemento_comun ((todosLosDivisores a)) ((todosLosDivisores b)) 
+
+elemento_comun :: [Int] -> [Int] -> Int
+elemento_comun as bs 
+ | elem (head as) bs = head as
+ | otherwise =  elemento_comun (tail as) bs
 									</code>
-									</pre>
+								</pre>
+									
 							</div>
 						</article>
 						<article id="3">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#3 UNSAM's Python classes</div></div>
+								<div class="titulo"><div class="typed-out-head">#3</div></div>
+								<h2>UNSAM: Python Programming Course</h2>
+								<p>
+									Complete project wrote by me during the Python Programming Course, of the Universidad Nacional de San Martín
+									<br>
+									<br>
+									<a href="https://github.com/python-unsam/Programacion_en_Python_UNSAM/blob/master/Notas/Contenidos.md" >In this link </a>
+									you will find the entire official program and the details of the Seminar
+									<br>
+									<br>
+									The course was given by two ECyT-UNSAM professors who are also CONICET researchers: Oscar Filevich has a degree in Biology, a PhD in Chemistry and works in neurophysiology; Rafael Grimson has a degree in Mathematics, a PhD in Computing and works on environmental issues.
+									<br>
+									Manuela Cerdiero also participated as JTP and Iván Pedrón and Daniela Alban as assistants. In addition, Matias López-Rosenfeld was visiting professor, and José Crespo and José Clemente, visiting professors.
+									<br>
+									<br>
+									Below are some examples, and the full codes can be seen
+									<a href="https://github.com/romanripari/UNSAMPython" target="_blank"> in GitHub, in this link</a>
+								</p>
 								<pre>
 									<code class="python">
-def fib(n):
-	a, b = 0, 1
-	while a < n:
-	print(a, end=' ')
-	a, b = b, a+b
-	print()
-	fib(1000)
+
+# fileparse.py
+
+import csv
+
+#%% ejercicio 7.6
+def parse_csv(lines, select = None, types = None, has_headers = True, silence_errors = False):
+    '''
+    Parsea un archivo CSV en una lista de registros.
+    Se puede seleccionar sólo un subconjunto de las columnas, determinando el parámetro select,
+    que debe ser una lista de nombres de las columnas a considerar.
+    '''
+    if select and not has_headers:
+        raise RuntimeError('Para seleccionar, necesito encabezados.')
+    filas = csv.reader(lines)
+
+    # Lee los encabezados del archivo
+    if has_headers:
+        encabezados = next(filas)
+    else:
+        encabezados = []
+
+    # Si se indicó un selector de columnas,
+    #    buscar los índices de las columnas especificadas.
+    # Y en ese caso achicar el conjunto de encabezados para diccionarios
+
+    if select:
+        indices = [encabezados.index(nombre_columna) for nombre_columna in select]
+        encabezados = select
+    else:
+        indices = []
+
+    registros = []
+    for n_fila, fila in enumerate(filas, start = 1):
+        if not fila:    # Saltear filas vacías
+            continue
+        # Filtrar la fila si se especificaron columnas
+        if indices:
+            fila = [fila[index] for index in indices]
+        
+        try:
+            if types:
+            
+                fila = [func(val) for func, val in zip(types, fila)]
+                
+            # Armar el diccionario
+            if encabezados:
+                registro = dict(zip(encabezados, fila))
+            else:
+                registro = tuple(fila)
+
+            registros.append(registro)
+        
+        except ValueError as e:
+            if not silence_errors:
+                print(f'Fila {n_fila}: No pude convertir {fila}')
+                print(f'Fila {n_fila}: Motivo: {e}')
+                
+    return registros
 									</code>
-									</pre>
+								</pre>
+									
 							</div>
 						</article>
 

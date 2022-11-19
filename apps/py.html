@@ -96,15 +96,34 @@
 								from js import console
 								def my_function(*args, **kwargs):
 									text = Element('test-input').element.value
+									diccionarioMeses = {
+										"1": "Octubre 2021",
+										"2": "Noviembre 2021",
+										"3": "Diciembre 2021",
+										"4": "Enero 2022",
+										"5": "Febrero 2022",
+										"6": "Marzo 2022",
+										"7": "Abril 2022",
+										"8": "Mayo 2022",
+										"9": "Junio 2022",
+										"10": "Julio 2022",
+										"11": "Agosto 2022",
+										"12": "Septiembre 2022",
+										"13": "Octubre 2022"}
+									
 									mes1 =  int(Element('MesInicio').element.value)
 									mes2 =  int(Element('MesFin').element.value)
+									mes1string = diccionarioMeses[str(mes1)]
+									mes2string = diccionarioMeses[str(mes2)]
 
 									dicInfl = [1.035, 1.025, 1.038, 1.039, 1.047, 1.067, 1.061, 1.051, 1.053, 1.074, 1.07, 1.062, 1.064]
 									try:
 										dMes = int(text)
+										dMesOrigin = dMes
 										for i in range(mes1-1, mes2-1):
 											dMes = dMes * (dicInfl[i])
-										Element('test-output').element.innerText =  "$ {:,.2f}".format(dMes)
+										Element('test-output').element.innerText = "" + \
+											mes1string + ": " + "$ {:,.2f}".format(dMesOrigin) + "\n" + mes2string + ": " + "$ {:,.2f}".format(dMes)
 									except:
 										Element('test-output').element.innerText = "Escriba un valor numérico"
 								      

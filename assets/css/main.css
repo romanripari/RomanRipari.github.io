@@ -1873,3 +1873,9 @@ input, select, textarea {
 		height: 15px;
 	}
 
+
+
+    .ocultar {
+		display: none;
+		}
+	

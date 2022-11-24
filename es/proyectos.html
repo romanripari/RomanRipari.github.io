@@ -97,7 +97,7 @@
 								</p>
 								<pre>
 									<code class="python">
-Function Example()
+<b>Function Example()</b>
     Dim dMax As Double, f As Double
     dMax = 12345
     
@@ -115,7 +115,7 @@ Function Example()
         End If
     Next
     ProgressBarModule.CloseBar
-End Function
+<b>End Function</b>
 										</code>
 									</pre>
 							</div>
@@ -146,16 +146,16 @@ End Function
 import random
 import numpy as np
 
-def nuevo_album(fig_en_el_album):
+<b>def nuevo_album(fig_en_el_album):</b>
 	return np.zeros(fig_en_el_album)
 
-def esta_incompleto(A):
+<b>def esta_incompleto(A):</b>
 	return 0 in A
 
-def nuevo_paquete(fig_en_el_album, fig_en_paquete):
+<b>def nuevo_paquete(fig_en_el_album, fig_en_paquete):</b>
 	return random.choices(range(fig_en_el_album),k=fig_en_paquete)
 
-def paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiazo):
+<b>def paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiazo):</b>
 	album = nuevo_album(fig_en_el_album)
 	comprados = 0
 	while esta_incompleto(album):
@@ -166,7 +166,7 @@ def paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiazo):
 			album[p - 1] = 1
 	return comprados
 
-def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
+<b>def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):</b>
 	Tests = [paquetes_necesarios(fig_en_el_album, fig_en_paquete, cambiafigu) for i in range(n)]
 	return np.mean(Tests)
 
@@ -191,7 +191,7 @@ def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
 									<code class="python">
 # functions.hs
 
-division :: Int -> Int -> ( Int , Int )
+<b>division :: Int -> Int -> ( Int , Int )</b>
 division a d
  | a < 0 = (-q-1, d-r) --Si el primero es negativo
  | d < 0 = (-q', r')   --Si el segundo es negativo
@@ -200,32 +200,32 @@ division a d
  where (q,r) = division (-a) d 
        (q',r') = division a (-d) 
 
-mcd :: Int -> Int -> Int
+<b>mcd :: Int -> Int -> Int</b>
 mcd a 0 = a
 mcd a b  = mcd b (snd (division a b))
 
 
-todosLosDivisores :: Int -> [Int]
+<b>todosLosDivisores :: Int -> [Int]</b>
 todosLosDivisores x = todosLosDivisoresAux x x
 --todosLosDivisores x = 1 : auxiliarDivisor x 2
 
-todosLosDivisoresAux :: Int -> Int -> [Int]
+<b>todosLosDivisoresAux :: Int -> Int -> [Int]</b>
 todosLosDivisoresAux x x'
  | x == 0 = []
  | x == 1 = [1] 
  | mod x' x == 0 = x : (todosLosDivisoresAux (x-1) x')
  | otherwise = (todosLosDivisoresAux (x-1) x')
 
-auxiliarDivisor :: Int -> Int -> [Int]
+<b>auxiliarDivisor :: Int -> Int -> [Int]</b>
 auxiliarDivisor x y 
  | x == y = [x]
  | mod x y == 0 = y : auxiliarDivisor x (y+1)
  | otherwise = auxiliarDivisor x (y+1)
 
-mayorDivisorComun :: Int -> Int -> Int
+<b>mayorDivisorComun :: Int -> Int -> Int</b>
 mayorDivisorComun a b = elemento_comun ((todosLosDivisores a)) ((todosLosDivisores b)) 
 
-elemento_comun :: [Int] -> [Int] -> Int
+<b>elemento_comun :: [Int] -> [Int] -> Int</b>
 elemento_comun as bs 
  | elem (head as) bs = head as
  | otherwise =  elemento_comun (tail as) bs
@@ -263,7 +263,7 @@ elemento_comun as bs
 import csv
 
 #%% ejercicio 7.6
-def parse_csv(lines, select = None, types = None, has_headers = True, silence_errors = False):
+<b>def parse_csv(lines, select = None, types = None, has_headers = True, silence_errors = False):</b>
     '''
     Parsea un archivo CSV en una lista de registros.
     Se puede seleccionar sólo un subconjunto de las columnas, determinando el parámetro select,

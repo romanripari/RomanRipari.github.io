@@ -27,22 +27,32 @@
 							<h1><a href="es.html" class="fa fa-home"></a></h1>
 						</ul>
 							<h1>Román Ariel Ripari</h1>
-						<h3>Proyectos</h3>
+							<h3 class="icon brands fa-python" > Proyectos <i class="icon fa-file-excel"></i></h3>
 					</div>
 				</div>
 				<nav>
 					<ul>
-						<li><a href="#1">#1 Álbum de figuritas del Mundial QATAR 2022</a></li>
+						<li><a href="#0"><i class="icon fa-file-excel"></i> Barra de Progreso en Macros VBA-Excel</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#2">#2 Funciones de Álgebra en Haskell</a></li>
+						<li><a href="#1"><i class="icon brands fa-python"></i> Álbum de figuritas del Mundial QATAR 2022</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#3">#3 Curso de Programación en Python de la UNSAM</a></li>
+						<li><a href="#2"><i class="icon fa-square-h"></i> Funciones de Álgebra en Haskell </a></li>
+					</ul>
+				</nav>
+				<nav>
+					<ul>
+						<li><a href="#3"><i class="icon brands fa-python"></i> Curso de Programación en Python de la UNSAM</a></li>
+					</ul>
+				</nav>
+				<nav>
+					<ul>
+						<li><a href="#"></a></li>
 					</ul>
 				</nav>
 
@@ -51,9 +61,61 @@
 				<!-- Main -->
 					<div id="main">
 						<!-- 1 -->
+						<!-- 0 -->
+						<article id="0">
+							<div class="noticia">
+								<div class="titulo"><div class="typed-out-head"></div></div>
+								<h2>Barra de Progreso en Macros VBA-Excel</h2>
+								<p>
+									Aquí un tutorial paso a paso para instalar y utilizar una Barra de Progreso para tus proyectos de VBA Excel
+									<br>
+									<br>
+									Al final, podrás utilizar esta barra en cualquier archivo, macro, en cualquier código simplemente llamando a las funciones dentro del módulo.
+									<br>
+									<br>
+									Primero, hay que descargar los archivos del UserForm (ambos: <i>ProgressBar.frm</i> y <i>ProgressBar.frx</i>) alojados en <a href="https://github.com/romanripari/RomanRipari.github.io/tree/main/xls" target="_blank">esta carpeta de GitHub, en este link</a>.
+									<br>
+									<br>
+									De la misma carpeta, se puede descargar el archivo <i>ProgressBarModule.bas</i>.
+									<br>
+									<br>
+									Una vez que tengas los tres archivos, debes importarlos todos a tu archivo Excel habilitado para macros (xlsm o xlsb).
+									<br>
+									<br>
+									Dentro de tu archivo Excel, ya podés utilziar las funciones del módulo ProgressBarModule: StartBar, IncreaseBar, CloseBar, Subtitle.
+									<br>
+									<br>
+									A continuación, el código de la función<i> Example()</i> que se puede usar para practicar con la barra de progreso:
+								</p>
+								<pre>
+									<code class="python">
+Function Example()
+    Dim dMax As Double, f As Double
+    dMax = 12345
+    
+    ProgressBarModule.StartBar dMax, "Here we write a title..."
+    For f = 1 To dMax
+        ProgressBarModule.IncreaseBar
+        If f < 1000 Then
+            ProgressBarModule.Subtitle "Subtitle: less than 1000.."
+        ElseIf f < 3000 Then
+            ProgressBarModule.Subtitle "Subtitle: less than 3000.."
+        ElseIf f < 5000 Then
+            ProgressBarModule.Subtitle "Subtitle: less than 5000.."
+        Else
+            ProgressBarModule.Subtitle "Subtitle: more than 5000.."
+        End If
+    Next
+    ProgressBarModule.CloseBar
+End Function
+										</code>
+									</pre>
+							</div>
+						</article>
+
 						<article id="1">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#1</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>Álbum de figuritas del Mundial QATAR 2022</h2>
 								<p>
 									¿Cuánto cuesta llenar el Álbum de la Copa Mundial Qatar 2022 en Argentina?
@@ -106,9 +168,8 @@ def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
 						<!-- 2 -->
 						<article id="2">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#2</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>Funciones de Álgebra en Haskell</h2>
-
 								<p>
 									Funciones y ejercicios realizados en el Taller de Álgebra en la Facultad de Exactas (UBA)
 									<br>
@@ -165,7 +226,7 @@ elemento_comun as bs
 						</article>
 						<article id="3">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#3</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>Curso de Programación en Python de la UNSAM</h2>
 								<p>
 									Proyecto completo realizado durante el Curso de programación en Python de la Universidad Nacional de San Martín

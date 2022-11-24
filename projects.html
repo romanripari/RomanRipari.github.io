@@ -27,28 +27,28 @@
 							<h1><a href="../" class="fa fa-home"></a></h1>
 						</ul>
 							<h1>Román Ariel Ripari</h1>
-						<h3>Projects</h3>
+							<h3 class="icon brands fa-python" > Projects <i class="icon fa-file-excel"></i></h3>
 					</div>
 				</div>
 
 				<nav>
 					<ul>
-						<li><a href="#0">Progress Bar in VBA-Excel Macros</a></li>
+						<li><a href="#0"><i class="icon fa-file-excel"></i> Progress Bar in VBA-Excel Macros</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#1">FIFA World Cup Qatar 2022</a></li>
+						<li><a href="#1"><i class="icon brands fa-python"></i> FIFA World Cup Qatar 2022</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#2">Algebra functions made in Haskell</a></li>
+						<li><a href="#2"><i class="icon fa-square-h"></i> Algebra functions made in Haskell</a></li>
 					</ul>
 				</nav>
 				<nav>
 					<ul>
-						<li><a href="#3">UNSAM: Python Programming Course </a></li>
+						<li><a href="#3"><i class="icon brands fa-python"></i> UNSAM: Python Programming Course </a></li>
 					</ul>
 				</nav>
 				<nav>
@@ -63,40 +63,31 @@
 						<!-- 0 -->
 						<article id="0">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#1</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>Progress Bar in VBA-Excel Macros</h2>
 								<p>
 									Here you will find a step by step tutorial for install and use a Progress Bar for your VBA Excel projects.
 									<br>
-									When you finish, you will be able to use this progress bar in any file, any macro, any code you want just by calling the functions inside the modules
+									<br>
+									When you finish, you will be able to use this progress bar in any file, any macro, any code you want just by calling the functions inside the modules.
 									<br>
 									<br>
-									First, you have to download the Userform parts from my <a href="https://github.com/romanripari/RomanRipari.github.io/tree/main/xls" target="_blank">GitHub folder, in this link</a>.
-									
-
+									First, you have to download the Userform (both files: <i>ProgressBar.frm</i> and <i>ProgressBar.frx</i>) from my <a href="https://github.com/romanripari/RomanRipari.github.io/tree/main/xls" target="_blank">GitHub folder, in this link</a>.
 									<br>
 									<br>
+									From the same folder, you have to download the <i>ProgressBarModule.bas</i> file.
+									<br>
+									<br>
+									Once you got the three files, you have to import them all to your Excel Macro Enabled file.
+									<br>
+									<br>
+									In your Excel file, you can use the functions from ProgressBarModule: StartBar, IncreaseBar, CloseBar, Subtitle.
+									<br>
+									<br>
+									Here is the code of the <i>Function Example()</i>:
 								</p>
 								<pre>
 									<code class="python">
-Option Explicit
-
-' ----------------------------------------------------------------
-'Created: Roman Ripari
-'https://romanripari.ar
-'Edited by: -
-'Last modified: '23/11/2022
-' ----------------------------------------------------------------
-' You have to import this module and the form called "Progress Bar" into your Excel file, through VBA Editor
-
-Public dTotal As Double
-Public dProgress As Double
-Public strLabel As String
-Public Progresando As Boolean
-
-' ----------------------------------------------------------------
-' Example:
-' ----------------------------------------------------------------
 Function Example()
     Dim dMax As Double, f As Double
     dMax = 12345
@@ -116,80 +107,7 @@ Function Example()
     Next
     ProgressBarModule.CloseBar
 End Function
-
-' ----------------------------------------------------------------
-'Description: Function to create a form object with a text as title and a maximun number as 100%
-' ----------------------------------------------------------------
-Function StartBar(iTotal As Double, strLabel As String)
-If iTotal <> 0 Then
-    dProgress = 0
-    dTotal = iTotal
-    ProgressBar.Show
-    ProgressBar.LabelTitle = strLabel
-    ProgressBar.Progress.Width = dProgress / dTotal
-    ProgressBar.Subtitle = ""
-    Progresando = True
-End If
-End Function
-
-' ----------------------------------------------------------------
-'Description: Function to increase +1 and show the new result
-' ----------------------------------------------------------------
-Function IncreaseBar()
-dProgress = dProgress + 1
-ProgressBar.Progress.Width = dProgress / dTotal * 260
-
-'*** Amount and Percentage ***
-'ProgressBar.ProgressLabel.Caption = dProgress & " de " & dTotal & "   -   " & Format(dProgress / dTotal, "0.0%")
-
-'*** Only Amount ***
-'ProgressBar.ProgressLabel.Caption = dProgress & " de " & dTotal
-
-'*** Only Percentage ***
-ProgressBar.ProgressLabel.Caption = Format(dProgress / dTotal, "0.0%")
-
-DoEvents
-End Function
-
-' ----------------------------------------------------------------
-'Description: Function to complete 100% and close the Form
-' ----------------------------------------------------------------
-Function CloseBar()
-    ProgressBarModule.Complete100
-    Application.Wait Now + #12:00:01 AM#
-    Progresando = False
-    dProgress = 0
-    Unload ProgressBar
-End Function
-
-' ----------------------------------------------------------------
-'Description: Function to change the subtitle
-' ----------------------------------------------------------------
-Function Subtitle(sSubt As String)
-    ProgressBar.Subtitle = sSubt
-    DoEvents
-End Function
-
-' ----------------------------------------------------------------
-'Description: Function to rapidly complete 100% before close
-' ----------------------------------------------------------------
-Function Complete100()
-Dim Remains As Double
-For Remains = dProgress + 1 To dTotal
-    ProgressBarModule.IncreaseBar
-Next
-End Function
-
-' ----------------------------------------------------------------
-'Description: Function to kill any running process
-' ----------------------------------------------------------------
-Function CancelarProgress()
-Dim a As Byte
-    a = MsgBox("Do you want to cancel the process?", vbExclamation + vbYesNo, "")
-    If a = 6 Then
-        End
-    End If
-End Function									</code>
+										</code>
 									</pre>
 							</div>
 						</article>
@@ -197,7 +115,7 @@ End Function									</code>
 						<!-- 1 -->
 						<article id="1">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#1</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>FIFA World Cup Qatar 2022 Sticker Collection</h2>
 								<p>
 									How much does it cost to fill out the Qatar 2022 World Cup Album in Argentina?
@@ -250,7 +168,7 @@ def test_paquetes(n, fig_en_el_album, fig_en_paquete, cambiafigu = False):
 						<!-- 2 -->
 						<article id="2">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#2</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>Algebra functions made in Haskell</h2>
 
 								<p>
@@ -309,7 +227,7 @@ elemento_comun as bs
 						</article>
 						<article id="3">
 							<div class="noticia">
-								<div class="titulo"><div class="typed-out-head">#3</div></div>
+								<div class="titulo"><div class="typed-out-head"></div></div>
 								<h2>UNSAM: Python Programming Course</h2>
 								<p>
 									Complete project wrote by me during the Python Programming Course, of the Universidad Nacional de San Martín

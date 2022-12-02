@@ -1879,3 +1879,6 @@ input, select, textarea {
 		display: none;
 		}
 	
+.job-description {
+	font-size: 0.8rem;	
+}

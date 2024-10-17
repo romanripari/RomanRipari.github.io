@@ -1882,3 +1882,16 @@ input, select, textarea {
 .job-description {
 	font-size: 0.8rem;	
 }
+
+.zoomable-img {
+    width: 60%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.zoomable-img:active {
+    transform: scale(2); /* Escala la imagen al doble */
+}

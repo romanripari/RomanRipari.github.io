@@ -5,184 +5,82 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
 <html lang="en">
-	<head>
-		<title>Román Ariel Ripari</title>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/jpeg" href="../resources/favicon.jpg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.9.0/brython.min.js"></script>
-		<link rel="stylesheet" href="../assets/css/main.css" />
-		<noscript> <link rel="stylesheet" href="../assets/css/noscript.css" /> </noscript>
-		
+<head>
+	<title>Román Ariel Ripari</title>
+	<meta charset="utf-8" />
+	<link rel="icon" type="image/jpeg" href="../resources/favicon.jpg" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<link rel="stylesheet" href="../assets/css/main.css" />
+	<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+	<!-- PyScript -->
+	<link rel="stylesheet" href="https://pyscript.net/releases/2024.6.1/core.css" />
+</head>
+<body class="is-preload">
 
-	</head>
-	<body class="is-preload">
-
-		<!-- Wrapper -->
-
-		<div id="wrapper">
-			<!-- Header -->
-			<header id="header">
-				<div class="content">
-					<div class="inner">
-						<ul class="icons">
-							<h1><a href="../" class="fa fa-home"></a></h1>
-						</ul>
-							<h1>Román Ariel Ripari</h1>
-						<h3>Apps</h3>
-					</div>
-				</div>
-				<nav>
-					<ul>
-						<li><a href="#1">#1 Inflación</a></li>
-						<li><a href="#2">#2 Ahorcado</a></li>
+	<!-- Wrapper -->
+	<div id="wrapper">
+		<!-- Header -->
+		<header id="header">
+			<div class="content">
+				<div class="inner">
+					<ul class="icons">
+						<h1><a href="../" class="fa fa-home"></a></h1>
 					</ul>
-				</nav>
-
-			</header>				<!-- Main -->
-					<div id="main">
-						<!-- 1 -->
-						<article id="1">
-							<div class="noticia">
-								<h2>Inflación</h2>
-								<p>
-									 
-								</p>
-								<label for="demo-category">$ Inicio</label>
-								<input type="text" onkeypress='return event.charCode >= 48 && event.charCode <= 57' id="test-input"/>
-								<br>
-								<label for="demo-category">Mes Inicio</label>
-								<select name="demo-category" id="MesInicio" >
-									<option value="1"  selected ="true">Octubre 2021</option>
-									<option value="2">Noviembre 2021</option>
-									<option value="3">Diciembre 2021</option>
-									<option value="4">Enero 2022</option>
-									<option value="5">Febrero 2022</option>
-									<option value="6">Marzo 2022</option>
-									<option value="7">Abril 2022</option>
-									<option value="8">Mayo 2022</option>
-									<option value="9">Junio 2022</option>
-									<option value="10">Julio 2022</option>
-									<option value="11">Agosto 2022</option>
-									<option value="12">Septiembre 2022</option>
-									<option value="13">Octubre 2022</option>
-								</select>
-								<br>
-								<label for="demo-category">Mes Fin</label>
-								<select name="demo-category" id="MesFin" value ="Noviembre 2021">
-									<option value="1">Octubre 2021</option>
-									<option value="2">Noviembre 2021</option>
-									<option value="3">Diciembre 2021</option>
-									<option value="4">Enero 2022</option>
-									<option value="5">Febrero 2022</option>
-									<option value="6">Marzo 2022</option>
-									<option value="7">Abril 2022</option>
-									<option value="8">Mayo 2022</option>
-									<option value="9">Junio 2022</option>
-									<option value="10">Julio 2022</option>
-									<option value="11">Agosto 2022</option>
-									<option value="12">Septiembre 2022</option>
-									<option value="13"  selected ="true">Octubre 2022</option>
-								</select>
-								<br>
-								<button id="submit-button" type="submit" aria-pressed="my_function" pys-onClick="my_function">
-									Calcular Inflación
-								</button>
-								<br>
-								<br>
-								<label for="demo-category">$ según inflación:</label>
-								<div id="test-output"></div>
-							  <py-script>
-								from js import console
-								def my_function(*args, **kwargs):
-									text = Element('test-input').element.value
-									diccionarioMeses = {
-										"1": "Octubre 2021",
-										"2": "Noviembre 2021",
-										"3": "Diciembre 2021",
-										"4": "Enero 2022",
-										"5": "Febrero 2022",
-										"6": "Marzo 2022",
-										"7": "Abril 2022",
-										"8": "Mayo 2022",
-										"9": "Junio 2022",
-										"10": "Julio 2022",
-										"11": "Agosto 2022",
-										"12": "Septiembre 2022",
-										"13": "Octubre 2022"}
-									
-									mes1 =  int(Element('MesInicio').element.value)
-									mes2 =  int(Element('MesFin').element.value)
-									mes1string = diccionarioMeses[str(mes1)]
-									mes2string = diccionarioMeses[str(mes2)]
-
-									dicInfl = [1.035, 1.025, 1.038, 1.039, 1.047, 1.067, 1.061, 1.051, 1.053, 1.074, 1.07, 1.062, 1.064]
-									try:
-										dMes = int(text)
-										dMesOrigin = dMes
-										for i in range(mes1-1, mes2-1):
-											dMes = dMes * (dicInfl[i])
-										Element('test-output').element.innerText = "" + \
-											mes1string + ": " + "$ {:,.2f}".format(dMesOrigin) + "\n" + mes2string + ": " + "$ {:,.2f}".format(dMes)
-									except:
-										Element('test-output').element.innerText = "Escriba un valor numérico"
-								      
-							  </py-script>
-							</div>
-						</article>
-						<!-- 2 -->
-						<article id="2">
-							<div class="noticia">
-								<h2>Ahorcado</h2>
-								<label for="demo-category">Escriba una letra</label>
-								<input type="text" id="letra-elegida"/>
-								<br>
-								<br>
-								<button id="ok-letra" type="submit" aria-pressed="ahorcado" pys-onClick="ahorcado">
-									OK
-								</button>
-								<br>
-								<br>
-								<label for="demo-category">Resultado:</label>
-								<div id="resultado"></div>
-								<py-script>
-								import csv
-								import random
-								def elige_palabra():
-									Element('resultado').element.innerText = help(csv)
-									csv_path = "Data.csv"
-
-									with open(csv_path, 'r', encoding='utf8') as f:
-										rows = csv.reader(f)        
-										palabras = [p for p in rows]
-									palabra = ''.join(random.choice(palabras))
-
-									Element('resultado').element.innerText = "después de abrir csv"
-									return palabra
-
-								def ahorcado(*args, **kwargs):
-									elige_palabra()
-
-									</py-script>
-							</div>
-						</article>					
-					</div>
-				<!-- Footer-->
-					<footer id="footer">
-					</footer>
+					<h1>Román Ariel Ripari</h1>
+					<h3>Apps</h3>
 				</div>
+			</div>
+			<nav>
+				<ul>
+					<li><a href="#1">#1 Hola Mundo</a></li>
+				</ul>
+			</nav>
+		</header>
 
-		<!-- BG -->
-		<div id="bg"></div>
+		<!-- Main -->
+		<div id="main">
+			<!-- 1 -->
+			<article id="1">
+				<div class="noticia">
+					<h2>Hola Mundo</h2>
 
-		<!-- Scripts -->
-			<script src="../assets/js/jquery.min.js"></script>
-			<script src="../assets/js/browser.min.js"></script>
-			<script src="../assets/js/breakpoints.min.js"></script>
-			<script src="../assets/js/util.js"></script>
-			<script src="../assets/js/main.js"></script>
-			<script type="text/javascript" src="../js/functions.js"></script>
-			<script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+					<label for="nombree">Escribí tu nombre:</label>
+					<input type="text" id="nombree" />
 
-	</body>
+					<button id="saludar-btn">Saludar</button>
+
+					<p id="saludo"></p>
+				</div>
+			</article>
+		</div>
+
+		<!-- Footer-->
+		<footer id="footer">
+		</footer>
+	</div>
+
+	<!-- BG (Fondo) -->
+	<div id="bg"></div>
+
+	<!-- Scripts -->
+	<!-- Primero PyScript -->
+	<script defer src="https://pyscript.net/releases/2024.6.1/core.js"></script>
+	<script type="py">
+from pyscript import display, Element
+
+def saludar(event):
+	nombre = Element("nombree").value
+	display(f"¡Hola, {nombre}!", target="saludo")
+
+Element("saludar-btn").onclick = saludar
+	</script>
+
+	<!-- Luego otros scripts -->
+	<script src="../assets/js/jquery.min.js"></script>
+	<script src="../assets/js/browser.min.js"></script>
+	<script src="../assets/js/breakpoints.min.js"></script>
+	<script src="../assets/js/util.js"></script>
+	<script src="../assets/js/main.js"></script>
+
+</body>
 </html>

@@ -1885,8 +1885,9 @@ input, select, textarea {
 
 /* Ocultar el checkbox para que sea invisible */
 input[type="checkbox"] {
-	display: none;
-  }
+	/*display: none;
+  */
+}
   
   /* Estilo para la imagen pequeña */
   .zoomable-img {

@@ -1929,3 +1929,11 @@ input[type="checkbox"] {
     margin-top: 10px;
     font-weight: 600;
 }
+
+.btn-resume {
+    display: inline-block;
+    padding: 10px 20px;
+    /* acá pegá el background, color, border, border-radius, etc. de tu botón actual */
+    text-decoration: none;
+    cursor: pointer;
+}

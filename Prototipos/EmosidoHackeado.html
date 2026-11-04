@@ -303,7 +303,7 @@ const LEG=[
 `<i style="background:#c3e6cb"></i>Leve (afuera)<i style="background:#fff2b3"></i>Moderado<i style="background:#f9b9a0"></i>Crítico (centro)<i style="background:#3b2f73"></i>Total (●) · Parcial (◐)`,
 `<i style="background:#3b2f73"></i>IA<i style="background:#e8467c"></i>Humano<span style="margin-left:10px">Solo se mueve por las líneas blancas</span>`,
 `<i style="background:#0d3b2e"></i>Ransom<i style="background:#1f8f74"></i>Wiper<i style="background:#b9d63c"></i>Spyware`,
-`<i style="background:#1e3a6e"></i>Código Fuente<i style="background:#ef6b4a"></i>Datos de Clientes<i style="background:#e0ae4a"></i>Info. de Ventas<i style="background:#fff;border:3px solid #29a8e0"></i>Nube<i style="background:#fff;border:3px solid #1a1a1a"></i>Local<span style="margin-left:10px">Arriba: Nube · Abajo: Local</span>`];
+`<i style="background:#1e3a6e"></i>Código Fuente<i style="background:#ef6b4a"></i>Datos de Clientes<i style="background:#e0ae4a"></i>Info. de Ventas<i style="background:#fff;border:3px solid #29a8e0"></i>Nube<i style="background:#fff;border:3px solid #1a1a1a"></i>Local<span style="margin-left:10px"></span>`];
 const GRP='<rect x="84" y="62" width="92" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="200" y="62" width="97" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="315" y="62" width="94" height="206" rx="14" fill="#fff" fill-opacity=".35"/>';
 function dots(t){return S.ps.filter(p=>p.read.has(t)).map(p=>`<span class="dt" style="background:${p.c}"></span>`).join('')}
 function toggleHelp(){cfg.help=cfg.help===1?0:1;render()}

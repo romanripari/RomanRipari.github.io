@@ -72,7 +72,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <ul class="rules">
 <li>Hay 6 Archivos Log ocultos (uno de cada tipo A–F). Cada uno fija 2 datos de la solución.</li>
 <li>Turnos 1 a 4: leés un Log en secreto y colocás una ficha. Turnos 5 a 10: colocás una ficha.</li>
-<li>Cada jugador tiene 8 fichas de posición (4 Honeypot, 1 Exploit, 3 Ping) y 2 tácticas (Cortafuegos y Keylogger). Máximo 2 fichas tuyas de Posición por tablero.</li>
+<li>Cada jugador tiene 8 fichas de posición (4 Honeypot, 1 Exploit, 3 Ping) y 2 tácticas (Cortafuegos y Keylogger). Máximo 2 fichas tuyas por tablero.</li>
 <li>Las fichas de los rivales se ven, pero no si son Ping, Exploit o Honeypot.</li>
 <li>Puntaje por distancia (0 / 1 / 2): Exploit +8/+6/+4 · Ping +6/+4/+2 · Honeypot −6/−4/−2. El Keylogger da a su dueño la mitad de los puntos de la ficha rival.</li>
 </ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
@@ -99,11 +99,11 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <div class="ovl" id="ovl"><div class="card" id="ovlc"></div></div>
 
 <script>
-const DOM={mot:['Mercenario','Espía','Activista','Vengador'],mom:['Madrugada','Mañana','Tarde','Noche'],niv:['SuperNoob','Pro','Elite'],form:['Nube','Local'],ia:['IA','Humano'],tipo:['Ransom','Wiper','Spyware'],via:['USB','Insider','Phishing','Vulnerabilidad'],ciudad:['Ushuaia','Rosario','Buenos Aires','Mendoza'],conoc:['Conocido','Nuevo'],grav:['Leve','Moderado','Crítico'],alc:['Total','Parcial'],dato:['Código','Clientes','Ventas']};
+const DOM={mot:['Mercenario','Espía','Activista','Vengador'],mom:['Madrugada','Mañana','Tarde','Noche'],niv:['Novato','Pro','Elite'],form:['Nube','Local'],ia:['IA','Humano'],tipo:['Ransom','Wiper','Spyware'],via:['USB','Insider','Phishing','Vulnerabilidad'],ciudad:['Ushuaia','Rosario','Buenos Aires','Mendoza'],conoc:['Conocido','Nuevo'],grav:['Leve','Moderado','Crítico'],alc:['Total','Parcial'],dato:['Código','Clientes','Ventas']};
 const VARS={A:['mot','mom'],B:['niv','form'],C:['ia','tipo'],D:['via','ciudad'],E:['conoc','grav'],F:['alc','dato']};
 const CARDS={
 A:[['Mercenario','Madrugada'],['Espía','Madrugada'],['Espía','Mañana'],['Activista','Mañana'],['Activista','Tarde'],['Vengador','Tarde'],['Vengador','Noche'],['Mercenario','Noche']],
-B:[['SuperNoob','Local'],['Pro','Local'],['Elite','Local'],['SuperNoob','Nube'],['Pro','Nube'],['Elite','Nube']],
+B:[['Novato','Local'],['Pro','Local'],['Elite','Local'],['Novato','Nube'],['Pro','Nube'],['Elite','Nube']],
 C:[['IA','Ransom'],['IA','Wiper'],['IA','Spyware'],['Humano','Ransom'],['Humano','Wiper'],['Humano','Spyware']],
 D:[['Phishing','Buenos Aires'],['Phishing','Mendoza'],['USB','Mendoza'],['USB','Rosario'],['Vulnerabilidad','Rosario'],['Vulnerabilidad','Ushuaia'],['Insider','Ushuaia'],['Insider','Buenos Aires']],
 E:[['Conocido','Leve'],['Conocido','Moderado'],['Conocido','Crítico'],['Nuevo','Leve'],['Nuevo','Moderado'],['Nuevo','Crítico']],
@@ -131,19 +131,21 @@ const cutId=(b,p,q)=>b+'|'+[p,q].sort().join('>');
 function nb(b,k){return nbAll(b,k).filter(w=>!S.cuts.has(cutId(b,k,w)))}
 function dist(b,s){const m=new Map([[s,0]]),q=[s];while(q.length){const k=q.shift();for(const w of nb(b,k))if(!m.has(w)){m.set(w,m.get(k)+1);q.push(w)}}return m}
 function pr(p,b,k){const c=co(k);let r=1;for(let i=0;i<3;i++){const v=BOARDS[b].ax[i];if(p.known[v]!==undefined)r*=DOM[v][c[i]]===p.known[v]?1:0;else r/=sz(b,i)}return r}
-function ev(p,b,k,t){const d=dist(b,k);let s=0;for(const y of cells(b)){const q=pr(p,b,y),dd=d.get(y);if(q&&dd!==undefined&&dd<3)s+=q*SC[t][dd]}return s}
+const PB=0.6;
+function hw(b,y){let w=1;S.chips.forEach(c=>{if(c.o===0&&c.b===b){const d=dist(b,c.k).get(y),n=d===undefined?3:d,real=1+(n<3?[1.2,0.5,0.2][n]:0),bait=n<=1?0.5:1;w*=(1-PB)*real+PB*bait}});return w}
+function ev(p,b,k,t){const d=dist(b,k);let s=0,z=0;for(const y of cells(b)){const q=pr(p,b,y)*hw(b,y);z+=q;const dd=d.get(y);if(q&&dd!==undefined&&dd<3)s+=q*SC[t][dd]}return z?s/z:0}
 const chipIdx=(b,k)=>S.chips.findIndex(c=>c.b===b&&c.k===k);
 const cnt=(o,b)=>S.chips.filter(c=>c.o===o&&c.b===b).length;
 const cutsOn=b=>S.cutList.filter(x=>x[0]===b).length;
 const msg=t=>{$('msg').textContent=t||''};
 
 function newGame(){
- const pool=['Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián', 'Bruno', 'Lucho', 'Nahuel', 'Augusto', 'Ale', 'Joaco', 'Gonza', 'Quimey', 'Facu','Pepo','Fer', 'Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
+ const pool=['Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
  const ps=names.map((n,i)=>({i,n,h:i===0,c:COL[i],pool:{E:1,P:3,H:4,C:1,K:1},q:4,known:{},read:new Set()}));
  const rot=cfg.start==='azar'?rnd(ps.length):0;
  const idx={};TY.forEach(t=>idx[t]=rnd(CARDS[t].length));
  const solv={};TY.forEach(t=>VARS[t].forEach((v,j)=>solv[v]=CARDS[t][idx[t]][j]));
- return{ps,order:ps.slice(rot).concat(ps.slice(0,rot)),idx,solv,chips:[],kls:[],cuts:new Set(),cutList:[],log:[],turn:0,done:false};
+ const perm=[...TY].sort(()=>Math.random()-.5);return{perm,ps,order:ps.slice(rot).concat(ps.slice(0,rot)),idx,solv,chips:[],kls:[],cuts:new Set(),cutList:[],log:[],turn:0,done:false};
 }
 function learn(p,t){p.read.add(t);p.q=Math.max(0,p.q-1);VARS[t].forEach((v,j)=>p.known[v]=CARDS[t][S.idx[t]][j])}
 function put(p,t,b,k,x){if(t==='C'){S.cuts.add(cutId(b,k,x));S.cutList.push([b,k,x])}else if(t==='K')S.kls.push({o:p.i,c:x});else S.chips.push({o:p.i,t,b,k});p.pool[t]--}
@@ -179,7 +181,7 @@ function hC(b,k){
 }
 function done(txt){S.log.push('Vos: '+txt);hT.placed=true;hT.tool=null;hT.first=null;chk();render()}
 function chk(){if(hT&&hT.placed&&(!hT.needRead||hT.readDone))hRes&&hRes()}
-function hR(t){const p=S.ps[0];if(!hT||!hT.needRead||hT.readDone||p.q<1||p.read.has(t))return;learn(p,t);hT.readDone=true;(S.flip=S.flip||{})[t]=1;S.log.push('Vos: leíste el log '+t);msg(hT.placed?'':'Ahora colocá una ficha');chk();render()}
+function hR(i){const t=S.perm[i],p=S.ps[0];if(!hT||!hT.needRead||hT.readDone||p.q<1||p.read.has(t))return;learn(p,t);hT.readDone=true;(S.flip=S.flip||{})[t]=1;S.log.push('Vos: leíste un log');msg(hT.placed?'':'Ahora colocá una ficha');chk();render()}
 function pick(t){if(!hT)return;hT.tool=t;hT.first=null;msg('');render()}
 
 async function humanTurn(r){
@@ -278,7 +280,7 @@ function bdSvg(b){
 }
 const ICO={E:'⚡',P:'📡',H:'🍯',C:'🧱',K:'⌨️'};
 const VB_={mot:1,niv:1,ia:1,mom:0,grav:0,alc:0,via:2,conoc:2,tipo:2,ciudad:3,form:3,dato:3};
-function face(t){return `<div class="fc${S.flip&&S.flip[t]?' fl':''}"><b>Log ${t}</b><br>${VARS[t].map(v=>`<span style="color:${BOARDS[VB_[v]].c};font-weight:700">${S.ps[0].known[v]}</span>`).join('<br>')}</div>`}
+function face(t){return `<div class="fc${S.flip&&S.flip[t]?' fl':''}"><b>Log</b><br>${VARS[t].map(v=>`<span style="color:${BOARDS[VB_[v]].c};font-weight:700">${S.ps[0].known[v]}</span>`).join('<br>')}</div>`}
 const TIPS={E:'Exploit: +8 / +6 / +4 puntos (distancia 0 / 1 / 2)',P:'Ping: +6 / +4 / +2 puntos (distancia 0 / 1 / 2)',H:'Honeypot: −6 / −4 / −2 puntos. Es una trampa.',C:'Cortafuegos: corta la conexión entre dos casillas vecinas.',K:'Keylogger: copia la mitad de los puntos de la ficha rival que tiene encima.'};
 function tipOf(c){if(!(c.o===0||S.done))return '<title>Ficha rival (tipo oculto)</title>';const kl=S.kls.some(x=>x.c===S.chips.indexOf(c))?' · Tiene un Keylogger encima':'';return `<title>${TIPS[c.t]}${kl}</title>`}
 function pill(ic,v){return `<span class="pl ${v>0?'pos':v<0?'neg':''}">${ic} ${v>0?'+':''}${v}</span>`}
@@ -303,7 +305,7 @@ const LEG=[
 `<i style="background:#c3e6cb"></i>Leve (afuera)<i style="background:#fff2b3"></i>Moderado<i style="background:#f9b9a0"></i>Crítico (centro)<i style="background:#3b2f73"></i>Total (●) · Parcial (◐)`,
 `<i style="background:#3b2f73"></i>IA<i style="background:#e8467c"></i>Humano<span style="margin-left:10px">Solo se mueve por las líneas blancas</span>`,
 `<i style="background:#0d3b2e"></i>Ransom<i style="background:#1f8f74"></i>Wiper<i style="background:#b9d63c"></i>Spyware`,
-`<i style="background:#1e3a6e"></i>Código Fuente<i style="background:#ef6b4a"></i>Datos de Clientes<i style="background:#e0ae4a"></i>Info. de Ventas<i style="background:#fff;border:3px solid #29a8e0"></i>Nube<i style="background:#fff;border:3px solid #1a1a1a"></i>Local<span style="margin-left:10px"></span>`];
+`<i style="background:#1e3a6e"></i>Código Fuente<i style="background:#ef6b4a"></i>Datos de Clientes<i style="background:#e0ae4a"></i>Info. de Ventas<i style="background:#fff;border:3px solid #29a8e0"></i>Nube<i style="background:#fff;border:3px solid #1a1a1a"></i>Local`];
 const GRP='<rect x="84" y="62" width="92" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="200" y="62" width="97" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="315" y="62" width="94" height="206" rx="14" fill="#fff" fill-opacity=".35"/>';
 function dots(t){return S.ps.filter(p=>p.read.has(t)).map(p=>`<span class="dt" style="background:${p.c}"></span>`).join('')}
 function toggleHelp(){cfg.help=cfg.help===1?0:1;render()}
@@ -313,8 +315,8 @@ function render(){
  $('tn').textContent='Turno '+Math.min(S.turn+1,10)+' de 10';const nr=hT&&hT.needRead&&!hT.readDone,np=!!hT&&!hT.placed;$('bxR').className='box'+(nr?' hl':'');$('bxT').className='box'+(np?' hl':'');$('hlp').textContent='Ayuda: '+(cfg.help===1?'activada':'desactivada');
  $('boards').innerHTML=[0,1,2,3].map(bdSvg).join('');
  $('tools').innerHTML=['E','P','H','C','K'].map(t=>`<button title="${TIPS[t]}" class="tool ${hT&&hT.tool===t?'on':''}" ${!hT||H.pool[t]<1?'disabled':''} onclick="pick('${t}')"><span>${ICO[t]} ${NM[t]}</span><b>${H.pool[t]}</b></button>`).join('')+`<div style="color:var(--m);font-size:12px;margin-top:6px">Queries restantes: ${H.q}</div>`;
- $('reads').innerHTML=TY.map(t=>H.read.has(t)?`<div><button class="rd" disabled>${face(t)}</button><div class="dts">${dots(t)}</div></div>`:`<div><button ${!hT||!hT.needRead||hT.readDone||H.q<1?'disabled':''} onclick="hR('${t}')">Log ${t}</button><div class="dts">${dots(t)}</div></div>`).join('');
- S.flip={};$('nb').innerHTML=TY.map(t=>`<div>${t}: ${H.read.has(t)?CARDS[t][S.idx[t]].join(' · '):'<span style="color:var(--m)">?</span>'}</div>`).join('');
+ $('reads').innerHTML=S.perm.map((t,i)=>H.read.has(t)?`<div><button class="rd" disabled>${face(t)}</button><div class="dts">${dots(t)}</div></div>`:`<div><button ${!hT||!hT.needRead||hT.readDone||H.q<1?'disabled':''} onclick="hR(${i})">Log ${i+1}</button><div class="dts">${dots(t)}</div></div>`).join('');
+ S.flip={};$('nb').innerHTML=[...H.read].map(t=>`<div>${CARDS[t][S.idx[t]].join(' · ')}</div>`).join('');
  $('log').innerHTML=S.log.slice(-40).map(x=>'<div>'+x+'</div>').join('');$('log').scrollTop=1e6;
 }
 

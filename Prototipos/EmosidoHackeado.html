@@ -20,12 +20,20 @@ button{font:inherit;color:var(--t);cursor:pointer}
 .seg button{background:transparent;border:1px solid var(--b);border-radius:12px;padding:10px 14px}
 .seg button.on{border-color:var(--g);color:var(--g);background:rgba(0,193,122,.1)}
 .go{width:100%;background:var(--g);color:#04281a;border:0;border-radius:14px;padding:16px;font-weight:700;font-size:17px}
-#game{display:none;grid-template-columns:1fr 300px;gap:16px;max-width:1280px;margin:0 auto;padding:18px}
+#game{display:none;grid-template-columns:300px 1fr;gap:16px;max-width:1360px;margin:0 auto;padding:18px}#game>div:first-child{order:2}
 @media(max-width:900px){#game{grid-template-columns:1fr}}
-.boards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.boards{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:stretch}
+.hl{box-shadow:0 0 0 2px var(--g);border-color:var(--g)}
+.dt{display:inline-block;width:9px;height:9px;border-radius:50%;margin:3px 2px}
+.dts{text-align:center;min-height:14px}
 @media(max-width:900px){.boards{grid-template-columns:1fr}}
 .bd{background:var(--p);border:1px solid var(--b);border-top:4px solid var(--c);border-radius:14px;padding:10px;overflow-x:auto}
-.bd h3{margin:0 0 6px;font-size:15px}
+.bd{color:#1a1a1a}
+.bd h3{margin:0 0 6px;font-size:20px;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.bdg{font-size:12px;font-weight:700;background:rgba(255,255,255,.6);border-radius:14px;padding:3px 10px}
+.bdg.full{background:#00c17a;color:#04281a}
+.lg{font-size:12px;margin-top:6px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px 0 10px;vertical-align:middle;border:1px solid #1a1a1a}
 table{border-collapse:separate;border-spacing:3px;width:100%}
 th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 .c{width:100%;min-width:26px;height:34px;background:#1b1f25;border:1px solid var(--b);border-radius:6px;position:relative;padding:0}
@@ -46,7 +54,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 .ovl.on{display:flex}
 .card{background:var(--p);border:1px solid var(--b);border-radius:18px;padding:22px;max-width:620px;width:100%;max-height:42vh;overflow:auto;pointer-events:auto}
 .res td,.res th{padding:6px;font-size:13px;text-align:left}
-.lb{fill:#eef1f4}
+.lb{fill:#1a1a1a}
 .bd svg{width:100%;height:auto;display:block}
 .rd:disabled{opacity:1;cursor:default;padding:4px}
 .fc{font:12px/1.35 ui-monospace,monospace;color:#111;background:#fff;border-radius:6px;padding:6px;min-height:58px;text-align:left;animation:fl .5s}
@@ -78,9 +86,9 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <div class="boards" id="boards"></div>
 </div>
 <div>
-<div class="box"><h4 id="tn">Turno</h4><div class="msg" id="msg"></div></div>
-<div class="box"><h4>Tu bandeja</h4><div id="tools"></div></div>
-<div class="box"><h4>Leer un log (secreto)</h4><div class="reads" id="reads"></div></div>
+<div class="box"><h4 id="tn">Turno</h4><div class="msg" id="msg"></div><button id="hlp" onclick="toggleHelp()" style="margin-top:8px;width:100%;background:#1b1f25;color:#eef1f4;border:1px solid #262b33;border-radius:10px;padding:8px">Ayuda</button></div>
+<div class="box" id="bxR"><h4>Leer un log (secreto)</h4><div class="reads" id="reads"></div></div>
+<div class="box" id="bxT"><h4>Tus fichas</h4><div id="tools"></div></div>
 <div class="box"><h4>Tu libreta</h4><div id="nb" style="font-size:13px"></div></div>
 <div class="box"><h4>Registro</h4><div class="log" id="log"></div></div>
 </div></div>
@@ -218,7 +226,7 @@ function bd(b){
  for(let a=0;a<sz(b,0);a++){h+=`<tr><th style="text-align:left">${DOM[B.ax[0]][a]}</th>`;for(let x=0;x<n1;x++)for(let y=0;y<n2;y++)h+=cellH(b,a+','+x+','+y);h+='</tr>'}
  return h+'</table></div>';
 }
-const VB=['0 0 300 300','0 0 420 300','0 0 420 210','0 0 420 260'];
+const VB=['0 0 420 230','0 0 420 230','0 0 420 230','0 0 420 230'];
 const HADJ={},SADJ={},VADJ={};
 function addE(T,p,q){(T[p]=T[p]||[]).push(q);(T[q]=T[q]||[]).push(p)}
 const HS=[[0,0],[0,1],[1,1],[1,0],[2,0],[2,1]];
@@ -236,22 +244,22 @@ function nbAll(b,k){return b===0?(IADJ[k]||[]):b===1?(HADJ[k]||[]):b===2?(VADJ[k
 function cutsSvg(b){let s='';for(const[bb,p,q] of S.cutList)if(bb===b){const a=geoOf(b,p),c=geoOf(b,q),dx=c.cx-a.cx,dy=c.cy-a.cy,L=Math.hypot(dx,dy)||1,mx=(a.cx+c.cx)/2,my=(a.cy+c.cy)/2,ux=-dy/L*11,uy=dx/L*11;s+=`<line x1="${mx-ux}" y1="${my-uy}" x2="${mx+ux}" y2="${my+uy}" stroke="#ff5d6c" stroke-width="5" stroke-linecap="round"/>`}return s}
 function geoOf(b,k){
  const[a,x,y]=co(k);
- if(b===0){const R=[[110,150],[75,110],[40,75]][x],a1=-90+90*a+45*y,a2=a1+45;const P=(r,t)=>[150+r*Math.sin(t*Math.PI/180),150-r*Math.cos(t*Math.PI/180)];const p1=P(R[1],a1),p2=P(R[1],a2),p3=P(R[0],a2),p4=P(R[0],a1),m=P((R[0]+R[1])/2,a1+22.5);return{cx:m[0],cy:m[1],s:`<path d="M${p1} A${R[1]} ${R[1]} 0 0 1 ${p2} L${p3} A${R[0]} ${R[0]} 0 0 0 ${p4}Z" fill="${['#c3e6cb','#fff2b3','#f9b9a0'][x]}" stroke="#14171c" stroke-width="2"/><text x="${P(R[1]-12,a1+11)[0]}" y="${P(R[1]-12,a1+11)[1]}" font-size="10" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#14171c">${y?'P':'T'}</text>`}}
- if(b===1){const cx=[[104,156],[275,222],[335,389]][x][y],cy=[89,142,194,246][a];return{cx,cy,s:`<circle cx="${cx}" cy="${cy}" r="20" fill="${y?'#e8467c':'#3b2f73'}" stroke="#fff" stroke-width="2"/>`}}
- if(b===2){const col=x*3+(x?2-y:y),cx=110+(col+a/2)*40,cy=60+a*36;const pts=[0,1,2,3,4,5].map(i=>{const t=(60*i+30)*Math.PI/180;return (cx+22*Math.cos(t)).toFixed(1)+','+(cy+22*Math.sin(t)).toFixed(1)}).join(' ');return{cx,cy,s:`<polygon points="${pts}" fill="${['#0d3b2e','#1f8f74','#b9d63c'][y]}" stroke="#fff" stroke-width="1.5"/><text x="${cx}" y="${cy-13}" font-size="8" text-anchor="middle" fill="${y===2?'#123':'#fff'}">${DOM.tipo[y]}</text>`}}
- const[bx,by]=[[30,40],[230,40],[230,170],[30,170]][a],cx=bx+y*44+20,cy=by+x*30+13;return{cx,cy,s:`<rect x="${bx+y*44}" y="${by+x*30}" width="40" height="26" rx="4" fill="${['#1e3a6e','#ef6b4a','#e0ae4a'][y]}" stroke="#14171c" stroke-width="1.5"/>`};
+ if(b===0){const R=[[110,150],[75,110],[40,75]][x],a1=-90+90*a+45*y,a2=a1+45;const P=(r,t)=>[150+r*Math.sin(t*Math.PI/180),150-r*Math.cos(t*Math.PI/180)];const p1=P(R[1],a1),p2=P(R[1],a2),p3=P(R[0],a2),p4=P(R[0],a1),m=P((R[0]+R[1])/2,a1+22.5);return{cx:m[0],cy:m[1],s:`<path d="M${p1} A${R[1]} ${R[1]} 0 0 1 ${p2} L${p3} A${R[0]} ${R[0]} 0 0 0 ${p4}Z" fill="${['#c3e6cb','#fff2b3','#f9b9a0'][x]}" stroke="#14171c" stroke-width="2"/>${(()=>{const q=P(R[1]-12,a1+11);return y?GP(q[0],q[1]):GT(q[0],q[1])})()}`}}
+ if(b===1){const cx=[[104,156],[275,222],[335,389]][x][y],cy=[89,142,194,246][a];return{cx,cy,s:`<circle cx="${cx}" cy="${cy}" r="20" fill="${y?'#e8467c':'#3b2f73'}" stroke="#fff" stroke-width="2"/>${y?HU(cx,cy):IA(cx,cy)}`}}
+ if(b===2){const col=x*3+(x?2-y:y),cx=110+(col+a/2)*40,cy=60+a*36;const pts=[0,1,2,3,4,5].map(i=>{const t=(60*i+30)*Math.PI/180;return (cx+22*Math.cos(t)).toFixed(1)+','+(cy+22*Math.sin(t)).toFixed(1)}).join(' ');return{cx,cy,s:`<polygon points="${pts}" fill="${['#0d3b2e','#1f8f74','#b9d63c'][y]}" stroke="#fff" stroke-width="1.5"/>${TI[y](cx,cy)}`}}
+ const[bx,by]=[[30,40],[230,40],[230,170],[30,170]][a],cx=bx+y*44+20,cy=by+x*30+13;return{cx,cy,s:`<rect x="${bx+y*44}" y="${by+x*30}" width="40" height="26" rx="4" fill="${['#1e3a6e','#ef6b4a','#e0ae4a'][y]}" stroke="${x?'#1a1a1a':'#29a8e0'}" stroke-width="2.5"/>${[CODE,PERS,BARS][y](cx,cy,'#fff')}`};
 }
 function labels(b){
  const t=(x,y,s,o)=>`<text class="lb" x="${x}" y="${y}" ${o||''}>${s}</text>`;
- if(b===0)return t(4,16,'Madrugada','font-size="13" font-weight="700"')+t(296,16,'Mañana','font-size="13" font-weight="700" text-anchor="end"')+t(296,296,'Tarde','font-size="13" font-weight="700" text-anchor="end"')+t(4,296,'Noche','font-size="13" font-weight="700"');
+ if(b===0)return t(4,16,'Madrugada','font-size="13" font-weight="700"')+t(416,16,'Mañana','font-size="13" font-weight="700" text-anchor="end"')+SUN(352,12,'#f5b800')+t(416,214,'Tarde','font-size="13" font-weight="700" text-anchor="end"')+SUN(366,210,'#f08a1c')+t(4,214,'Noche','font-size="13" font-weight="700"')+MOON(56,210,'#1a1a1a')+SUN(86,12,'#f08a1c');
  let s='';
- if(b===1){DOM.mot.forEach((m,a)=>s+=t(4,[89,142,194,246][a]+4,m,'font-size="10"'));['Novato','Pro','Elite'].forEach((n,i)=>s+=t(130+i*116,26,n,'font-size="12" font-weight="700" text-anchor="middle"'));return s}
- if(b===2){DOM.via.forEach((v,a)=>s+=t(4,60+a*36+4,v,'font-size="10"'));s+=t(150,30,'Virus conocido','font-size="12" font-weight="700" text-anchor="middle"')+t(270,30,'Nuevo virus','font-size="12" font-weight="700" text-anchor="middle"');return s}
+ if(b===1){DOM.mot.forEach((m,a)=>s+=t(4,[89,142,194,246][a]+4,m,'font-size="10"'));['Supernoob','Pro','Elite'].forEach((n,i)=>s+=t(130+i*116,26,n,'font-size="12" font-weight="700" text-anchor="middle"'));return s}
+ if(b===2){DOM.via.forEach((v,a)=>s+=t(82+a*20,60+a*36+4,v,'font-size="10" text-anchor="end"')+[USB,PERS,HOOK,SHIELD][a](110+(5+a/2)*40+30,60+a*36,'#0d3b2e'));s+=t(150,30,'Virus conocido','font-size="12" font-weight="700" text-anchor="middle"')+t(270,30,'Nuevo virus','font-size="12" font-weight="700" text-anchor="middle"');return s}
  return ['Ushuaia','Rosario','Buenos Aires','Mendoza'].map((c,i)=>{const[bx,by]=[[30,40],[230,40],[230,170],[30,170]][i];return t(bx,by-6,c,'font-size="12" font-weight="700"')}).join('');
 }
 function bdSvg(b){
- const B=BOARDS[b];let s='';
- if(b===1||b===3)for(const k of cells(b))for(const w of nbAll(b,k))if(k<w){const p=geoOf(b,k),q=geoOf(b,w);s+=`<line x1="${p.cx}" y1="${p.cy}" x2="${q.cx}" y2="${q.cy}" stroke="#fff" stroke-opacity="${b===1?0.9:0.35}" stroke-width="${b===1?8:2}"/>`}
+ const B=BOARDS[b];let s=b===1?GRP:'';
+ if(b===1||b===3)for(const k of cells(b))for(const w of nbAll(b,k))if(k<w){const p=geoOf(b,k),q=geoOf(b,w);s+=`<line x1="${p.cx}" y1="${p.cy}" x2="${q.cx}" y2="${q.cy}" stroke="${b===1?'#fff':'#14171c'}" stroke-opacity="${b===1?0.9:0.8}" stroke-width="${b===1?8:4}"/>`}
  
  for(const k of cells(b)){
   const g=geoOf(b,k),ci=chipIdx(b,k),c=ci>=0?S.chips[ci]:null;
@@ -262,19 +270,43 @@ function bdSvg(b){
    if(S.kls.some(x=>x.c===ci))s+=`<circle cx="${g.cx+12}" cy="${g.cy-12}" r="7" fill="#fff"/><text x="${g.cx+12}" y="${g.cy-12}" font-size="9" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#000">K</text>`}
   s+='</g>';
  }
- return `<div class="bd" style="--c:${B.c}"><h3>${B.n}</h3><svg viewBox="${VB[b]}">${s}${cutsSvg(b)}${labels(b)}</svg></div>`;
+ return `<div class="bd" style="--c:${B.c};background:${['#cfe9f7','#fcd5c4','#cdc6e8','#cfe8d6'][b]}"><h3>${B.n}<span class="bdg${cnt(0,b)>=2?' full':''}">Tus fichas ${cnt(0,b)}/2</span></h3><svg viewBox="${VB[b]}">${b===0?`<g transform="translate(210,115) scale(0.6) translate(-150,-150)">${s}${cutsSvg(b)}</g>${labels(b)}`:`<g transform="translate(${b===1?30:0},${b===1?-10:(b===2?8:0)}) scale(${b===1?0.8:1})">${s}${cutsSvg(b)}${labels(b)}</g>`}</svg><div class="lg">${LEG[b]}</div></div>`;
 }
 const ICO={E:'⚡',P:'📡',H:'🍯',C:'🧱',K:'⌨️'};
 const VB_={mot:1,niv:1,ia:1,mom:0,grav:0,alc:0,via:2,conoc:2,tipo:2,ciudad:3,form:3,dato:3};
 function face(t){return `<div class="fc"><b>Log ${t}</b><br>${VARS[t].map(v=>`<span style="color:${BOARDS[VB_[v]].c};font-weight:700">${S.ps[0].known[v]}</span>`).join('<br>')}</div>`}
 function cellPts(i,b){const a=[];S.chips.forEach(c=>{if(c.o===i&&c.b===b)a.push(c.pts)});S.kls.forEach(x=>{if(x.o===i&&S.chips[x.c].b===b)a.push(x.pts+'K')});return a.length?a.join(' '):'0'}
+const PERS=(x,y,c)=>`<circle cx="${x}" cy="${y-5}" r="3.5" fill="${c}"/><path d="M${x-6},${y+7} Q${x-6},${y-1} ${x},${y-1} Q${x+6},${y-1} ${x+6},${y+7}Z" fill="${c}"/>`;
+const IA=(x,y)=>`<rect x="${x-6}" y="${y-6}" width="12" height="12" rx="2" fill="none" stroke="#fff" stroke-width="2"/><rect x="${x-2.5}" y="${y-2.5}" width="5" height="5" fill="#fff"/>`;
+const HU=(x,y)=>PERS(x,y,'#fff');
+const CODE=(x,y,c)=>`<text x="${x}" y="${y}" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="${c}">&lt;/&gt;</text>`;
+const BARS=(x,y,c)=>`<rect x="${x-7}" y="${y}" width="3" height="6" fill="${c}"/><rect x="${x-2}" y="${y-3}" width="3" height="9" fill="${c}"/><rect x="${x+3}" y="${y-6}" width="3" height="12" fill="${c}"/>`;
+const LOCK=(x,y,c)=>`<rect x="${x-6}" y="${y-1}" width="12" height="9" rx="2" fill="${c}"/><path d="M${x-4},${y-1} V${y-5} A4,4 0 0 1 ${x+4},${y-5} V${y-1}" fill="none" stroke="${c}" stroke-width="2"/>`;
+const WIPE=(x,y,c)=>`<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="${c}" stroke-width="2"/><path d="M${x-3.5},${y-3.5} L${x+3.5},${y+3.5} M${x+3.5},${y-3.5} L${x-3.5},${y+3.5}" stroke="${c}" stroke-width="2"/>`;
+const EYE=(x,y,c)=>`<path d="M${x-9},${y} Q${x},${y-7} ${x+9},${y} Q${x},${y+7} ${x-9},${y}Z" fill="none" stroke="${c}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="2.5" fill="${c}"/>`;
+const USB=(x,y,c)=>`<rect x="${x-8}" y="${y-4}" width="16" height="8" rx="2" fill="${c}"/><rect x="${x+8}" y="${y-2}" width="3" height="4" fill="${c}"/>`;
+const HOOK=(x,y,c)=>`<path d="M${x-2},${y-8} Q${x+6},${y-8} ${x+4},${y-2} Q${x+2},${y+4} ${x-4},${y+4} Q${x-8},${y+4} ${x-6},${y}" fill="none" stroke="${c}" stroke-width="2"/>`;
+const SHIELD=(x,y,c)=>`<path d="M${x-7},${y-8} L${x},${y-5} L${x+7},${y-8} V${y+1} Q${x+7},${y+7} ${x},${y+9} Q${x-7},${y+7} ${x-7},${y+1}Z" fill="none" stroke="${c}" stroke-width="2"/>`;
+const SUN=(x,y,c)=>`<circle cx="${x}" cy="${y}" r="5" fill="${c}"/>`+[0,45,90,135,180,225,270,315].map(d=>{const r=d*Math.PI/180;return `<line x1="${x+8*Math.sin(r)}" y1="${y-8*Math.cos(r)}" x2="${x+12*Math.sin(r)}" y2="${y-12*Math.cos(r)}" stroke="${c}" stroke-width="2"/>`}).join('');
+const MOON=(x,y,c)=>`<path d="M${x+3},${y-8} A8,8 0 1 0 ${x+8},${y+4} A6,6 0 0 1 ${x+3},${y-8}Z" fill="${c}"/>`;
+const GT=(x,y)=>`<circle cx="${x}" cy="${y}" r="5" fill="#1a1a1a"/>`;
+const GP=(x,y)=>`<circle cx="${x}" cy="${y}" r="5" fill="none" stroke="#1a1a1a" stroke-width="1.5"/><path d="M${x-5},${y} A5,5 0 0 1 ${x+5},${y}Z" fill="#1a1a1a"/>`;
+const TI=[(x,y)=>LOCK(x,y,'#fff'),(x,y)=>WIPE(x,y,'#fff'),(x,y)=>EYE(x,y,'#123')];
+const LEG=[
+`<i style="background:#c3e6cb"></i>Leve (afuera)<i style="background:#fff2b3"></i>Moderado<i style="background:#f9b9a0"></i>Crítico (centro)<i style="background:#3b2f73"></i>Total (●) · Parcial (◐)`,
+`<i style="background:#3b2f73"></i>IA<i style="background:#e8467c"></i>Humano<span style="margin-left:10px">Solo se mueve por las líneas blancas</span>`,
+`<i style="background:#0d3b2e"></i>Ransom<i style="background:#1f8f74"></i>Wiper<i style="background:#b9d63c"></i>Spyware`,
+`<i style="background:#1e3a6e"></i>Código Fuente<i style="background:#ef6b4a"></i>Datos de Clientes<i style="background:#e0ae4a"></i>Info. de Ventas<i style="background:#fff;border:3px solid #29a8e0"></i>Nube<i style="background:#fff;border:3px solid #1a1a1a"></i>Local<span style="margin-left:10px">Arriba: Nube · Abajo: Local</span>`];
+const GRP='<rect x="84" y="62" width="92" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="200" y="62" width="97" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="315" y="62" width="94" height="206" rx="14" fill="#fff" fill-opacity=".35"/>';
+function dots(t){return S.ps.filter(p=>p.read.has(t)).map(p=>`<span class="dt" style="background:${p.c}"></span>`).join('')}
+function toggleHelp(){cfg.help=cfg.help===1?0:1;render()}
 function render(){
  if(!S)return;const H=S.ps[0];
  $('pl').innerHTML=S.ps.map(p=>`<span style="color:${p.c}">${p.n}</span>`).join(' &nbsp; ');
- $('tn').textContent='Turno '+Math.min(S.turn+1,10)+' de 10';
+ $('tn').textContent='Turno '+Math.min(S.turn+1,10)+' de 10';const nr=hT&&hT.needRead&&!hT.readDone,np=!!hT&&!hT.placed;$('bxR').className='box'+(nr?' hl':'');$('bxT').className='box'+(np?' hl':'');$('hlp').textContent='Ayuda: '+(cfg.help===1?'activada':'desactivada');
  $('boards').innerHTML=[0,1,2,3].map(bdSvg).join('');
  $('tools').innerHTML=['E','P','H','C','K'].map(t=>`<button class="tool ${hT&&hT.tool===t?'on':''}" ${!hT||H.pool[t]<1?'disabled':''} onclick="pick('${t}')"><span>${ICO[t]} ${NM[t]}</span><b>${H.pool[t]}</b></button>`).join('')+`<div style="color:var(--m);font-size:12px;margin-top:6px">Queries restantes: ${H.q}</div>`;
- $('reads').innerHTML=TY.map(t=>H.read.has(t)?`<button class="rd" disabled>${face(t)}</button>`:`<button ${!hT||!hT.needRead||hT.readDone||H.q<1?'disabled':''} onclick="hR('${t}')">Log ${t}</button>`).join('');
+ $('reads').innerHTML=TY.map(t=>H.read.has(t)?`<div><button class="rd" disabled>${face(t)}</button><div class="dts">${dots(t)}</div></div>`:`<div><button ${!hT||!hT.needRead||hT.readDone||H.q<1?'disabled':''} onclick="hR('${t}')">Log ${t}</button><div class="dts">${dots(t)}</div></div>`).join('');
  $('nb').innerHTML=TY.map(t=>`<div>${t}: ${H.read.has(t)?CARDS[t][S.idx[t]].join(' · '):'<span style="color:var(--m)">?</span>'}</div>`).join('');
  $('log').innerHTML=S.log.slice(-40).map(x=>'<div>'+x+'</div>').join('');$('log').scrollTop=1e6;
 }

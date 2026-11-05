@@ -140,7 +140,7 @@ const cutsOn=b=>S.cutList.filter(x=>x[0]===b).length;
 const msg=t=>{$('msg').textContent=t||''};
 
 function newGame(){
- const pool=['Agos','Agos','Lean','J','Alee','Caro','Rorry', 'Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
+ const pool=['Agos','Agos','Lean','J','Alee','Caro','Rorry', 'Lucía','Ana','Lucas','Sofía','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
  const ps=names.map((n,i)=>({i,n,h:i===0,c:COL[i],pool:{E:1,P:3,H:4,C:1,K:1},q:4,known:{},read:new Set()}));
  const rot=cfg.start==='azar'?rnd(ps.length):0;
  const idx={};TY.forEach(t=>idx[t]=rnd(CARDS[t].length));

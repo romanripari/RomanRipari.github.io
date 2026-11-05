@@ -272,8 +272,9 @@ function bdSvg(b){
   const g=geoOf(b,k),ci=chipIdx(b,k),c=ci>=0?S.chips[ci]:null;
   const dim=cfg.help===1&&!S.done&&incons(b,k);
   s+=`<g onclick="hC(${b},'${k}')" style="cursor:pointer" opacity="${dim?0.25:1}">${c?tipOf(c):''}${g.s}`;
-  if(S.done&&S.tk[b]===k)s+=`<circle cx="${g.cx}" cy="${g.cy}" r="17" fill="none" stroke="#ffc857" stroke-width="3"/>`;
+  if(S.done&&S.tk[b]===k)s+=`<circle cx="${g.cx}" cy="${g.cy}" r="19" fill="none" stroke="#e0141f" stroke-width="5"/>`;
   if(c){s+=`<circle cx="${g.cx}" cy="${g.cy}" r="11" fill="${S.ps[c.o].c}" stroke="#000" stroke-width="1.5"/><text x="${g.cx}" y="${g.cy}" font-size="11" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#000">${S.done||c.o===0?ICO[c.t]:'•'}</text>`;
+   if(S.done)s+=`<text x="${g.cx}" y="${g.cy-17}" font-size="12" font-weight="800" text-anchor="middle" fill="${c.pts>0?'#0a7a4a':c.pts<0?'#c0102a':'#333'}" stroke="#fff" stroke-width="3" paint-order="stroke">${c.pts>0?'+':''}${c.pts}</text>`;
    if(S.kls.some(x=>x.c===ci))s+=`<circle cx="${g.cx+12}" cy="${g.cy-12}" r="7" fill="#fff"/><text x="${g.cx+12}" y="${g.cy-12}" font-size="9" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="#000">K</text>`}
   s+='</g>';
  }

@@ -10,7 +10,7 @@ body{margin:0;background:var(--bg);color:var(--t);font:15px/1.4 system-ui,-apple
 @media(max-width:800px){#intro{grid-template-columns:1fr}}
 h1{font-size:64px;margin:12px 0 16px;letter-spacing:-1px}
 .lead{font-size:20px;margin:0 0 18px}
-.rules{color:var(--m);padding:0;list-style:none;margin:0}
+.rules{display:none}
 .rules li{margin:10px 0}
 .panel{background:var(--p);border:1px solid var(--b);border-radius:20px;padding:24px}
 .sec{margin-bottom:22px}
@@ -63,10 +63,11 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 .fc{font:14px/1.4 ui-monospace,monospace;color:#111;background:#fff;border-radius:10px;padding:8px;min-height:96px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-size:15px}
 .fc.fl{animation:fl .5s}
 @keyframes fl{from{transform:rotateY(90deg)}to{transform:none}}
+.sec:has([data-g="speed"]){display:none}
 </style></head><body>
 
 <div class="wrap" id="intro"><div>
-<div class="mono" style="color:var(--g)">&gt; convocatoria_abierta.log</div>
+<div class="mono" style="color:var(--g)">&gt; emosido_hackeado.log</div>
 <h1>Emosido Hackeado</h1><p class="mono" style="color:var(--y);margin:0 0 14px;font-size:14px">PROTOTIPO DE JUEGO DE MESA DE ROMÁN RIPARI</p>
 <p class="lead">Una corporación sufrió un ciberataque. Deducí las cuatro coordenadas exactas: el incidente, el servidor vulnerado, el hacker y el virus.</p>
 <ul class="rules">
@@ -75,9 +76,9 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <li>Cada jugador tiene 8 fichas de posición (4 Honeypot, 1 Exploit, 3 Ping) y 2 tácticas (Cortafuegos y Keylogger). Máximo 2 fichas tuyas por tablero.</li>
 <li>Las fichas de los rivales se ven, pero no si son Ping, Exploit o Honeypot.</li>
 <li>Puntaje por distancia (0 / 1 / 2): Exploit +8/+6/+4 · Ping +6/+4/+2 · Honeypot −6/−4/−2. El Keylogger da a su dueño la mitad de los puntos de la ficha rival.</li>
-</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
+</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li><li>Cada jugador tiene 14 fichas, 4 Query (para leer logs), 8 de posición y 2 tácticas, y no podés repetir un log que ya leíste.</li><li>Los 4 tableros son Incidente (momento, gravedad, alcance), Hacker (motivación, nivel, IA o humano), Virus (vía, tipo, conocido o nuevo) y Servidor (ciudad, formato, dato).</li><li>Puntaje por distancia 0 / 1 / 2: Exploit +8/+6/+4, Ping +6/+4/+2 y Honeypot −6/−4/−2.</li><li>El Keylogger da al dueño la mitad de los puntos de la ficha rival que tiene encima.</li><li>El botón Ayuda atenúa las casillas que tus pistas descartan, y se puede activar o desactivar durante la partida.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
 <div class="panel">
-<div class="sec"><h4>Rivales (bots)</h4><div class="seg" data-g="rivals"><button data-v="0">Solo</button><button data-v="1">1</button><button data-v="2" class="on">2</button><button data-v="3">3</button><button data-v="4">4</button></div></div>
+<div class="sec"><h4>Rivales (bots)</h4><div class="seg" data-g="rivals"><button data-v="0">Solo</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3" class="on">3</button><button data-v="4">4</button></div></div>
 <div class="sec"><h4>Empieza</h4><div class="seg" data-g="start"><button data-v="yo" class="on">Yo</button><button data-v="azar">Al azar</button></div></div>
 <div class="sec"><h4>Velocidad de los bots</h4><div class="seg" data-g="speed"><button data-v="1400">Lenta</button><button data-v="800" class="on">Normal</button><button data-v="300">Rápida</button></div></div>
 <div class="sec"><h4>Ayuda: atenuar casillas descartadas por mis pistas</h4><div class="seg" data-g="help"><button data-v="0">No</button><button data-v="1" class="on">Sí</button></div></div>
@@ -90,7 +91,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <div class="boards" id="boards"></div><p style="margin-top:14px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p>
 </div>
 <div>
-<div class="box"><h4 id="tn">Turno</h4><div class="msg" id="msg"></div><button id="hlp" onclick="toggleHelp()" style="margin-top:8px;width:100%;background:#1b1f25;color:#eef1f4;border:1px solid #262b33;border-radius:10px;padding:8px">Ayuda</button></div>
+<div class="box"><h4 id="tn">Turno</h4><div class="msg" id="msg"></div><button id="hlp" onclick="toggleHelp()" style="margin-top:8px;width:100%;background:#1b1f25;color:#eef1f4;border:1px solid #262b33;border-radius:10px;padding:8px">Ayuda</button><button id="scr" onclick="$('ovl').classList.add('on')" style="display:none;margin-top:8px;width:100%;background:#00c17a;color:#04281a;border:0;border-radius:10px;padding:8px;font-weight:700">Ver puntajes</button></div>
 <div class="box" id="bxR"><h4>Leer un log (secreto)</h4><div class="reads" id="reads"></div></div>
 <div class="box" id="bxT"><h4>Tus fichas</h4><div id="tools"></div></div>
 <div class="box"><h4>Tu libreta</h4><div id="nb" style="font-size:13px"></div></div>
@@ -117,7 +118,7 @@ const SC={E:[8,6,4],P:[6,4,2],H:[-6,-4,-2]};
 const NM={E:'Exploit',P:'Ping',H:'Honeypot',C:'Cortafuegos',K:'Keylogger'};
 const COL=['#00c17a','#ffc857','#ff5d6c','#8a63d2','#2aa3e0'];
 const TY=['A','B','C','D','E','F'];
-const cfg={rivals:2,start:'yo',speed:800,help:1};
+const cfg={rivals:3,start:'yo',speed:800,help:1};
 let S=null,hT=null,hRes=null;
 
 const $=i=>document.getElementById(i);
@@ -140,7 +141,7 @@ const cutsOn=b=>S.cutList.filter(x=>x[0]===b).length;
 const msg=t=>{$('msg').textContent=t||''};
 
 function newGame(){
- const pool=['Agos','Lean','J','Alee','Caro','Rorry', 'Lucía','Ana','Lucas','Roma','Sofía','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
+ const pool=['Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'].sort(()=>Math.random()-.5);const names=[($('nm').value||'').trim()||'Vos'];for(let i=1;i<=cfg.rivals;i++)names.push(pool[i-1]);
  const ps=names.map((n,i)=>({i,n,h:i===0,c:COL[i],pool:{E:1,P:3,H:4,C:1,K:1},q:4,known:{},read:new Set()}));
  const rot=cfg.start==='azar'?rnd(ps.length):0;
  const idx={};TY.forEach(t=>idx[t]=rnd(CARDS[t].length));
@@ -214,7 +215,7 @@ function finish(){
  <table class="res"><tr><th>Jugador</th>${BOARDS.map(B=>`<th>${B.n}</th>`).join('')}<th>Total</th></tr>${tot.map(x=>`<tr><td style="color:${x.p.c}">${x.p.n}</td>${BOARDS.map((B,b)=>`<td>${cellPts(x.p.i,b)}</td>`).join('')}<td><b>${x.v}</b></td></tr>`).join('')}</table>
  <p style="color:var(--m);font-size:13px">Las fichas quedan reveladas en los tableros. La casilla marcada es la respuesta.</p>
  <button class="go" onclick="$('ovl').classList.remove('on')" style="background:#262b33;color:#eef1f4;margin-bottom:8px">Ver tableros</button><button class="go" onclick="location.reload()">Jugar otra vez</button>`;
- $('ovl').classList.add('on');render();
+ $('ovl').classList.add('on');$('scr').style.display='block';render();
 }
 
 function cellH(b,k){
@@ -324,6 +325,7 @@ document.querySelectorAll('[data-g]').forEach(g=>g.querySelectorAll('button').fo
  g.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
  const v=b.dataset.v;cfg[g.dataset.g]=isNaN(+v)?v:+v;
 }));
+document.querySelectorAll('[data-g="speed"] button').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-g="speed"] button').forEach(x=>x.classList.remove('on'));b.classList.add('on');cfg.speed=+b.dataset.v});
 $('go').onclick=()=>{$('intro').style.display='none';$('game').style.display='grid';S=newGame();render();run()};
 </script>
 </body></html>

@@ -82,6 +82,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <div class="sec"><h4>Empieza</h4><div class="seg" data-g="start"><button data-v="yo" class="on">Yo</button><button data-v="azar">Al azar</button></div></div>
 <div class="sec"><h4>Velocidad de los bots</h4><div class="seg" data-g="speed"><button data-v="1400">Lenta</button><button data-v="800" class="on">Normal</button><button data-v="300">Rápida</button></div></div>
 <div class="sec"><h4>Ayuda: atenuar casillas descartadas por mis pistas</h4><div class="seg" data-g="help"><button data-v="0">No</button><button data-v="1" class="on">Sí</button></div></div>
+<div class="sec"><h4>Dificultad de los bots</h4><div class="seg" data-g="dif"><button data-v="0">Fácil</button><button data-v="1" class="on">Normal</button><button data-v="2">Difícil</button></div></div>
 <div class="sec"><h4>Honeypot obligatorio en cada área</h4><div class="seg" data-g="hon"><button data-v="1" class="on">Sí</button><button data-v="0">No</button></div></div>
 <input id="nm" placeholder="Tu nombre" maxlength="14" style="width:100%;margin-bottom:12px;background:#1b1f25;color:#eef1f4;border:1px solid #262b33;border-radius:12px;padding:12px;font:inherit"><button class="go" id="go">▷ Empezar investigación</button>
 </div></div>
@@ -119,7 +120,7 @@ const SC={E:[8,6,4],P:[6,4,2],H:[-6,-4,-2]};
 const NM={E:'Exploit',P:'Ping',H:'Honeypot',C:'Cortafuegos',K:'Keylogger'};
 const COL=['#00c17a','#ffc857','#ff5d6c','#8a63d2','#2aa3e0'];
 const TY=['A','B','C','D','E','F'];
-const cfg={rivals:3,start:'yo',speed:800,help:1,hon:1};
+const cfg={rivals:3,start:'yo',speed:800,help:1,hon:1,dif:1};
 let S=null,hT=null,hRes=null;
 
 const $=i=>document.getElementById(i);
@@ -134,8 +135,8 @@ function nb(b,k){return nbAll(b,k).filter(w=>!S.cuts.has(cutId(b,k,w)))}
 function dist(b,s){const m=new Map([[s,0]]),q=[s];while(q.length){const k=q.shift();for(const w of nb(b,k))if(!m.has(w)){m.set(w,m.get(k)+1);q.push(w)}}return m}
 function pr(p,b,k){const c=co(k);let r=1;for(let i=0;i<3;i++){const v=BOARDS[b].ax[i];if(p.known[v]!==undefined)r*=DOM[v][c[i]]===p.known[v]?1:0;else r/=sz(b,i)}return r}
 const PB=0.6;
-function hw(b,y){let w=1;S.chips.forEach(c=>{if(c.o===0&&c.b===b){const d=dist(b,c.k).get(y),n=d===undefined?3:d,real=1+(n<3?[1.2,0.5,0.2][n]:0),bait=n<=1?0.5:1;w*=(1-PB)*real+PB*bait}});return w}
-function ev(p,b,k,t){const d=dist(b,k);let s=0,z=0;for(const y of cells(b)){const q=pr(p,b,y)*hw(b,y);z+=q;const dd=d.get(y);if(q&&dd!==undefined&&dd<3)s+=q*SC[t][dd]}return z?s/z:0}
+function hw(p,b,y){if(cfg.dif===0)return 1;let w=1;S.chips.forEach(c=>{if(c.o!==p.i&&c.b===b){const bt=c.o===0?PB:0.3;const d=dist(b,c.k).get(y),n=d===undefined?3:d,real=1+(n<3?[1.2,0.5,0.2][n]:0),bait=n<=1?0.5:1;w*=(1-bt)*real+bt*bait}});return w}
+function ev(p,b,k,t){const d=dist(b,k);let s=0,z=0;for(const y of cells(b)){const q=pr(p,b,y)*hw(p,b,y);z+=q;const dd=d.get(y);if(q&&dd!==undefined&&dd<3)s+=q*SC[t][dd]}return z?s/z:0}
 const chipIdx=(b,k)=>S.chips.findIndex(c=>c.b===b&&c.k===k);
 const cnt=(o,b)=>S.chips.filter(c=>c.o===o&&c.b===b).length;
 const cutsOn=b=>S.cutList.filter(x=>x[0]===b).length;
@@ -152,7 +153,7 @@ function newGame(){
 function learn(p,t){(S.ev=S.ev||[]).push([S.turn+1,p.n,'leer_log',t,'','',CARDS[t][S.idx[t]].join(' / ')]);p.read.add(t);p.q=Math.max(0,p.q-1);VARS[t].forEach((v,j)=>p.known[v]=CARDS[t][S.idx[t]][j])}
 function put(p,t,b,k,x){S.ev.push([S.turn+1,p.n,'colocar',NM[t],t==='K'?'':BOARDS[b].n,t==='K'?'':k,t==='K'?'sobre ficha de '+S.ps[S.chips[x].o].n:t==='C'?'entre '+k+' y '+x:'']);if(t==='C'){S.cuts.add(cutId(b,k,x));S.cutList.push([b,k,x])}else if(t==='K')S.kls.push({o:p.i,c:x});else S.chips.push({o:p.i,t,b,k});p.pool[t]--}
 
-function botBest(p){
+function botBestOld(p){
  let best=null,bv=-1e9;const T=(v,f)=>{v+=Math.random()*.01;if(v>bv){bv=v;best=f}};
  for(const t of ['E','P','H'])if(p.pool[t]>0)for(let b=0;b<4;b++)for(const k of cells(b))if(chipIdx(b,k)<0&&cnt(p.i,b)<2&&okPos(p,b,t))T(ev(p,b,k,t),()=>put(p,t,b,k,0));
  if(p.pool.K>0)S.chips.forEach((c,ci)=>{if(c.o!==p.i&&!S.kls.some(x=>x.c===ci))T(.5*ev(p,c.b,c.k,'P'),()=>put(p,'K',0,0,ci))});
@@ -328,6 +329,23 @@ function exportAll(tot){
  if(ENDPOINT)fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({partidas:P,jugadas:J})}).catch(()=>{});
 }
 function okPos(p,b,t){if(!cfg.hon)return true;return t==='H'?!S.chips.some(c=>c.o===p.i&&c.b===b&&c.t==='H'):!S.chips.some(c=>c.o===p.i&&c.b===b&&c.t!=='H')}
+function decoy(p,b,k){const d=dist(b,k);let z=0,s=0;for(const y of cells(b)){const q=pr(p,b,y)*hw(p,b,y);z+=q;const dd=d.get(y);if(dd!==undefined&&dd<=1)s+=q}return z?s/z:0}
+function cutVal(p,b,k,w){let v=0;S.chips.forEach(c=>{if(c.b!==b||c.o===p.i)return;const q=c.k===k?w:c.k===w?k:null;if(q)v+=pr(p,b,q)*hw(p,b,q)});return .2+4*v}
+function botBest(p){
+ const D=cfg.dif,opts=[],T=(v,f)=>opts.push([v+Math.random()*.01,f]),turn=S.turn;
+ for(const t of ['E','P','H'])if(p.pool[t]>0)for(let b=0;b<4;b++)for(const k of cells(b))if(chipIdx(b,k)<0&&cnt(p.i,b)<2&&okPos(p,b,t)){
+  let v=ev(p,b,k,t);
+  if(D===2&&t==='E'&&turn<4)v*=0.6;
+  if(D===2&&t==='H')v+=3*decoy(p,b,k);
+  T(v,()=>put(p,t,b,k,0));
+ }
+ if(p.pool.K>0)S.chips.forEach((c,ci)=>{if(c.o!==p.i&&!S.kls.some(x=>x.c===ci))T(.5*ev(p,c.b,c.k,'P'),()=>put(p,'K',0,0,ci))});
+ if(p.pool.C>0)for(let b=0;b<4;b++)if(cutsOn(b)<2)for(const k of cells(b))for(const w of nb(b,k))if(k<w)T(D===2?cutVal(p,b,k,w):.2,()=>put(p,'C',b,k,w));
+ if(!opts.length)return null;
+ opts.sort((x,y)=>y[0]-x[0]);
+ const pick=D===0||Math.random()<0.7?0:1;
+ return (opts[pick]||opts[0])[1];
+}
 function render(){
  if(!S)return;const H=S.ps[0];
  $('pl').innerHTML=S.ps.map(p=>`<span style="color:${p.c}">${p.n}</span>`).join(' &nbsp; ');

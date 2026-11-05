@@ -76,12 +76,13 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <li>Cada jugador tiene 8 fichas de posición (4 Honeypot, 1 Exploit, 3 Ping) y 2 tácticas (Cortafuegos y Keylogger). Máximo 2 fichas tuyas por tablero.</li>
 <li>Las fichas de los rivales se ven, pero no si son Ping, Exploit o Honeypot.</li>
 <li>Puntaje por distancia (0 / 1 / 2): Exploit +8/+6/+4 · Ping +6/+4/+2 · Honeypot −6/−4/−2. El Keylogger da a su dueño la mitad de los puntos de la ficha rival.</li>
-</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li><li>Cada jugador tiene 14 fichas, 4 Query (para leer logs), 8 de posición y 2 tácticas, y no podés repetir un log que ya leíste.</li><li>Los 4 tableros son Incidente (momento, gravedad, alcance), Hacker (motivación, nivel, IA o humano), Virus (vía, tipo, conocido o nuevo) y Servidor (ciudad, formato, dato).</li><li>Puntaje por distancia 0 / 1 / 2: Exploit +8/+6/+4, Ping +6/+4/+2 y Honeypot −6/−4/−2.</li><li>El Keylogger da al dueño la mitad de los puntos de la ficha rival que tiene encima.</li><li>El botón Ayuda atenúa las casillas que tus pistas descartan, y se puede activar o desactivar durante la partida.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
+</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li><li>Cada jugador tiene 14 fichas, 4 Query (para leer logs), 8 de posición y 2 tácticas, y no podés repetir un log que ya leíste.</li><li>Los 4 tableros son Incidente (momento, gravedad, alcance), Hacker (motivación, nivel, IA o humano), Virus (vía, tipo, conocido o nuevo) y Servidor (ciudad, formato, dato).</li><li>Puntaje por distancia 0 / 1 / 2: Exploit +8/+6/+4, Ping +6/+4/+2 y Honeypot −6/−4/−2.</li><li>El Keylogger da al dueño la mitad de los puntos de la ficha rival que tiene encima.</li><li>El botón Ayuda atenúa las casillas que tus pistas descartan, y se puede activar o desactivar durante la partida.</li><li>Con "Honeypot obligatorio" activado, cada jugador pone exactamente un Honeypot y un Exploit o Ping en cada tablero.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
 <div class="panel">
 <div class="sec"><h4>Rivales (bots)</h4><div class="seg" data-g="rivals"><button data-v="0">Solo</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3" class="on">3</button><button data-v="4">4</button></div></div>
 <div class="sec"><h4>Empieza</h4><div class="seg" data-g="start"><button data-v="yo" class="on">Yo</button><button data-v="azar">Al azar</button></div></div>
 <div class="sec"><h4>Velocidad de los bots</h4><div class="seg" data-g="speed"><button data-v="1400">Lenta</button><button data-v="800" class="on">Normal</button><button data-v="300">Rápida</button></div></div>
 <div class="sec"><h4>Ayuda: atenuar casillas descartadas por mis pistas</h4><div class="seg" data-g="help"><button data-v="0">No</button><button data-v="1" class="on">Sí</button></div></div>
+<div class="sec"><h4>Honeypot obligatorio en cada área</h4><div class="seg" data-g="hon"><button data-v="1" class="on">Sí</button><button data-v="0">No</button></div></div>
 <input id="nm" placeholder="Tu nombre" maxlength="14" style="width:100%;margin-bottom:12px;background:#1b1f25;color:#eef1f4;border:1px solid #262b33;border-radius:12px;padding:12px;font:inherit"><button class="go" id="go">▷ Empezar investigación</button>
 </div></div>
 
@@ -118,7 +119,7 @@ const SC={E:[8,6,4],P:[6,4,2],H:[-6,-4,-2]};
 const NM={E:'Exploit',P:'Ping',H:'Honeypot',C:'Cortafuegos',K:'Keylogger'};
 const COL=['#00c17a','#ffc857','#ff5d6c','#8a63d2','#2aa3e0'];
 const TY=['A','B','C','D','E','F'];
-const cfg={rivals:3,start:'yo',speed:800,help:1};
+const cfg={rivals:3,start:'yo',speed:800,help:1,hon:1};
 let S=null,hT=null,hRes=null;
 
 const $=i=>document.getElementById(i);
@@ -146,14 +147,14 @@ function newGame(){
  const rot=cfg.start==='azar'?rnd(ps.length):0;
  const idx={};TY.forEach(t=>idx[t]=rnd(CARDS[t].length));
  const solv={};TY.forEach(t=>VARS[t].forEach((v,j)=>solv[v]=CARDS[t][idx[t]][j]));
- const perm=[...TY].sort(()=>Math.random()-.5);return{perm,ps,order:ps.slice(rot).concat(ps.slice(0,rot)),idx,solv,chips:[],kls:[],cuts:new Set(),cutList:[],log:[],turn:0,done:false};
+ const perm=[...TY].sort(()=>Math.random()-.5);return{ev:[],perm,ps,order:ps.slice(rot).concat(ps.slice(0,rot)),idx,solv,chips:[],kls:[],cuts:new Set(),cutList:[],log:[],turn:0,done:false};
 }
-function learn(p,t){p.read.add(t);p.q=Math.max(0,p.q-1);VARS[t].forEach((v,j)=>p.known[v]=CARDS[t][S.idx[t]][j])}
-function put(p,t,b,k,x){if(t==='C'){S.cuts.add(cutId(b,k,x));S.cutList.push([b,k,x])}else if(t==='K')S.kls.push({o:p.i,c:x});else S.chips.push({o:p.i,t,b,k});p.pool[t]--}
+function learn(p,t){(S.ev=S.ev||[]).push([S.turn+1,p.n,'leer_log',t,'','',CARDS[t][S.idx[t]].join(' / ')]);p.read.add(t);p.q=Math.max(0,p.q-1);VARS[t].forEach((v,j)=>p.known[v]=CARDS[t][S.idx[t]][j])}
+function put(p,t,b,k,x){S.ev.push([S.turn+1,p.n,'colocar',NM[t],t==='K'?'':BOARDS[b].n,t==='K'?'':k,t==='K'?'sobre ficha de '+S.ps[S.chips[x].o].n:t==='C'?'entre '+k+' y '+x:'']);if(t==='C'){S.cuts.add(cutId(b,k,x));S.cutList.push([b,k,x])}else if(t==='K')S.kls.push({o:p.i,c:x});else S.chips.push({o:p.i,t,b,k});p.pool[t]--}
 
 function botBest(p){
  let best=null,bv=-1e9;const T=(v,f)=>{v+=Math.random()*.01;if(v>bv){bv=v;best=f}};
- for(const t of ['E','P','H'])if(p.pool[t]>0)for(let b=0;b<4;b++)for(const k of cells(b))if(chipIdx(b,k)<0&&cnt(p.i,b)<2)T(ev(p,b,k,t),()=>put(p,t,b,k,0));
+ for(const t of ['E','P','H'])if(p.pool[t]>0)for(let b=0;b<4;b++)for(const k of cells(b))if(chipIdx(b,k)<0&&cnt(p.i,b)<2&&okPos(p,b,t))T(ev(p,b,k,t),()=>put(p,t,b,k,0));
  if(p.pool.K>0)S.chips.forEach((c,ci)=>{if(c.o!==p.i&&!S.kls.some(x=>x.c===ci))T(.5*ev(p,c.b,c.k,'P'),()=>put(p,'K',0,0,ci))});
  if(p.pool.C>0)for(let b=0;b<4;b++)if(cutsOn(b)<2)for(const k of cells(b))for(const w of nb(b,k))if(k<w)T(.2,()=>put(p,'C',b,k,w));
  return best;
@@ -177,7 +178,7 @@ function hC(b,k){
   put(p,'K',0,0,ci);return done('Keylogger sobre una ficha rival');
  }
  if(chipIdx(b,k)>=0)return msg('Esa casilla está ocupada');
- if(cnt(0,b)>=2)return msg('Máximo 2 fichas tuyas por tablero');
+ if(cnt(0,b)>=2)return msg('Máximo 2 fichas tuyas por tablero');if(!okPos(p,b,t))return msg(t==='H'?'Ya tenés un Honeypot en este tablero':'Ya tenés un Exploit o Ping en este tablero');
  put(p,t,b,k,0);done(NM[t]+' en '+BOARDS[b].n);
 }
 function done(txt){S.log.push('Vos: '+txt);hT.placed=true;hT.tool=null;hT.first=null;chk();render()}
@@ -210,7 +211,7 @@ function finish(){
  S.kls.forEach(x=>x.pts=S.chips[x.c].pts/2);
  const tot=S.ps.map(p=>({p,v:S.chips.filter(c=>c.o===p.i).reduce((s,c)=>s+c.pts,0)+S.kls.filter(x=>x.o===p.i).reduce((s,x)=>s+x.pts,0)})).sort((a,b)=>b.v-a.v);
  const win=tot.filter(x=>x.v===tot[0].v);
- $('ovlc').innerHTML=`<h2 style="margin:0 0 6px">${win.length>1?'Empate':win[0].p.h?'¡Ganaste!':'Ganó '+win[0].p.n}</h2>
+ exportAll(tot);$('ovlc').innerHTML=`<h2 style="margin:0 0 6px">${win.length>1?'Empate':win[0].p.h?'¡Ganaste!':'Ganó '+win[0].p.n}</h2>
  <p class="mono" style="color:var(--m);font-size:13px">Incidente: ${S.solv.mom} · ${S.solv.grav} · ${S.solv.alc}<br>Hacker: ${S.solv.mot} · ${S.solv.niv} · ${S.solv.ia}<br>Virus: ${S.solv.via} · ${S.solv.tipo} · ${S.solv.conoc}<br>Servidor: ${S.solv.ciudad} · ${S.solv.form} · ${S.solv.dato}</p>
  <table class="res"><tr><th>Jugador</th>${BOARDS.map(B=>`<th>${B.n}</th>`).join('')}<th>Total</th></tr>${tot.map(x=>`<tr><td style="color:${x.p.c}">${x.p.n}</td>${BOARDS.map((B,b)=>`<td>${cellPts(x.p.i,b)}</td>`).join('')}<td><b>${x.v}</b></td></tr>`).join('')}</table>
  <p style="color:var(--m);font-size:13px">Las fichas quedan reveladas en los tableros. La casilla marcada es la respuesta.</p>
@@ -311,6 +312,22 @@ const LEG=[
 const GRP='<rect x="84" y="62" width="92" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="200" y="62" width="97" height="206" rx="14" fill="#fff" fill-opacity=".35"/><rect x="315" y="62" width="94" height="206" rx="14" fill="#fff" fill-opacity=".35"/>';
 function dots(t){return S.ps.filter(p=>p.read.has(t)).map(p=>`<span class="dt" style="background:${p.c}"></span>`).join('')}
 function toggleHelp(){cfg.help=cfg.help===1?0:1;render()}
+const ENDPOINT='';
+function csvLine(r){return r.map(v=>'"'+String(v===undefined||v===null?'':v).replace(/"/g,'""')+'"').join(',')}
+function dl(name,rows){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(csvLine).join('\n')],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function exportAll(tot){
+ const id=Date.now().toString(36),fecha=new Date().toISOString(),sol=S.solv,top=tot[0].v;
+ const base=[id,fecha,cfg.rivals,cfg.start,cfg.help,sol.mom,sol.grav,sol.alc,sol.mot,sol.niv,sol.ia,sol.via,sol.conoc,sol.tipo,sol.ciudad,sol.form,sol.dato];
+ const P=[['partida_id','fecha','rivales','empieza','ayuda','sol_momento','sol_gravedad','sol_alcance','sol_motivacion','sol_nivel','sol_ia_humano','sol_via','sol_conocido_nuevo','sol_tipo','sol_ciudad','sol_formato','sol_dato','jugador','es_humano','puntos_total','pts_incidente','pts_hacker','pts_virus','pts_servidor','pts_keylogger','fichas_colocadas','logs_leidos','ganador']];
+ S.ps.forEach(p=>{const pb=[0,0,0,0];let kl=0;S.chips.forEach(c=>{if(c.o===p.i)pb[c.b]+=c.pts});S.kls.forEach(x=>{if(x.o===p.i){kl+=x.pts;pb[S.chips[x.c].b]+=x.pts}});const v=tot.find(z=>z.p===p).v;P.push([...base,p.n,p.h?1:0,v,...pb,kl,S.chips.filter(c=>c.o===p.i).length,p.read.size,v===top?'si':'no'])});
+ const J=[['partida_id','turno','jugador','accion','tablero_o_tipo','casilla','extra','detalle']];
+ S.ev.forEach(e=>J.push([id,...e]));
+ S.chips.forEach(c=>J.push([id,'final',S.ps[c.o].n,'resultado',BOARDS[c.b].n,c.k,'',NM[c.t]+' ('+c.pts+' pts)']));
+ S.kls.forEach(x=>{const c=S.chips[x.c];J.push([id,'final',S.ps[x.o].n,'keylogger',BOARDS[c.b].n,c.k,'',x.pts+' pts sobre ficha de '+S.ps[c.o].n])});
+ 
+ if(ENDPOINT)fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({partidas:P,jugadas:J})}).catch(()=>{});
+}
+function okPos(p,b,t){if(!cfg.hon)return true;return t==='H'?!S.chips.some(c=>c.o===p.i&&c.b===b&&c.t==='H'):!S.chips.some(c=>c.o===p.i&&c.b===b&&c.t!=='H')}
 function render(){
  if(!S)return;const H=S.ps[0];
  $('pl').innerHTML=S.ps.map(p=>`<span style="color:${p.c}">${p.n}</span>`).join(' &nbsp; ');

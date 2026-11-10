@@ -64,6 +64,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 .fc.fl{animation:fl .5s}
 @keyframes fl{from{transform:rotateY(90deg)}to{transform:none}}
 .sec:has([data-g="speed"]){display:none}
+#intro ul[style*="padding-left:20px"]{display:none}
 </style></head><body>
 
 <div class="wrap" id="intro"><div>
@@ -76,7 +77,7 @@ th{font-size:10px;color:var(--m);font-weight:600;text-align:center}
 <li>Cada jugador tiene 8 fichas de posición (4 Honeypot, 1 Exploit, 3 Ping) y 2 tácticas (Cortafuegos y Keylogger). Máximo 2 fichas tuyas por tablero.</li>
 <li>Las fichas de los rivales se ven, pero no si son Ping, Exploit o Honeypot.</li>
 <li>Puntaje por distancia (0 / 1 / 2): Exploit +8/+6/+4 · Ping +6/+4/+2 · Honeypot −6/−4/−2. El Keylogger da a su dueño la mitad de los puntos de la ficha rival.</li>
-</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li><li>Cada jugador tiene 14 fichas, 4 Query (para leer logs), 8 de posición y 2 tácticas, y no podés repetir un log que ya leíste.</li><li>Los 4 tableros son Incidente (momento, gravedad, alcance), Hacker (motivación, nivel, IA o humano), Virus (vía, tipo, conocido o nuevo) y Servidor (ciudad, formato, dato).</li><li>Puntaje por distancia 0 / 1 / 2: Exploit +8/+6/+4, Ping +6/+4/+2 y Honeypot −6/−4/−2.</li><li>El Keylogger da al dueño la mitad de los puntos de la ficha rival que tiene encima.</li><li>El botón Ayuda atenúa las casillas que tus pistas descartan, y se puede activar o desactivar durante la partida.</li><li>Con "Honeypot obligatorio" activado, cada jugador pone exactamente un Honeypot y un Exploit o Ping en cada tablero.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
+</ul><h3 style="margin:22px 0 8px;font-size:18px">Paso a paso</h3><ul style="color:var(--m);padding-left:20px;margin:0"><li>Preparación: las 40 cartas se separan en 6 tipos (A–F) y se saca una de cada tipo. Esas 6 cartas son la solución.</li><li>Cada jugador recibe 14 fichas: 4 Query, 8 de posición (Honeypot, Exploit y Ping) y 2 tácticas (Cortafuegos y Keylogger).</li><li>En los turnos 1 a 4 leés un log en secreto con una Query. Se da vuelta y ves sus dos datos.</li><li>En cada turno colocás una ficha en un tablero: máximo 2 tuyas por tablero y una por casilla.</li><li>Cortafuegos: corta la conexión entre dos casillas vecinas. Keylogger: va encima de una ficha rival y da la mitad de sus puntos.</li><li>Al terminar los 10 turnos se revela la solución, se coloca la Ficha de Sistema y se puntúa cada tablero.</li><li>Cada jugador tiene 14 fichas, 4 Query (para leer logs), 8 de posición y 2 tácticas, y no podés repetir un log que ya leíste.</li><li>Los 4 tableros son Incidente (momento, gravedad, alcance), Hacker (motivación, nivel, IA o humano), Virus (vía, tipo, conocido o nuevo) y Servidor (ciudad, formato, dato).</li><li>Puntaje por distancia 0 / 1 / 2: Exploit +8/+6/+4, Ping +6/+4/+2 y Honeypot −6/−4/−2.</li><li>El Keylogger da al dueño la mitad de los puntos de la ficha rival que tiene encima.</li><li>El botón Ayuda atenúa las casillas que tus pistas descartan, y se puede activar o desactivar durante la partida.</li><li>Con "Honeypot obligatorio" activado, cada jugador pone exactamente un Honeypot y un Exploit o Ping en cada tablero.</li></ul><ul style="color:var(--m);padding-left:22px;margin:0 0 12px"><li>Preparación: se mezclan las 6 cartas de log boca abajo. La solución queda oculta.</li><li>Turno 1: cada jugador lee 2 logs y pone 2 fichas.</li><li>Turnos 2 y 3: el primer jugador gira a la izquierda. Cada jugador lee 1 log y pone 1 ficha.</li><li>Turnos 4 a 9: el primer jugador gira a la izquierda. Cada jugador pone 1 ficha.</li><li>Fichas: 4 Honeypot, 4 que puntúan (Exploit y Ping), 1 Cortafuegos y 1 Keylogger.</li><li>Con Honeypot obligatorio: al menos un Honeypot por tablero, y como máximo 2 fichas que puntúan por tablero.</li><li>Al final se revela la solución y se puntúa cada tablero.</li></ul><p style="margin-top:18px"><a href="https://docs.google.com/document/d/15Mjw2ALs2zg7UZ4dfvI1KwTw5aAuSPa8-Che142ofZY/edit?usp=sharing" target="_blank" style="color:var(--g)">Ver el manual completo</a></p></div>
 <div class="panel">
 <div class="sec"><h4>Rivales (bots)</h4><div class="seg" data-g="rivals"><button data-v="0">Solo</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3" class="on">3</button><button data-v="4">4</button></div></div>
 <div class="sec"><h4>Empieza</h4><div class="seg" data-g="start"><button data-v="yo" class="on">Yo</button><button data-v="azar">Al azar</button></div></div>
@@ -346,7 +347,49 @@ function botBest(p){
  const pick=D===0||Math.random()<0.7?0:1;
  return (opts[pick]||opts[0])[1];
 }
+async function humanTurn(rd,pl){
+ hT={rd:rd,pl:pl,tool:null,first:null,get placed(){return this.pl<=0}};
+ S.log.push('— Ronda '+(S.turn+1)+': tu jugada');
+ msg('Leé '+rd+' log(s) y colocá '+pl+' ficha(s)');render();
+ await new Promise(res=>hRes=res);
+ hT=null;msg('');render();
+}
+async function botTurn(p,rd,pl){
+ await sleep(cfg.speed);
+ for(let j=0;j<rd;j++){const o=TY.filter(t=>!p.read.has(t));if(o.length)learn(p,o[rnd(o.length)]);S.log.push(p.n+' leyó un log')}
+ for(let j=0;j<pl;j++){const f=botBest(p);if(f){f();S.log.push(p.n+' colocó una ficha')}else S.log.push(p.n+' pasó')}
+ render();
+}
+async function run(){
+ for(let k=0;k<9;k++){
+  const n=S.order.length,ord=S.order.map((_,i)=>S.order[(i+k)%n]);
+  const rd=k===0?2:k<=2?1:0,pl=k===0?2:1;
+  for(const p of ord){S.turn=k;render();if(p.h)await humanTurn(rd,pl);else await botTurn(p,rd,pl)}
+ }
+ S.done=true;finish();
+}
+function chk(){if(hT&&hT.pl<=0&&hT.rd<=0)hRes&&hRes()}
+function done(txt){S.log.push('Vos: '+txt);hT.pl--;hT.tool=null;hT.first=null;chk();render()}
+function hR(i){const t=S.perm[i],p=S.ps[0];if(!hT||hT.rd<1||p.q<1||p.read.has(t))return;learn(p,t);hT.rd--;(S.flip=S.flip||{})[t]=1;S.log.push('Vos: leíste un log');chk();render()}
 function render(){
+ if(!S)return;const H=S.ps[0];
+ $('pl').innerHTML=S.ps.map(p=>`<span style="color:${p.c}">${p.n}</span>`).join(' &nbsp; ');
+ $('tn').innerHTML=TL();const nr=!!hT&&hT.rd>0,np=!!hT&&hT.pl>0;$('bxR').className='box'+(nr?' hl':'');$('bxT').className='box'+(np?' hl':'');$('hlp').textContent='Ayuda: '+(cfg.help===1?'activada':'desactivada');
+ $('boards').innerHTML=[0,1,2,3].map(bdSvg).join('');
+ $('tools').innerHTML=['E','P','H','C','K'].map(t=>`<button title="${TIPS[t]}" class="tool ${hT&&hT.tool===t?'on':''}" ${!hT||H.pool[t]<1||hT.pl<1?'disabled':''} onclick="pick('${t}')"><span>${ICO[t]} ${NM[t]}</span><b>${H.pool[t]}</b></button>`).join('')+`<div style="color:var(--m);font-size:12px;margin-top:6px">Queries restantes: ${H.q}</div>`;
+ $('reads').innerHTML=S.perm.map((t,i)=>H.read.has(t)?`<div><button class="rd" disabled>${face(t)}</button><div class="dts">${dots(t)}</div></div>`:`<div><button ${!hT||hT.rd<1||H.q<1?'disabled':''} onclick="hR(${i})">Log ${i+1}</button><div class="dts">${dots(t)}</div></div>`).join('');
+ S.flip={};$('nb').innerHTML=[...H.read].map(t=>`<div>${CARDS[t][S.idx[t]].join(' · ')}</div>`).join('');
+ $('log').innerHTML=S.log.slice(-40).map(x=>'<div>'+x+'</div>').join('');$('log').scrollTop=1e6;
+}
+function TL(){
+ const cur=S.turn,n=S.order.length;
+ return '<div style="display:flex;gap:4px;overflow-x:auto;padding-bottom:4px">'+[0,1,2,3,4,5,6,7,8].map(k=>{
+  const ic=k===0?'🔎🔎 🧩🧩':k<=2?'🔎 🧩':'🧩';
+  const st=S.order[k%n]?S.order[k%n].n:'';
+  const on=k===cur;
+  return `<div style="flex:0 0 auto;min-width:74px;text-align:center;border:1px solid ${on?'var(--g)':'var(--b)'};border-radius:8px;padding:4px;opacity:${k<cur?0.45:1};${on?'box-shadow:0 0 0 2px var(--g)':''}"><div style="font-size:11px;color:var(--m)">Turno ${k+1}</div><div style="font-size:14px;letter-spacing:2px">${ic}</div><div style="font-size:10px;color:var(--m)">${st}</div></div>`}).join('')+'</div>';
+}
+function renderOld(){
  if(!S)return;const H=S.ps[0];
  $('pl').innerHTML=S.ps.map(p=>`<span style="color:${p.c}">${p.n}</span>`).join(' &nbsp; ');
  $('tn').textContent='Turno '+Math.min(S.turn+1,10)+' de 10';const nr=hT&&hT.needRead&&!hT.readDone,np=!!hT&&!hT.placed;$('bxR').className='box'+(nr?' hl':'');$('bxT').className='box'+(np?' hl':'');$('hlp').textContent='Ayuda: '+(cfg.help===1?'activada':'desactivada');

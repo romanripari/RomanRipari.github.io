@@ -102,7 +102,7 @@ const DATA = [
 ];
 const NAMES = ['Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
 const POOL = ['Pe','Me','Gr','Ma','Ta','No','Ba','El','Ju','Ro'];
-const LBL = {Ma:'Mañana',Ta:'Tarde',No:'Noche',Pe:'Pequeño',Me:'Mediano',Gr:'Grande',Ba:'Bazar',El:'Electrónica',Ju:'Juguetería',Ro:'Ropa'};
+const LBL = {_TOT:'Bonus de Clientela',Ma:'Mañana',Ta:'Tarde',No:'Noche',Pe:'Pequeño',Me:'Mediano',Gr:'Grande',Ba:'Bazar',El:'Electrónica',Ju:'Juguetería',Ro:'Ropa'};
 const CAP3 = {Pe:3,Me:4,Gr:5};
 const CAP4 = {Pe:4,Me:5,Gr:6};
 const SLOTS = [5,3,1];
@@ -160,7 +160,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:true, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:true, extraClients:false, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -186,7 +186,7 @@ function newGame(){
     round:1, rounds: SETUP.rounds, totalPts: [], roundResults: [],
     pendingPick:false, prePick:false, extraMode:false, selCard:null, front:null,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -332,8 +332,10 @@ function placeExtra(card){
 function score(){
   const pts = S.players.map(()=>0);
   const lines = [];
-  S.active.forEach(crit=>{
-    const vals = S.players.map((p,i)=>({i, v:p.street.filter(c=>has(c,crit)).reduce((s,c)=>s+c.clients,0)}));
+  const keys = [...S.active];
+  if(S.extraClients) keys.push('_TOT');
+  keys.forEach(crit=>{
+    const vals = S.players.map((p,i)=>({i, v: crit==='_TOT' ? totalClients(p) : p.street.filter(c=>has(c,crit)).reduce((s,c)=>s+c.clients,0)}));
     vals.sort((a,b)=>b.v-a.v);
     let pos=0;
     while(pos<vals.length && vals[pos].v>0){
@@ -444,6 +446,9 @@ function setupHTML(){
       <div class="opt-label">Inauguración</div>
       <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
       <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>
+      <div class="opt-label">Bonus de Clientela</div>
+      <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
+      <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start">▷ Empezar partida</button>
     </div>
@@ -459,7 +464,7 @@ function roundTableHTML(res){
 
 function liveHTML(){
   const res = score();
-  const rows = S.active.map(crit=>{
+  const rows = [...S.active, ...(S.extraClients?['_TOT']:[])].map(crit=>{
     const parts = res.lines.filter(l=>l.crit===crit);
     return `<div><b>${LBL[crit]}:</b> ${parts.length? parts.map(l=>l.group.map(g=>`${g.name} (${g.v} cl., +${g.pts})`).join(' · ')).join(' | ') : '<i>nadie puntúa aún</i>'}</div>`;
   }).join('');

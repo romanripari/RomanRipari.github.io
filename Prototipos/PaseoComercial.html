@@ -272,8 +272,8 @@ function doTurn(humanId){
   if(S.turn<=pickLimit){
     const st = S.players[S.start];
     if(S.round===1){
-      if(S.turn===1) st.extras += S.inaug ? 1 : 2;
-      if(S.turn===2) st.extras += 1;
+      if(S.turn===1) st.extras += S.inaug ? 1 : 0;
+      if(S.turn===2) st.extras += S.inaug ? 1 : 0;
     }
     if(st.human){
       S.pendingPick = true;

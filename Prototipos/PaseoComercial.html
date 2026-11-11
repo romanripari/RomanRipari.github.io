@@ -164,7 +164,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, discardMode:false, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, discardMode:false, simPick:true, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -190,8 +190,9 @@ function newGame(){
     active: [], turn:1, totalTurns:5, start: starter,
     round:1, rounds: SETUP.rounds, totalPts: [], roundResults: [],
     pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
+    simQueue:[], simDone:false,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -201,13 +202,14 @@ function newGame(){
 function beginRound(){
   S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.extraMode=false;
   S.pendingPick=false; S.prePick=false; S.pendingDiscard=false;
+  S.simQueue=[]; S.simDone=false;
   S.players.forEach(p=>p.extras=0);
   S.totalTurns = S.round===1 ? (S.n===4 ? 5 : S.cards) : 3;
   S.active = shuffle(POOL.slice()).slice(0,2);
   log(`— Ronda ${S.round} —`);
   log(`Criterios iniciales: ${S.active.map(x=>LBL[x]).join(', ')}.`);
   log(`Empieza ${S.players[S.start].name}.`);
-  if(S.round>1 && S.n===4){
+  if(S.round>1 && S.n===4 && !S.simPick){
     const st = S.players[S.start];
     if(st.human){ S.prePick=true; render(); return; }
     const c = botCrit(st);
@@ -321,14 +323,24 @@ function doTurn(humanId){
   picks.forEach(c=>giveClients(c));
   S.selCard = null;
 
+  // Inauguración: el jugador inicial de los turnos 1 y 2 de la ronda 1 recibe 1 extra
+  if(S.round===1 && S.inaug && S.turn<=2) S.players[S.start].extras += 1;
+
+  // Criterios en simultáneo: al llegar a la tercera carta, todos eligen en orden desde el jugador inicial
+  if(S.simPick){
+    if(!S.simDone && S.players.some(p=>p.street.length>=3)){
+      S.simDone=true;
+      startSimPick();
+      return;
+    }
+    finishTurn(null);
+    return;
+  }
+
   if(S.round>1 && S.n===4 && S.turn===1){ finishTurn(null); return; }
   const pickLimit = S.round===1 ? lastPickTurn() : 3;
   if(S.turn<=pickLimit){
     const st = S.players[S.start];
-    if(S.round===1){
-      if(S.turn===1) st.extras += S.inaug ? 1 : 0;
-      if(S.turn===2) st.extras += S.inaug ? 1 : 0;
-    }
     if(st.human){
       S.pendingPick = true;
       log('Sos jugador inicial: elegí un criterio nuevo.');
@@ -343,6 +355,31 @@ function doTurn(humanId){
   }
 }
 
+function startSimPick(){
+  S.simQueue = [...Array(S.n).keys()].map(i=>(S.start+i)%S.n);
+  log('Elegir criterios en simultáneo: cada jugador elige, en orden desde el jugador inicial.');
+  runSimQueue();
+}
+
+// Avanza la cola: los bots eligen solos; cuando llega el turno del jugador, se detiene y espera su elección.
+function runSimQueue(){
+  while(S.simQueue.length){
+    const p = S.players[S.simQueue[0]];
+    if(p.human){
+      S.pendingPick = true;
+      log('Elegí tu criterio de puntuación.');
+      render();
+      return;
+    }
+    const crit = botCrit(p);
+    S.active.push(crit);
+    S.simQueue.shift();
+    log(`${p.name} elige el criterio ${LBL[crit]}.`);
+  }
+  S.pendingPick = false;
+  finishTurn(null);
+}
+
 function pickCriterion(crit){
   if(S.prePick){
     S.prePick=false;
@@ -352,6 +389,14 @@ function pickCriterion(crit){
     return;
   }
   if(!S.pendingPick) return;
+  if(S.simQueue.length){
+    S.active.push(crit);
+    S.simQueue.shift();
+    S.pendingPick = false;
+    log(`Criterio nuevo: ${LBL[crit]}.`);
+    runSimQueue();
+    return;
+  }
   log(`Criterio nuevo: ${LBL[crit]}.`);
   finishTurn(crit);
 }
@@ -510,6 +555,9 @@ function setupHTML(){
       <div class="opt-label">Bonus de Clientela</div>
       <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
       <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
+      <div class="opt-label">Elegir criterios en simultáneo</div>
+      <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
+      <div class="opts">${opt('simPick',true,'Sí')}${opt('simPick',false,'No')}</div>
       <div class="opt-label">Modo descarte</div>
       <div class="opt-desc">Después de cada turno, descartás una carta y robás dos</div>
       <div class="opts">${opt('discardMode',true,'Sí')}${opt('discardMode',false,'No')}</div>
@@ -562,6 +610,7 @@ function render(){
   let handHTML = '';
   if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
   else if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
+  else if(S.pendingPick && S.simQueue.length) html += `<div class="banner">Elegí tu criterio de puntuación</div>`;
   else if(S.pendingPick) html += `<div class="banner">Elegí un criterio nuevo</div>`;
   else if(needPlay && !S.selCard) html += `<div class="banner">Elegí una carta de tu mano</div>`;
   else if(needPlay && S.selCard) html += `<div class="banner">Bajá la carta elegida</div>`;
@@ -580,7 +629,8 @@ function render(){
         <button class="alt" data-act="extra" ${(me.extras<=0 || !needPlay)?'disabled':''}>${S.extraMode?'Cancelar colocar':'Colocar cliente extra'} (${me.extras})</button>
       </div></div>`;
     if(needPick){
-      html += `<div class="panel"><b>${S.prePick?'Elegí el criterio para la ronda':'Sos jugador inicial: elegí un criterio'}</b>
+      const title = S.prePick ? 'Elegí el criterio para la ronda' : (S.simQueue.length ? 'Elegí tu criterio de puntuación' : 'Sos jugador inicial: elegí un criterio');
+      html += `<div class="panel"><b>${title}</b>
         <div class="crit-grid" style="margin-top:6px">${POOL.filter(x=>!S.active.includes(x)).map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
     }
   } else {

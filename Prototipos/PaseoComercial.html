@@ -159,7 +159,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:2, cards:5, diff:'dificil', starter:'yo', live:false, fullPenalty:false, rounds:1, name:''};
+let SETUP = {rivals:2, cards:5, diff:'dificil', starter:'yo', live:false, fullPenalty:false, inaug:true, rounds:1, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -185,7 +185,7 @@ function newGame(){
     round:1, rounds: SETUP.rounds, totalPts: [], roundResults: [],
     pendingPick:false, prePick:false, extraMode:false, selCard:null, front:null,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -272,7 +272,7 @@ function doTurn(humanId){
   if(S.turn<=pickLimit){
     const st = S.players[S.start];
     if(S.round===1){
-      if(S.turn===1) st.extras += 2;
+      if(S.turn===1) st.extras += S.inaug ? 1 : 2;
       if(S.turn===2) st.extras += 1;
     }
     if(st.human){
@@ -412,7 +412,7 @@ function setupHTML(){
   const opt = (key,val,label) => `<button class="opt ${SETUP[key]===val?'on':''}" data-opt="${key}" data-val="${val}">${label}</button>`;
   return `<div class="setup"><div class="setup-wrap">
     <div class="setup-left">
-      <div class="proto">PROTOTIPO DE JUEGO DE MESA DE DISEÑO PROPIO</div>
+      <div class="proto">PROTOTIPO DE JUEGO DE MESA DE BRUNO SASSONE Y ROMÁN RIPARI</div>
       <h2>Paseo Comercial</h2>
       <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios que se activan en la ronda.</p>
       <h4>Paso a paso</h4>
@@ -428,7 +428,7 @@ function setupHTML(){
       <div class="opt-label">Rivales (bots)</div>
       <div class="opts">${opt('rivals',2,'2')}${opt('rivals',3,'3')}</div>
       ${SETUP.rivals===2 ? `<div class="opt-label">Cartas jugadas</div>
-      <div class="opts">${opt('cards',5,'5')}${opt('cards',6,'6 (locales de 4/5/6)')}</div>` : ''}
+      <div class="opts">${opt('cards',5,'5 locales (menos capacidad)')}${opt('cards',6,'6 locales (capacidad estándar)')}</div>` : ''}
       <div class="opt-label">Dificultad de los bots</div>
       <div class="opts">${opt('diff','facil','Fácil')}${opt('diff','dificil','Difícil')}</div>
       <div class="opt-label">Empieza</div>
@@ -440,6 +440,9 @@ function setupHTML(){
       <div class="opt-label">Cliente enojado</div>
       <div class="opt-desc">Local lleno: si recibe un cliente nuevo, resta 1</div>
       <div class="opts">${opt('fullPenalty',true,'Sí')}${opt('fullPenalty',false,'No')}</div>
+      <div class="opt-label">Inauguración</div>
+      <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
+      <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start">▷ Empezar partida</button>
     </div>

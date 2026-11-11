@@ -269,6 +269,7 @@ function doTurn(humanId){
   picks.forEach(c=>giveClients(c));
   S.selCard = null;
 
+  if(S.round>1 && S.n===4 && S.turn===1){ finishTurn(null); return; }
   const pickLimit = S.round===1 ? lastPickTurn() : 3;
   if(S.turn<=pickLimit){
     const st = S.players[S.start];

@@ -441,7 +441,7 @@ function setupHTML(){
       <div class="opt-desc">Local lleno: si recibe un cliente nuevo, resta 1</div>
       <div class="opts">${opt('fullPenalty',true,'Sí')}${opt('fullPenalty',false,'No')}</div>
       <div class="opt-label">Inauguración</div>
-      <div class="opt-desc">+1 Cliente Extra para primeros dos jugadores</div>
+      <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
       <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start">▷ Empezar partida</button>
@@ -493,7 +493,7 @@ function render(){
   else if(needPlay && S.selCard) html += `<div class="banner">Bajá la carta elegida</div>`;
 
   S.players.forEach(p=>{
-    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''}</span><span class="tot">${p.street.length} locales · ${totalClients(p)} clientes totales${p.human && p.extras?` · extras: ${p.extras}`:''}</span></h3>
+    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''}${S.live?` · ${score().pts[S.players.indexOf(p)]} pts`:''}</span><span class="tot">${p.street.length} locales · ${totalClients(p)} clientes totales${p.human && p.extras?` · extras: ${p.extras}`:''}</span></h3>
       <div class="row">${p.street.length ? p.street.map(c=>cardHTML(c, (p.human && S.extraMode && c.clients<capOf(c))?'ext':'')).join('') : '<span class="empty">Sin locales aún</span>'}</div></div>`;
   });
 

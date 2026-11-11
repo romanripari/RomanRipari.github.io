@@ -13,6 +13,10 @@ h1{font-size:18px;margin:0}
 .chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
 main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 .stickytop{position:sticky;top:0;z-index:50}
+.street.handdock{position:sticky;bottom:0;z-index:40;box-shadow:0 -6px 14px #0003;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.log{max-height:110px!important}
+.infos{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.infos>.panel{flex:1 1 280px;min-width:0}
 .loseta{position:relative;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:space-around;box-shadow:0 2px 6px #0004}
 .lg{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:3px;border-radius:6px;opacity:.4}
 .lg.act{opacity:1;background:#fff9;outline:2px solid #e0007a}
@@ -508,6 +512,7 @@ function render(){
   const needPlay = !S.over && !needPick;
 
   let html = '';
+  let handHTML = '';
   if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
   else if(S.pendingPick) html += `<div class="banner">Elegí un criterio nuevo</div>`;
   else if(needPlay && !S.selCard) html += `<div class="banner">Elegí una carta de tu mano</div>`;
@@ -520,7 +525,7 @@ function render(){
 
   if(!S.over){
     const handGlow = needPlay && !S.selCard ? ' glow' : '';
-    html += `<div class="street${handGlow}"><h3><span>Tu mano</span><span>${S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta'}</span></h3>
+    handHTML = `<div class="street handdock${handGlow}"><h3><span>Tu mano</span><span>${S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta'}</span></h3>
       <div class="row handrow">${me.hand.map(c=>cardHTML(c,'hand')).join('')}</div>
       <div>
         <button data-act="play" class="${needPlay && S.selCard?'glowbtn':''}" ${(!S.selCard||needPick)?'disabled':''}>Bajar carta</button>
@@ -530,7 +535,7 @@ function render(){
       html += `<div class="panel"><b>${S.prePick?'Elegí el criterio para la ronda':'Sos jugador inicial: elegí un criterio'}</b>
         <div class="crit-grid" style="margin-top:6px">${POOL.filter(x=>!S.active.includes(x)).map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
     }
-    if(S.live) html += liveHTML();
+
   } else {
     const res = S.roundResults[S.roundResults.length-1];
     const isLast = S.round >= S.rounds;
@@ -549,8 +554,8 @@ function render(){
     }
   }
 
-  html += `<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div>`;
-  app.innerHTML = html;
+  html += `<div class="infos">${S.live && !S.over ? liveHTML() : ''}<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div>`;
+  app.innerHTML = html + '</div>' + handHTML;
   const logEl = document.getElementById('logbox');
   if(logEl) logEl.scrollTop = logEl.scrollHeight;
 }

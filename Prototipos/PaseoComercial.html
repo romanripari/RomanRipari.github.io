@@ -192,7 +192,7 @@ function newGame(){
     pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
     simQueue:[], simDone:false,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -469,7 +469,7 @@ function endRound(){
   render();
 }
 
-// Conserva los 2 locales más recientes de cada vereda que tengan lugar libre.
+// Conserva los 2 locales más recientes de cada vereda que tengan lugar libre y al menos una ficha colocada.
 // El resto de las cartas (veredas, manos y descarte) vuelve al mazo, se mezcla y se reparten manos nuevas.
 function nextRound(){
   const kept = new Set();
@@ -477,7 +477,7 @@ function nextRound(){
     let n=0;
     for(let i=p.street.length-1; i>=0 && n<2; i--){
       const c=p.street[i];
-      if(c.clients<capOf(c)){ kept.add(c); n++; }
+      if(c.clients<capOf(c) && c.clients>=1){ kept.add(c); n++; }
     }
   });
   const back = [];
@@ -549,15 +549,15 @@ function setupHTML(){
       <div class="opt-label">Cliente enojado</div>
       <div class="opt-desc">Local lleno: si recibe un cliente nuevo, resta 1</div>
       <div class="opts">${opt('fullPenalty',true,'Sí')}${opt('fullPenalty',false,'No')}</div>
-      <div class="opt-label">Inauguración</div>
-      <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
-      <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>
-      <div class="opt-label">Bonus de Clientela</div>
-      <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
-      <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
       <div class="opt-label">Elegir criterios en simultáneo</div>
       <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
       <div class="opts">${opt('simPick',true,'Sí')}${opt('simPick',false,'No')}</div>
+      ${SETUP.simPick ? '' : `<div class="opt-label">Inauguración</div>
+      <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
+      <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>`}
+      <div class="opt-label">Bonus de Clientela</div>
+      <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
+      <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
       <div class="opt-label">Modo descarte</div>
       <div class="opt-desc">Después de cada turno, descartás una carta y robás dos</div>
       <div class="opts">${opt('discardMode',true,'Sí')}${opt('discardMode',false,'No')}</div>

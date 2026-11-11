@@ -12,7 +12,8 @@ header{background:#2d4a3e;color:#fff;padding:10px 14px;display:flex;flex-wrap:wr
 h1{font-size:18px;margin:0}
 .chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
 main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-.loseta{position:sticky;top:0;z-index:50;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:space-around;box-shadow:0 2px 6px #0004}
+.stickytop{position:sticky;top:0;z-index:50}
+.loseta{position:relative;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:space-around;box-shadow:0 2px 6px #0004}
 .lg{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:3px;border-radius:6px;opacity:.4}
 .lg.act{opacity:1;background:#fff9;outline:2px solid #e0007a}
 .lg span{font-size:11px;font-weight:700;color:#111}
@@ -79,11 +80,11 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 </style>
 </head>
 <body>
-<header>
+<div class="stickytop"><header>
   <h1>Paseo Comercial</h1>
   <div id="hdr"></div>
 </header>
-<div id="loseta"></div>
+<div id="loseta"></div></div>
 <main>
   <div id="app"></div>
 </main>
@@ -159,7 +160,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:2, cards:5, diff:'dificil', starter:'yo', live:false, fullPenalty:false, inaug:true, rounds:1, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:true, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -436,7 +437,7 @@ function setupHTML(){
       <div class="opt-label">Ver puntuación en vivo</div>
       <div class="opts">${opt('live',true,'Sí')}${opt('live',false,'No')}</div>
       <div class="opt-label">Número de rondas</div>
-      <div class="opts">${opt('rounds',1,'1')}${opt('rounds',3,'3')}</div>
+      <div class="opts">${opt('rounds',1,'1')}${opt('rounds',2,'2')}${opt('rounds',3,'3')}</div>
       <div class="opt-label">Cliente enojado</div>
       <div class="opt-desc">Local lleno: si recibe un cliente nuevo, resta 1</div>
       <div class="opts">${opt('fullPenalty',true,'Sí')}${opt('fullPenalty',false,'No')}</div>

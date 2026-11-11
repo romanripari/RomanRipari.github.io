@@ -160,7 +160,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:true, extraClients:false, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -217,7 +217,7 @@ function giveClients(src){
   tableCards().forEach(x=>{
     if(x===src || !has(x,src.tgt)) return;
     if(x.clients<capOf(x)) x.clients++;
-    else if(S.fullPenalty && x.clients>0) x.clients--;
+    else if(S.fullPenalty && x.clients>0){ x.clients--; x.angry=true; log(`Cliente enojado: a un local de ${x.owner.name} se le restó uno.`); }
   });
 }
 
@@ -230,7 +230,7 @@ function botPick(p){
     let v=0;
     tableCards().forEach(x=>{
       if(x===c || !has(x,c.tgt) || x.clients>=capOf(x)) return;
-      v += (x.owner===p ? 2 : -0.8);
+      v += (x.owner===p ? 2 : -rivalThreat(x.owner));
     });
     S.active.forEach(a=>{ if(has(c,a)) v+=1.5 });
     v += Math.random()*0.3;
@@ -240,11 +240,24 @@ function botPick(p){
 }
 
 function countOwn(p,crit){return p.street.filter(c=>has(c,crit)).length}
+function totOf(q,k){ return k==='_TOT' ? totalClients(q) : q.street.filter(c=>has(c,k)).reduce((s,c)=>s+c.clients,0); }
+// cuántos criterios activos (incluido el bonus) lidera hoy este jugador
+function leadsCount(q){
+  const keys=[...S.active,...(S.extraClients?['_TOT']:[])];
+  return keys.filter(k=>{ const mine=totOf(q,k); return mine>0 && S.players.every(o=>o===q || totOf(o,k)<mine); }).length;
+}
+// amenaza de un rival: crece si va primero en varios criterios
+function rivalThreat(q){ return 0.6 + 0.5*leadsCount(q); }
+// valor de un criterio para el bot: lo que tiene él menos lo que tiene el mejor rival
+function critValue(p,crit){
+  const rivals=S.players.filter(q=>q!==p).map(q=>countOwn(q,crit));
+  return countOwn(p,crit) - 0.7*Math.max(0,...rivals);
+}
 
 function botCrit(p){
   const cand = POOL.filter(x=>!S.active.includes(x));
   if(S.diff==='facil') return cand[Math.floor(Math.random()*cand.length)];
-  cand.sort((a,b)=> (countOwn(p,b)-countOwn(p,a)) + (Math.random()-0.5));
+  cand.sort((a,b)=> (critValue(p,b)-critValue(p,a)) + (Math.random()-0.5));
   return cand[0];
 }
 
@@ -401,6 +414,7 @@ function cardHTML(c, cls=''){
       <div class="top">${timeSVG(c.t)}${rubroSVG(c.r)}</div>
       <div class="bld">${bldgSVG(c.r,c.s)}</div>
       <div class="sz">${LBL[c.s]}</div>
+      ${c.angry?'<div style="position:absolute;top:4px;left:4px;background:#e0302a;color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:0 5px">−1</div>':''}
       <div class="dots">${dots}</div>
     </div>
     <div class="strip"><span>da a</span>${iconFor(c.tgt)}<b>${LBL[c.tgt]}</b></div>

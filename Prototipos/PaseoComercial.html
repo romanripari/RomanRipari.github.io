@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paseo Comercial</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:system-ui,sans-serif}
+body{background:#efe9dd;color:#222}
+header{background:#2d4a3e;color:#fff;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+h1{font-size:18px;margin:0}
+.chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
+main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.loseta{position:sticky;top:0;z-index:50;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:space-around;box-shadow:0 2px 6px #0004}
+.lg{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:3px;border-radius:6px;opacity:.4}
+.lg.act{opacity:1;background:#fff9;outline:2px solid #e0007a}
+.lg span{font-size:11px;font-weight:700;color:#111}
+.lg svg{height:30px;width:30px}
+.street{background:#fff;border-radius:10px;padding:8px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
+.street.glow{box-shadow:0 0 0 3px #00b86b,0 0 14px #00b86b88}
+.street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tot{font-weight:400;color:#555}
+.row{display:flex;overflow-x:auto;min-height:150px;padding:6px 4px 4px 4px}
+.handrow{min-height:150px}
+.card{flex:0 0 120px;width:120px;height:146px;margin-right:-56px;border:2px solid #444;border-radius:8px;display:flex;overflow:hidden;position:relative;background:#fff}
+.card:last-child{margin-right:0}
+.handrow .card{margin-right:8px}
+.card.sel{outline:3px solid #e0a000}
+.card.ext{outline:3px dashed #e0007a;cursor:pointer}
+.card.hand{cursor:pointer}
+.main{width:70px;flex:0 0 70px;display:flex;flex-direction:column;align-items:center;padding:2px 2px 0 2px}
+.top{display:flex;justify-content:space-between;width:100%}
+.top svg{width:22px;height:22px}
+.bld svg{display:block}
+.sz{font-size:11px;font-weight:700;color:#111;line-height:1.1}
+.strip{flex:1;border-left:2px dashed #0006;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#111;background:#fff9;text-align:center;padding:2px;gap:2px;min-width:0}
+.strip b{font-size:9px;line-height:1.1;word-break:break-word}
+.strip svg{width:24px;height:24px}
+.dots{display:grid;grid-template-columns:repeat(3,9px);gap:2px;justify-content:start;margin:2px 0 0 4px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid #e0007a;background:none}
+.dot.on{background:#e0007a}
+.empty{color:#888;font-size:12px;align-self:center}
+button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
+button:disabled{opacity:.4;cursor:default}
+button.alt{background:#8a6d00}
+button.ghost{background:#5b7a6c}
+button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
+.panel{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
+.log{font-size:12px;max-height:160px;overflow-y:auto;line-height:1.5}
+.crit-grid{display:flex;flex-wrap:wrap;gap:4px}
+.crit-grid button.glowbtn{background:#00a060}
+.overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}
+.overlay .panel{max-width:460px;width:100%;max-height:92vh;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
+/* menú de inicio (oscuro) */
+.setup{background:#0e1013;color:#e8ecef;min-height:100vh;padding:24px 16px;display:flex;justify-content:center}
+.setup-wrap{display:flex;flex-wrap:wrap;gap:28px;max-width:1000px;width:100%}
+.setup-left{flex:1 1 380px;min-width:0}
+.setup-left .log-id{font-family:ui-monospace,monospace;color:#00c97a}
+.setup-left h2{font-size:44px;margin:14px 0 6px}
+.setup-left .proto{font-family:ui-monospace,monospace;color:#f5c04a;font-size:13px;letter-spacing:.5px}
+.setup-left p{color:#c7ced6;font-size:17px;line-height:1.5}
+.setup-left h4{margin:22px 0 6px;font-size:18px}
+.setup-left ul{color:#9aa3ad;font-size:15px;line-height:1.55;padding-left:20px}
+.setup-left a{color:#00c97a;font-size:16px}
+.setup-right{flex:1 1 380px;background:#16191e;border:1px solid #262b31;border-radius:18px;padding:18px}
+.opt-label{font-size:12px;letter-spacing:1px;color:#8a949e;margin:14px 0 6px;text-transform:uppercase}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{background:#14171b;color:#e8ecef;border:1px solid #2a3037;border-radius:10px;padding:10px 16px;margin:0;font-size:15px}
+.opt.on{border-color:#00c97a;color:#00c97a;background:#12261d}
+.setup-right input{width:100%;background:#1b1f25;color:#e8ecef;border:1px solid #2a3037;border-radius:10px;padding:14px;font-size:16px;margin-top:14px}
+.start{width:100%;background:#00c97a;color:#06140d;font-size:19px;font-weight:700;padding:16px;border-radius:12px;margin-top:14px}
+/* estética alegre del menú */
+.setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;padding-bottom:120px;overflow:hidden}
+.setup::after{content:"";position:absolute;left:0;right:0;bottom:0;height:78px;background:repeating-linear-gradient(90deg,#b9b9b9 0 46px,#a7a7a7 46px 48px);border-top:10px solid #e4787a;box-shadow:inset 0 10px 0 #fff,inset 0 -6px 0 #7a7a7a}
+.setup-left .log-id{display:none}
+.setup-left .proto{color:#e0007a;font-weight:700;font-size:14px}
+.setup-left h2{color:#2d6b4f;font-size:52px;text-shadow:3px 3px 0 #ffd66b}
+.setup-left p{color:#4a3d36}
+.setup-left h4{color:#c2410c}
+.setup-left ul{color:#5a4a3a}
+.setup-left a{color:#2d8a5a;font-weight:700}
+.setup-right{background:#fff;border:3px solid #ffd66b;border-radius:24px;box-shadow:0 8px 0 #f2b33d55;position:relative;z-index:1}
+.setup-left{position:relative;z-index:1}
+.opt-label{color:#8a5a2b;font-weight:700}
+.opt{background:#fff8ea;color:#5a4a3a;border:2px solid #f2c46b;border-radius:14px;font-weight:600}
+.opt.on{background:#ff7a59;color:#fff;border-color:#e0553a;box-shadow:0 3px 0 #b8402a}
+.setup-right input{background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px}
+.start{background:#2fb67c;color:#fff;border-radius:16px;box-shadow:0 5px 0 #1d8a5b;font-weight:800}
+.start:hover{filter:brightness(1.05)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Paseo Comercial</h1>
+  <div id="hdr"></div>
+</header>
+<div id="loseta"></div>
+<main>
+  <div id="app"></div>
+</main>
+
+<script>
+/* ===== DATOS ===== */
+// [id, horario, tipo, tamaño, otorga a]
+const DATA = [
+[1,'Ma','El','Gr','Me'],[2,'Ta','El','Gr','Ju'],[3,'No','El','Gr','Ro'],[4,'Ma','Ju','Gr','El'],[5,'Ta','Ju','Gr','No'],[6,'No','Ju','Gr','Ba'],
+[7,'Ma','El','Me','Pe'],[8,'Ta','El','Me','Ba'],[9,'No','El','Me','Ta'],[10,'Ma','Ju','Me','Ba'],[11,'Ta','Ju','Me','Pe'],[12,'No','Ju','Me','Ro'],
+[13,'Ma','El','Pe','No'],[14,'Ta','El','Pe','Ma'],[15,'No','El','Pe','Ta'],[16,'Ma','Ju','Pe','Me'],[17,'Ta','Ju','Pe','Gr'],[18,'No','Ju','Pe','Ma'],
+[19,'Ma','Ba','Gr','Pe'],[20,'Ta','Ba','Gr','El'],[21,'No','Ba','Gr','Ju'],[22,'Ma','Ro','Gr','Ju'],[23,'Ta','Ro','Gr','Ma'],[24,'No','Ro','Gr','Ta'],
+[25,'Ma','Ba','Me','Gr'],[26,'Ta','Ba','Me','Ro'],[27,'No','Ba','Me','Gr'],[28,'Ma','Ro','Me','El'],[29,'Ta','Ro','Me','No'],[30,'No','Ro','Me','Pe'],
+[31,'Ma','Ba','Pe','Me'],[32,'Ta','Ba','Pe','No'],[33,'No','Ba','Pe','Ma'],[34,'Ma','Ro','Pe','Gr'],[35,'Ta','Ro','Pe','Me'],[36,'No','Ro','Pe','Ta']
+];
+const NAMES = ['Lucía','Ana','Lucas','Sofía','Mateo','Julieta','Tomás','Valentina','Nicolás','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
+const POOL = ['Pe','Me','Gr','Ma','Ta','No','Ba','El','Ju','Ro'];
+const LBL = {Ma:'Mañana',Ta:'Tarde',No:'Noche',Pe:'Pequeño',Me:'Mediano',Gr:'Grande',Ba:'Bazar',El:'Electrónica',Ju:'Juguetería',Ro:'Ropa'};
+const CAP = {3:{Pe:3,Me:4,Gr:5}, 4:{Pe:4,Me:5,Gr:6}};
+const SLOTS = [5,3,1];
+const BGT = {Ma:'#fff1a8',Ta:'#ffd9a0',No:'#cdd6dc'};
+const BCOL = {Ba:'#f29a2e',El:'#3b86c4',Ju:'#e0443a',Ro:'#8c4bc8'};
+const BSZ = {Pe:{w:34,h:30},Me:{w:44,h:46},Gr:{w:50,h:62}};
+const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6KyIMqNLaXGmAMazl8/edit?usp=sharing';
+
+/* ===== ÍCONOS ===== */
+function timeSVG(t){
+  if(t==='Ma') return `<svg viewBox="0 0 24 24"><g stroke="#e8a400" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g><circle cx="12" cy="12" r="5" fill="#ffd21f" stroke="#222"/></svg>`;
+  if(t==='Ta') return `<svg viewBox="0 0 24 24"><path d="M3 17 A9 9 0 0 1 21 17 Z" fill="#f08a24" stroke="#222"/><line x1="1" y1="20" x2="23" y2="20" stroke="#f08a24" stroke-width="2"/><line x1="12" y1="2" x2="12" y2="5" stroke="#f08a24" stroke-width="1.5"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><path d="M15 3 A9 9 0 1 0 21 16 A7 7 0 0 1 15 3 Z" fill="#fff" stroke="#222"/></svg>`;
+}
+function rubroSVG(r){
+  if(r==='Ba') return `<svg viewBox="0 0 24 24"><path d="M6 3 L18 3 L15 10 L9 10 Z" fill="#ffd21f" stroke="#222"/><line x1="12" y1="10" x2="12" y2="18" stroke="#222" stroke-width="1.5"/><rect x="8" y="18" width="8" height="3" fill="#8c6a1c" stroke="#222"/></svg>`;
+  if(r==='El') return `<svg viewBox="0 0 24 24"><path d="M4 15 A8 8 0 0 1 20 15" fill="none" stroke="#1ea3e8" stroke-width="2.5"/><rect x="2" y="13" width="4" height="7" rx="1.5" fill="#1ea3e8"/><rect x="18" y="13" width="4" height="7" rx="1.5" fill="#1ea3e8"/></svg>`;
+  if(r==='Ju') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="13" height="7" fill="#3fb34f" stroke="#222"/><path d="M15 6 L21 6 L21 16 L15 16 Z" fill="#e0443a" stroke="#222"/><circle cx="6" cy="18" r="2.2" fill="#222"/><circle cx="12" cy="18" r="2.2" fill="#222"/><circle cx="19" cy="18" r="2.2" fill="#222"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><path d="M9 3 L15 3 L16 7 L19 22 L5 22 L8 7 Z" fill="#b25ee0" stroke="#222"/><path d="M9 3 L10 7 L14 7 L15 3" fill="none" stroke="#222" stroke-width="1.2"/></svg>`;
+}
+function sizeSVG(s){
+  if(s==='Pe') return `<svg viewBox="0 0 24 24"><rect x="5" y="13" width="14" height="8" fill="#bbb" stroke="#222"/></svg>`;
+  if(s==='Me') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="10" height="12" fill="#888" stroke="#222"/><rect x="12" y="13" width="10" height="8" fill="#ddd" stroke="#222"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><rect x="1" y="14" width="6" height="7" fill="#ddd" stroke="#222"/><rect x="8" y="8" width="7" height="13" fill="#999" stroke="#222"/><rect x="16" y="3" width="7" height="18" fill="#444" stroke="#222"/></svg>`;
+}
+function iconFor(code){
+  if(['Ma','Ta','No'].includes(code)) return timeSVG(code);
+  if(['Pe','Me','Gr'].includes(code)) return sizeSVG(code);
+  return rubroSVG(code);
+}
+function bldgSVG(r,s){
+  const d=BSZ[s], col=BCOL[r], base=80, x=(60-d.w)/2, y=base-d.h;
+  let roof='', extra='', wins='';
+  if(r==='El'){
+    roof=`<line x1="30" y1="${y}" x2="30" y2="${y-12}" stroke="#222" stroke-width="2"/><line x1="24" y1="${y-10}" x2="36" y2="${y-10}" stroke="#222" stroke-width="2"/>`;
+  } else if(r==='Ba'){
+    roof=`<polygon points="${x-3},${y} 30,${y-14} ${x+d.w+3},${y}" fill="#c96a1a" stroke="#222" stroke-width="2"/>`;
+  } else if(r==='Ju'){
+    let st=''; for(let i=0;i<6;i++) st+=`<rect x="${x+i*(d.w/6)}" y="${y+2}" width="${d.w/6}" height="7" fill="${i%2?'#3fb34f':'#fff'}" stroke="#222" stroke-width="0.8"/>`;
+    extra=st;
+  } else {
+    roof=`<rect x="${x-2}" y="${y-4}" width="${d.w+4}" height="4" fill="#5b2d86" stroke="#222"/>`;
+  }
+  const rows=Math.max(1,Math.floor((d.h-22)/16));
+  for(let rw=0;rw<rows;rw++) for(let c=0;c<3;c++)
+    wins+=`<rect x="${x+6+c*((d.w-12)/3)}" y="${y+7+rw*16}" width="${(d.w-12)/3-5}" height="8" fill="#fffb" stroke="#222" stroke-width="1"/>`;
+  return `<svg viewBox="0 0 60 84" width="62" height="72">
+    ${roof}
+    <rect x="${x}" y="${y}" width="${d.w}" height="${d.h}" fill="${col}" stroke="#222" stroke-width="2"/>
+    ${wins}${extra}
+    <rect x="25" y="${base-14}" width="10" height="14" fill="#fff" stroke="#222"/>
+    <line x1="2" y1="${base}" x2="58" y2="${base}" stroke="#666" stroke-width="2"/>
+  </svg>`;
+}
+
+/* ===== ESTADO ===== */
+let S = null;
+let SETUP = {rivals:2, diff:'facil', starter:'yo', live:false, name:''};
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function has(c,k){return c.t===k||c.r===k||c.s===k}
+function cap(c){return CAP[S.n][c.s]}
+function tableCards(){return S.players.flatMap(p=>p.street)}
+function totalClients(p){return p.street.reduce((s,c)=>s+c.clients,0)}
+function lastPickTurn(){return S.n===4?4:3}
+function log(msg){S.log.push(msg)}
+function mkCard(d,owner){return {id:d[0],t:d[1],r:d[2],s:d[3],tgt:d[4],owner,clients:0}}
+
+function newGame(){
+  const n = SETUP.rivals + 1;
+  const botNames = shuffle(NAMES.slice()).slice(0,SETUP.rivals);
+  const myName = SETUP.name.trim() || 'Vos';
+  const names = [myName, ...botNames];
+  const starter = SETUP.starter==='yo' ? 0 : Math.floor(Math.random()*n);
+  S = {
+    n,
+    players: names.map((name,i)=>({name,human:i===0,street:[],hand:[],extras:0})),
+    deck: shuffle(DATA.slice()),
+    active: shuffle(POOL.slice()).slice(0,2),
+    turn: 1, start: starter, pendingPick:false, extraMode:false, selCard:null, front:null,
+    over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff, log:[]
+  };
+  log(`Criterios iniciales: ${S.active.map(x=>LBL[x]).join(', ')}.`);
+  log(`Empieza ${S.players[starter].name}.`);
+  S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
+  render();
+}
+
+/* ===== MECÁNICA ===== */
+function giveClients(src){
+  tableCards().forEach(x=>{
+    if(x===src || !has(x,src.tgt)) return;
+    if(x.clients<cap(x)) x.clients++;
+  });
+}
+
+// Fácil: ve solo su mano, juega al azar.
+// Difícil: cuenta cartas visibles, evita regalar a rivales y prioriza criterios activos.
+function botPick(p){
+  if(S.diff==='facil') return p.hand[Math.floor(Math.random()*p.hand.length)];
+  let best=null, bs=-1e9;
+  p.hand.forEach(c=>{
+    let v=0;
+    tableCards().forEach(x=>{
+      if(x===c || !has(x,c.tgt) || x.clients>=cap(x)) return;
+      v += (x.owner===p ? 2 : -0.8);
+    });
+    S.active.forEach(a=>{ if(has(c,a)) v+=1.5 });
+    v += Math.random()*0.3;
+    if(v>bs){bs=v;best=c}
+  });
+  return best;
+}
+
+function countOwn(p,crit){return p.street.filter(c=>has(c,crit)).length}
+
+function botCrit(p){
+  const cand = POOL.filter(x=>!S.active.includes(x));
+  if(S.diff==='facil') return cand[Math.floor(Math.random()*cand.length)];
+  cand.sort((a,b)=> (countOwn(p,b)-countOwn(p,a)) + (Math.random()-0.5));
+  return cand[0];
+}
+
+function botExtras(p){
+  while(p.extras>0){
+    const opts = p.street.filter(c=>c.clients<cap(c));
+    if(!opts.length) break;
+    if(S.diff==='dificil') opts.sort((a,b)=> S.active.filter(x=>has(b,x)).length - S.active.filter(x=>has(a,x)).length);
+    opts[Math.floor(Math.random()*(S.diff==='facil'?opts.length:1))].clients++;
+    p.extras--;
+  }
+  p.extras=0;
+}
+
+function doTurn(humanId){
+  const picks = S.players.map(p => p.human ? p.hand.find(c=>c.id===humanId) : botPick(p));
+  S.players.forEach((p,i)=>{
+    p.hand = p.hand.filter(c=>c!==picks[i]);
+    p.street.push(picks[i]);
+  });
+  log(`— Turno ${S.turn}: ${S.players.map((p,i)=>`${p.name} bajó #${picks[i].id}`).join(' · ')}`);
+  picks.forEach(c=>giveClients(c));
+  S.selCard = null;
+
+  if(S.turn<=lastPickTurn()){
+    const st = S.players[S.start];
+    if(S.turn===1) st.extras += 2;
+    if(S.turn===2) st.extras += 1;
+    if(st.human){
+      S.pendingPick = true;
+      log('Sos jugador inicial: elegí un criterio nuevo.');
+      render();
+      return;
+    }
+    const crit = botCrit(st);
+    log(`${st.name} elige el criterio ${LBL[crit]}.`);
+    finishTurn(crit);
+  } else {
+    finishTurn(null);
+  }
+}
+
+function pickCriterion(crit){
+  if(!S.pendingPick) return;
+  log(`Criterio nuevo: ${LBL[crit]}.`);
+  finishTurn(crit);
+}
+
+function finishTurn(crit){
+  if(crit) S.active.push(crit);
+  S.pendingPick = false;
+  S.players.filter(p=>!p.human).forEach(botExtras);
+  S.start = (S.start+1) % S.n;
+  if(S.turn<5){
+    S.players.forEach(p=>{ if(S.deck.length) p.hand.push(mkCard(S.deck.pop(),p)) });
+  }
+  S.turn++;
+  if(S.turn>5){
+    S.over = true;
+    if(S.players[0].extras>0) log(`Te quedaron ${S.players[0].extras} clientes extra sin colocar.`);
+  }
+  render();
+}
+
+function placeExtra(card){
+  const me = S.players[0];
+  if(me.extras<=0){ log('No te quedan clientes extra.'); render(); return; }
+  if(card.clients>=cap(card)){ log('Ese local ya está lleno.'); render(); return; }
+  card.clients++;
+  me.extras--;
+  if(me.extras===0) S.extraMode=false;
+  render();
+}
+
+function score(){
+  const pts = S.players.map(()=>0);
+  const lines = [];
+  S.active.forEach(crit=>{
+    const vals = S.players.map((p,i)=>({i, v:p.street.filter(c=>has(c,crit)).reduce((s,c)=>s+c.clients,0)}));
+    vals.sort((a,b)=>b.v-a.v);
+    let pos=0;
+    while(pos<vals.length && vals[pos].v>0){
+      let k=pos;
+      while(k<vals.length && vals[k].v===vals[pos].v) k++;
+      const group = vals.slice(pos,k);
+      let sum=0;
+      for(let q=pos;q<k && q<3;q++) sum+=SLOTS[q];
+      const avg = Math.floor(sum/group.length);
+      group.forEach(g=>pts[g.i]+=avg);
+      lines.push({crit, group: group.map(g=>({name:S.players[g.i].name, v:g.v, pts:avg}))});
+      pos=k;
+    }
+  });
+  return {pts, lines};
+}
+
+/* ===== RENDER ===== */
+function cardHTML(c, cls=''){
+  const cp = cap(c);
+  const dots = Array.from({length:cp},(_,i)=>`<i class="dot ${i<c.clients?'on':''}"></i>`).join('');
+  const sel = S.selCard===c ? ' sel' : '';
+  const front = S.front===c.id ? ' style="z-index:20"' : '';
+  return `<div class="card ${cls}${sel}" style="background:${BGT[c.t]}" data-card="${c.id}"${front}>
+    <div class="main">
+      <div class="top">${timeSVG(c.t)}${rubroSVG(c.r)}</div>
+      <div class="bld">${bldgSVG(c.r,c.s)}</div>
+      <div class="sz">${LBL[c.s]}</div>
+      <div class="dots">${dots}</div>
+    </div>
+    <div class="strip"><span>da a</span>${iconFor(c.tgt)}<b>${LBL[c.tgt]}</b></div>
+  </div>`;
+}
+
+function losetaHTML(){
+  const item = (code) => `<div class="lg ${S && S.active.includes(code)?'act':''}">${iconFor(code)}<span>${LBL[code]}</span></div>`;
+  return ['Ma','Ta','No','Pe','Me','Gr','Ba','El','Ju','Ro'].map(item).join('');
+}
+
+function setupHTML(){
+  const opt = (key,val,label) => `<button class="opt ${SETUP[key]===val?'on':''}" data-opt="${key}" data-val="${val}">${label}</button>`;
+  return `<div class="setup"><div class="setup-wrap">
+    <div class="setup-left">
+      <div class="log-id">> paseo_comercial.log</div>
+      <h2>Paseo Comercial</h2>
+      <div class="proto">PROTOTIPO DE JUEGO DE MESA DE DISEÑO PROPIO</div>
+      <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios que se activan en la ronda.</p>
+      <h4>Paso a paso</h4>
+      <ul>
+        <li>Cada turno, todos bajan una carta a la vez y se revelan juntas.</li>
+        <li>Cada carta da 1 cliente a los locales de la mesa que cumplan con su franja.</li>
+        <li>El jugador inicial elige criterios nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
+        <li>Al final, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes.</li>
+      </ul>
+      <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
+    </div>
+    <div class="setup-right">
+      <div class="opt-label">Rivales (bots)</div>
+      <div class="opts">${opt('rivals',2,'2')}${opt('rivals',3,'3')}</div>
+      <div class="opt-label">Dificultad de los bots</div>
+      <div class="opts">${opt('diff','facil','Fácil')}${opt('diff','dificil','Difícil')}</div>
+      <div class="opt-label">Empieza</div>
+      <div class="opts">${opt('starter','yo','Yo')}${opt('starter','azar','Al azar')}</div>
+      <div class="opt-label">Ver puntuación en vivo</div>
+      <div class="opts">${opt('live',true,'Sí')}${opt('live',false,'No')}</div>
+      <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
+      <button class="start" data-act="start">▷ Empezar partida</button>
+    </div>
+  </div></div>`;
+}
+
+function liveHTML(){
+  const res = score();
+  const rows = S.active.map(crit=>{
+    const parts = res.lines.filter(l=>l.crit===crit);
+    return `<div><b>${LBL[crit]}:</b> ${parts.length? parts.map(l=>l.group.map(g=>`${g.name} (${g.v} cl., +${g.pts})`).join(' · ')).join(' | ') : '<i>nadie puntúa aún</i>'}</div>`;
+  }).join('');
+  return `<div class="panel"><b>Puntuación en vivo</b><div class="log" style="max-height:none;margin-top:6px">${rows}</div></div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const hdr = document.getElementById('hdr');
+  document.getElementById('loseta').innerHTML = `<div class="loseta">${losetaHTML()}</div>`;
+  if(!S){
+    hdr.innerHTML = '';
+    app.innerHTML = setupHTML();
+    const nm = document.getElementById('nm');
+    if(nm) nm.addEventListener('input', e=>{ SETUP.name = e.target.value; });
+    return;
+  }
+  hdr.innerHTML = `<span class="chip">Turno ${Math.min(S.turn,5)} / 5</span>
+    <span class="chip">Mazo: ${S.deck.length}</span>
+    <span class="chip">Inicial: ${S.players[S.start].name}</span>
+    <button class="ghost" data-act="live" style="margin:0">Puntuación en vivo: ${S.live?'sí':'no'}</button>`;
+
+  const me = S.players[0];
+  const needPlay = !S.over && !S.pendingPick;
+  const needPick = !S.over && S.pendingPick;
+
+  let html = '';
+  if(needPick) html += `<div class="banner">Elegí un criterio nuevo</div>`;
+  else if(needPlay && !S.selCard) html += `<div class="banner">Elegí una carta de tu mano</div>`;
+  else if(needPlay && S.selCard) html += `<div class="banner">Bajá la carta elegida</div>`;
+
+  S.players.forEach(p=>{
+    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''}</span><span class="tot">${p.street.length} locales · ${totalClients(p)} clientes totales${p.human && p.extras?` · extras: ${p.extras}`:''}</span></h3>
+      <div class="row">${p.street.length ? p.street.map(c=>cardHTML(c, (p.human && S.extraMode && c.clients<cap(c))?'ext':'')).join('') : '<span class="empty">Sin locales aún</span>'}</div></div>`;
+  });
+
+  if(!S.over){
+    const handGlow = needPlay && !S.selCard ? ' glow' : '';
+    html += `<div class="street${handGlow}"><h3><span>Tu mano</span><span>${S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta'}</span></h3>
+      <div class="row handrow">${me.hand.map(c=>cardHTML(c,'hand')).join('')}</div>
+      <div>
+        <button data-act="play" class="${needPlay && S.selCard?'glowbtn':''}" ${(!S.selCard||S.pendingPick)?'disabled':''}>Bajar carta</button>
+        <button class="alt" data-act="extra" ${(me.extras<=0||S.pendingPick)?'disabled':''}>${S.extraMode?'Cancelar colocar':'Colocar cliente extra'} (${me.extras})</button>
+      </div></div>`;
+    if(needPick){
+      html += `<div class="panel"><b>Sos jugador inicial: elegí un criterio</b>
+        <div class="crit-grid" style="margin-top:6px">${POOL.filter(x=>!S.active.includes(x)).map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
+    }
+    if(S.live) html += liveHTML();
+  } else {
+    const res = score();
+    const ranking = S.players.map((p,i)=>({name:p.name, pts:res.pts[i]})).sort((a,b)=>b.pts-a.pts);
+    html += `<div class="panel"><b>Ronda terminada</b><div style="margin-top:6px">
+      <button class="ghost" data-act="showscore">Ver puntuación</button>
+      <button data-act="new">Nueva partida</button></div></div>`;
+    if(!S.hideOverlay){
+      html += `<div class="overlay"><div class="panel">
+        <h3>Puntuación final</h3>
+        <table><tr><th>Jugador</th><th>Puntos</th></tr>
+        ${ranking.map(r=>`<tr><td>${r.name}</td><td>${r.pts}</td></tr>`).join('')}</table>
+        <h4>Detalle</h4><div class="log">${res.lines.map(l=>`${LBL[l.crit]}: `+l.group.map(g=>`${g.name} (${g.v} cl., +${g.pts})`).join(' · ')).join('<br>')}</div>
+        <div><button class="ghost" data-act="viewtable">Ver mesa</button><button data-act="new">Nueva partida</button></div></div></div>`;
+    }
+  }
+
+  html += `<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div>`;
+  app.innerHTML = html;
+  const logEl = document.getElementById('logbox');
+  if(logEl) logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ===== EVENTOS ===== */
+document.addEventListener('click', e=>{
+  const opt = e.target.closest('[data-opt]');
+  if(opt){
+    const k = opt.dataset.opt;
+    let v = opt.dataset.val;
+    if(k==='rivals') v = +v;
+    if(k==='live') v = v==='true';
+    SETUP[k] = v;
+    render();
+    return;
+  }
+  const act = e.target.closest('[data-act]');
+  if(act){
+    const a = act.dataset.act;
+    if(a==='start'){ newGame(); return; }
+    if(a==='new'){ S = null; render(); return; }
+    if(!S) return;
+    if(a==='live'){ S.live = !S.live; render(); return; }
+    if(a==='viewtable'){ S.hideOverlay=true; render(); return; }
+    if(a==='showscore'){ S.hideOverlay=false; render(); return; }
+    if(S.over) return;
+    if(a==='play' && S.selCard && !S.pendingPick){ doTurn(S.selCard.id); return; }
+    if(a==='extra'){ S.extraMode = !S.extraMode; render(); return; }
+    if(a==='crit'){ pickCriterion(act.dataset.crit); return; }
+  }
+  const cardEl = e.target.closest('[data-card]');
+  if(cardEl && S && !S.over){
+    const id = +cardEl.dataset.card;
+    const me = S.players[0];
+    S.front = id;
+    if(S.extraMode){
+      const own = me.street.find(c=>c.id===id);
+      if(own) placeExtra(own);
+      return;
+    }
+    if(S.pendingPick) return;
+    const hc = me.hand.find(c=>c.id===id);
+    if(hc) S.selCard = hc;
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>

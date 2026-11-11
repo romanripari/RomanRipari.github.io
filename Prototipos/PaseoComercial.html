@@ -164,7 +164,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, discardMode:false, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -186,11 +186,12 @@ function newGame(){
     cards: SETUP.rivals===2 ? SETUP.cards : 5,
     players: [myName, ...botNames].map((name,i)=>({name,human:i===0,street:[],hand:[],extras:0})),
     deck: shuffle(DATA.slice()),
+    discard: [],
     active: [], turn:1, totalTurns:5, start: starter,
     round:1, rounds: SETUP.rounds, totalPts: [], roundResults: [],
-    pendingPick:false, prePick:false, extraMode:false, selCard:null, front:null,
+    pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -199,7 +200,7 @@ function newGame(){
 
 function beginRound(){
   S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.extraMode=false;
-  S.pendingPick=false; S.prePick=false;
+  S.pendingPick=false; S.prePick=false; S.pendingDiscard=false;
   S.players.forEach(p=>p.extras=0);
   S.totalTurns = S.round===1 ? (S.n===4 ? 5 : S.cards) : 3;
   S.active = shuffle(POOL.slice()).slice(0,2);
@@ -214,6 +215,26 @@ function beginRound(){
     log(`${st.name} elige el criterio ${LBL[c]} antes de empezar.`);
   }
   render();
+}
+
+/* ===== MAZO Y DESCARTE ===== */
+function drawCards(p,n){
+  for(let i=0;i<n;i++){
+    if(!S.deck.length && S.discard.length){
+      S.deck = shuffle(S.discard.splice(0));
+      log('Se acabó el mazo: se mezcló el descarte y se armó un mazo nuevo.');
+    }
+    if(S.deck.length) p.hand.push(mkCard(S.deck.pop(),p));
+  }
+}
+function discardFrom(p,card){
+  p.hand = p.hand.filter(c=>c!==card);
+  S.discard.push(rowOf(card.id));
+}
+function completeTurn(){
+  S.pendingDiscard=false;
+  S.turn++;
+  if(S.turn>S.totalTurns) endRound(); else render();
 }
 
 /* ===== MECÁNICA ===== */
@@ -241,6 +262,20 @@ function botPick(p){
     if(v>bs){bs=v;best=c}
   });
   return best;
+}
+
+// Bot: qué carta descartar. Fácil al azar; difícil, la que menos sirve.
+function botDiscard(p){
+  if(S.diff==='facil') return p.hand[Math.floor(Math.random()*p.hand.length)];
+  let worst=null, wv=1e9;
+  p.hand.forEach(c=>{
+    let v=0;
+    S.active.forEach(a=>{ if(has(c,a)) v+=1; });
+    tableCards().forEach(x=>{ if(x.owner===p && has(x,c.tgt) && x.clients<capOf(x)) v+=0.5; });
+    v+=Math.random()*0.2;
+    if(v<wv){wv=v; worst=c;}
+  });
+  return worst;
 }
 
 function countOwn(p,crit){return p.street.filter(c=>has(c,crit)).length}
@@ -321,20 +356,27 @@ function pickCriterion(crit){
   finishTurn(crit);
 }
 
+// Después de bajar y elegir criterio.
+// Sin modo descarte: todos roban 1 carta.
+// Con modo descarte: los bots descartan en silencio y roban 2; vos elegís qué descartar.
 function finishTurn(crit){
   if(crit) S.active.push(crit);
   S.pendingPick = false;
   S.players.filter(p=>!p.human).forEach(botExtras);
   S.start = (S.start+1) % S.n;
-  if(S.turn<S.totalTurns){
-    S.players.forEach(p=>{ if(S.deck.length) p.hand.push(mkCard(S.deck.pop(),p)) });
+
+  if(!S.discardMode){
+    if(S.turn<S.totalTurns) S.players.forEach(p=>drawCards(p,1));
+    completeTurn();
+    return;
   }
-  S.turn++;
-  if(S.turn>S.totalTurns){
-    endRound();
-  } else {
-    render();
-  }
+  if(S.turn>=S.totalTurns){ completeTurn(); return; }
+  S.players.filter(p=>!p.human).forEach(p=>{
+    discardFrom(p, botDiscard(p));
+    drawCards(p,2);
+  });
+  S.pendingDiscard = true;
+  render();
 }
 
 function placeExtra(card){
@@ -383,7 +425,7 @@ function endRound(){
 }
 
 // Conserva los 2 locales más recientes de cada vereda que tengan lugar libre.
-// El resto vuelve al mazo, se mezcla y se reparten manos nuevas.
+// El resto de las cartas (veredas, manos y descarte) vuelve al mazo, se mezcla y se reparten manos nuevas.
 function nextRound(){
   const kept = new Set();
   S.players.forEach(p=>{
@@ -400,10 +442,10 @@ function nextRound(){
     p.street = p.street.filter(c=>kept.has(c));
     p.hand = [];
   });
-  S.deck = shuffle([...S.deck, ...back.map(rowOf)]);
+  S.deck = shuffle([...S.deck, ...S.discard, ...back.map(rowOf)]);
+  S.discard = [];
   S.players.forEach(p=>{ for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p)); });
   S.round++;
-  S.roundResults; 
   beginRound();
 }
 
@@ -434,14 +476,14 @@ function setupHTML(){
   const opt = (key,val,label) => `<button class="opt ${SETUP[key]===val?'on':''}" data-opt="${key}" data-val="${val}">${label}</button>`;
   return `<div class="setup"><div class="setup-wrap">
     <div class="setup-left">
-      <div class="proto">UN PROTOTIPO DE BRUNO SASSONE Y ROMÁN RIPARI</div>
+      <div class="proto">PROTOTIPO DE JUEGO DE MESA DE BRUNO SASSONE Y ROMÁN RIPARI</div>
       <h2>Paseo Comercial</h2>
-      <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios de puntuación que se activan en la ronda.</p>
+      <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios que se activan en la ronda.</p>
       <h4>Paso a paso</h4>
       <ul>
         <li>Cada turno, todos bajan una carta a la vez y se revelan juntas.</li>
-        <li>Cada carta da 1 cliente a los locales de la mesa que cumplan con la condición indicada.</li>
-        <li>Cada jugador inicial elige criterios nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
+        <li>Cada carta da 1 cliente a los locales de la mesa que cumplan con su franja.</li>
+        <li>El jugador inicial elige criterios nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
         <li>Al final de cada ronda, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes.</li>
       </ul>
       <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
@@ -468,6 +510,9 @@ function setupHTML(){
       <div class="opt-label">Bonus de Clientela</div>
       <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
       <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
+      <div class="opt-label">Modo descarte</div>
+      <div class="opt-desc">Después de cada turno, descartás una carta y robás dos</div>
+      <div class="opts">${opt('discardMode',true,'Sí')}${opt('discardMode',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start">▷ Empezar partida</button>
     </div>
@@ -483,7 +528,8 @@ function roundTableHTML(res){
 
 function liveHTML(){
   const res = score();
-  const rows = [...S.active, ...(S.extraClients?['_TOT']:[])].map(crit=>{
+  const keys = [...S.active, ...(S.extraClients?['_TOT']:[])];
+  const rows = keys.map(crit=>{
     const parts = res.lines.filter(l=>l.crit===crit);
     return `<div><b>${LBL[crit]}:</b> ${parts.length? parts.map(l=>l.group.map(g=>`${g.name} (${g.v} cl., +${g.pts})`).join(' · ')).join(' | ') : '<i>nadie puntúa aún</i>'}</div>`;
   }).join('');
@@ -509,11 +555,13 @@ function render(){
 
   const me = S.players[0];
   const needPick = !S.over && (S.pendingPick || S.prePick);
-  const needPlay = !S.over && !needPick;
+  const needDiscard = !S.over && S.pendingDiscard;
+  const needPlay = !S.over && !needPick && !needDiscard;
 
   let html = '';
   let handHTML = '';
-  if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
+  if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
+  else if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
   else if(S.pendingPick) html += `<div class="banner">Elegí un criterio nuevo</div>`;
   else if(needPlay && !S.selCard) html += `<div class="banner">Elegí una carta de tu mano</div>`;
   else if(needPlay && S.selCard) html += `<div class="banner">Bajá la carta elegida</div>`;
@@ -524,28 +572,26 @@ function render(){
   });
 
   if(!S.over){
-    const handGlow = needPlay && !S.selCard ? ' glow' : '';
-    handHTML = `<div class="street handdock${handGlow}"><h3><span>Tu mano</span><span>${S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta'}</span></h3>
+    const handGlow = (needPlay && !S.selCard) || needDiscard ? ' glow' : '';
+    handHTML = `<div class="street handdock${handGlow}"><h3><span>Tu mano</span><span>${needDiscard?'Tocá la carta que querés descartar':(S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta')}</span></h3>
       <div class="row handrow">${me.hand.map(c=>cardHTML(c,'hand')).join('')}</div>
       <div>
-        <button data-act="play" class="${needPlay && S.selCard?'glowbtn':''}" ${(!S.selCard||needPick)?'disabled':''}>Bajar carta</button>
-        <button class="alt" data-act="extra" ${(me.extras<=0||needPick)?'disabled':''}>${S.extraMode?'Cancelar colocar':'Colocar cliente extra'} (${me.extras})</button>
+        <button data-act="play" class="${needPlay && S.selCard?'glowbtn':''}" ${(!S.selCard || !needPlay)?'disabled':''}>Bajar carta</button>
+        <button class="alt" data-act="extra" ${(me.extras<=0 || !needPlay)?'disabled':''}>${S.extraMode?'Cancelar colocar':'Colocar cliente extra'} (${me.extras})</button>
       </div></div>`;
     if(needPick){
       html += `<div class="panel"><b>${S.prePick?'Elegí el criterio para la ronda':'Sos jugador inicial: elegí un criterio'}</b>
         <div class="crit-grid" style="margin-top:6px">${POOL.filter(x=>!S.active.includes(x)).map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
     }
-
   } else {
     const res = S.roundResults[S.roundResults.length-1];
     const isLast = S.round >= S.rounds;
-    const title = S.rounds===1 ? 'Puntuación final' : (isLast ? 'Puntuación final' : `Ronda ${S.round} terminada`);
     html += `<div class="panel"><b>Ronda ${S.round} terminada</b><div style="margin-top:6px">
       <button class="ghost" data-act="showscore">Ver puntuación</button>
       ${isLast ? '<button data-act="new">Nueva partida</button>' : '<button data-act="nextround">Siguiente ronda</button>'}</div></div>`;
     if(!S.hideOverlay){
       html += `<div class="overlay"><div class="panel">
-        <h3>${title}</h3>
+        <h3>${S.rounds===1 || isLast ? 'Puntuación final' : `Ronda ${S.round} terminada`}</h3>
         ${roundTableHTML(res)}
         <div style="margin-top:8px">
           <button class="ghost" data-act="viewtable">Ver mesa</button>
@@ -554,8 +600,8 @@ function render(){
     }
   }
 
-  html += `<div class="infos">${S.live && !S.over ? liveHTML() : ''}<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div>`;
-  app.innerHTML = html + '</div>' + handHTML;
+  html += `<div class="infos">${S.live && !S.over ? liveHTML() : ''}<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div></div>`;
+  app.innerHTML = html + handHTML;
   const logEl = document.getElementById('logbox');
   if(logEl) logEl.scrollTop = logEl.scrollHeight;
 }
@@ -583,7 +629,7 @@ document.addEventListener('click', e=>{
     if(a==='showscore'){ S.hideOverlay=false; render(); return; }
     if(a==='nextround'){ nextRound(); return; }
     if(S.over) return;
-    if(a==='play' && S.selCard && !S.pendingPick && !S.prePick){ doTurn(S.selCard.id); return; }
+    if(a==='play' && S.selCard && !S.pendingPick && !S.prePick && !S.pendingDiscard){ doTurn(S.selCard.id); return; }
     if(a==='extra'){ S.extraMode = !S.extraMode; render(); return; }
     if(a==='crit'){ pickCriterion(act.dataset.crit); return; }
   }
@@ -592,6 +638,16 @@ document.addEventListener('click', e=>{
     const id = +cardEl.dataset.card;
     const me = S.players[0];
     S.front = id;
+    if(S.pendingDiscard){
+      const dc = me.hand.find(c=>c.id===id);
+      if(dc){
+        discardFrom(me,dc);
+        log(`Descartaste #${dc.id}.`);
+        drawCards(me,2);
+        completeTurn();
+      }
+      return;
+    }
     if(S.extraMode){
       const own = me.street.find(c=>c.id===id);
       if(own) placeExtra(own);

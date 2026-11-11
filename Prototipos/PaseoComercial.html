@@ -434,14 +434,14 @@ function setupHTML(){
   const opt = (key,val,label) => `<button class="opt ${SETUP[key]===val?'on':''}" data-opt="${key}" data-val="${val}">${label}</button>`;
   return `<div class="setup"><div class="setup-wrap">
     <div class="setup-left">
-      <div class="proto">PROTOTIPO DE JUEGO DE MESA DE BRUNO SASSONE Y ROMÁN RIPARI</div>
+      <div class="proto">UN PROTOTIPO DE BRUNO SASSONE Y ROMÁN RIPARI</div>
       <h2>Paseo Comercial</h2>
-      <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios que se activan en la ronda.</p>
+      <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios de puntuación que se activan en la ronda.</p>
       <h4>Paso a paso</h4>
       <ul>
         <li>Cada turno, todos bajan una carta a la vez y se revelan juntas.</li>
-        <li>Cada carta da 1 cliente a los locales de la mesa que cumplan con su franja.</li>
-        <li>El jugador inicial elige criterios nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
+        <li>Cada carta da 1 cliente a los locales de la mesa que cumplan con la condición indicada.</li>
+        <li>Cada jugador inicial elige criterios nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
         <li>Al final de cada ronda, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes.</li>
       </ul>
       <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>

@@ -34,6 +34,8 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .card.sel{outline:3px solid #e0a000}
 .card.ext{outline:3px dashed #e0007a;cursor:pointer}
 .card.hand{cursor:pointer}
+.card.bonusmark{outline:3px solid #00b86b;box-shadow:0 0 10px #00b86b}
+.card.bonus{outline:3px dashed #00b86b;cursor:pointer}
 .main{width:70px;flex:0 0 70px;display:flex;flex-direction:column;align-items:center;padding:2px 2px 0 2px}
 .top{display:flex;justify-content:space-between;width:100%}
 .top svg{width:22px;height:22px}
@@ -164,7 +166,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:true, inaug:false, extraClients:true, discardMode:false, simPick:true, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:false, simPick:true, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -192,7 +194,7 @@ function newGame(){
     pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
     simQueue:[], simDone:false,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, chain: SETUP.chainBonus, newFull:[], bonusQ:[], pendingBonus:null, afterBonus:null, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -243,9 +245,64 @@ function completeTurn(){
 function giveClients(src){
   tableCards().forEach(x=>{
     if(x===src || !has(x,src.tgt)) return;
-    if(x.clients<capOf(x)) x.clients++;
+    if(x.clients<capOf(x)){ x.clients++; if(x.clients===capOf(x)) S.newFull.push(x); }
     else if(S.fullPenalty && x.clients>0){ x.clients--; x.angry=true; log(`Cliente enojado: a un local de ${x.owner.name} se le restó uno.`); }
   });
+}
+
+/* ===== CLIENTES EN CADENA ===== */
+// Pequeño lleno -> cliente extra a un Mediano del mismo rubro; Mediano lleno -> a un Grande del mismo rubro.
+// Solo se consideran los locales del propio jugador que tengan lugar libre.
+const NEXT_SIZE = {Pe:'Me', Me:'Gr'};
+function bonusTargets(owner, src){
+  const ns = NEXT_SIZE[src.s];
+  if(!ns) return [];
+  return owner.street.filter(c=>c.r===src.r && c.s===ns && c.clients<capOf(c));
+}
+function isBonusTarget(c){
+  return !!S.pendingBonus && bonusTargets(S.pendingBonus.owner, S.pendingBonus.src).includes(c);
+}
+function queueNewFull(){
+  const list = S.newFull; S.newFull = [];
+  list.forEach(src=>{
+    if(!S.chain || !NEXT_SIZE[src.s]) return;
+    if(!bonusTargets(src.owner, src).length) return;
+    src.bonusMark = true;
+    S.bonusQ.push({owner: src.owner, src});
+  });
+}
+function applyBonusTo(target){
+  target.clients++;
+  if(target.clients===capOf(target)) S.newFull.push(target);
+}
+function runBonuses(then){
+  queueNewFull();
+  while(S.bonusQ.length){
+    const item = S.bonusQ[0];
+    const t = bonusTargets(item.owner, item.src);
+    if(!t.length){ S.bonusQ.shift(); continue; }
+    if(item.owner.human){
+      S.pendingBonus = item; S.afterBonus = then; render(); return;
+    }
+    S.bonusQ.shift();
+    const pick = S.diff==='facil' ? t[Math.floor(Math.random()*t.length)]
+      : t.slice().sort((a,b)=>S.active.filter(x=>has(b,x)).length - S.active.filter(x=>has(a,x)).length)[0];
+    applyBonusTo(pick);
+    log(`Clientes en cadena: ${item.owner.name} suma un cliente a un ${LBL[pick.s]} de ${LBL[pick.r]}.`);
+    queueNewFull();
+  }
+  S.pendingBonus = null; S.afterBonus = null;
+  if(then) then();
+}
+function chooseBonus(target){
+  const item = S.pendingBonus;
+  if(!item || !isBonusTarget(target)) return;
+  applyBonusTo(target);
+  log(`Clientes en cadena: sumaste un cliente a tu ${LBL[target.s]} de ${LBL[target.r]}.`);
+  S.bonusQ.shift();
+  S.pendingBonus = null;
+  const then = S.afterBonus; S.afterBonus = null;
+  runBonuses(then);
 }
 
 // Fácil: ve solo su mano y juega al azar.
@@ -322,6 +379,10 @@ function doTurn(humanId){
   log(`— Turno ${S.turn}: ${S.players.map((p,i)=>`${p.name} bajó #${picks[i].id}`).join(' · ')}`);
   picks.forEach(c=>giveClients(c));
   S.selCard = null;
+  runBonuses(()=>afterReveal());
+}
+
+function afterReveal(){
 
   // Inauguración: el jugador inicial de los turnos 1 y 2 de la ronda 1 recibe 1 extra
   if(S.round===1 && S.inaug && S.turn<=2) S.players[S.start].extras += 1;
@@ -408,6 +469,7 @@ function finishTurn(crit){
   if(crit) S.active.push(crit);
   S.pendingPick = false;
   S.players.filter(p=>!p.human).forEach(botExtras);
+  runBonuses(null);
   S.start = (S.start+1) % S.n;
 
   if(!S.discardMode){
@@ -429,8 +491,10 @@ function placeExtra(card){
   if(me.extras<=0){ log('No te quedan clientes extra.'); render(); return; }
   if(card.clients>=capOf(card)){ log('Ese local ya está lleno.'); render(); return; }
   card.clients++;
+  if(card.clients===capOf(card)) S.newFull.push(card);
   me.extras--;
   if(me.extras===0) S.extraMode=false;
+  runBonuses(null);
   render();
 }
 
@@ -472,6 +536,7 @@ function endRound(){
 // Conserva los 2 locales más recientes de cada vereda que tengan lugar libre y al menos una ficha colocada.
 // El resto de las cartas (veredas, manos y descarte) vuelve al mazo, se mezcla y se reparten manos nuevas.
 function nextRound(){
+  S.players.forEach(p=>p.street.forEach(c=>{ c.bonusMark=false; }));
   const kept = new Set();
   S.players.forEach(p=>{
     let n=0;
@@ -500,7 +565,7 @@ function cardHTML(c, cls=''){
   const dots = Array.from({length:cp},(_,i)=>`<i class="dot ${i<c.clients?'on':''}"></i>`).join('');
   const sel = S.selCard===c ? ' sel' : '';
   const front = S.front===c.id ? ' style="z-index:20"' : '';
-  return `<div class="card ${cls}${sel}" style="background:${BGT[c.t]}" data-card="${c.id}"${front}>
+  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" style="background:${BGT[c.t]}" data-card="${c.id}"${front}>
     <div class="main">
       <div class="top">${timeSVG(c.t)}${rubroSVG(c.r)}</div>
       <div class="bld">${bldgSVG(c.r,c.s)}</div>
@@ -546,9 +611,9 @@ function setupHTML(){
       <div class="opts">${opt('live',true,'Sí')}${opt('live',false,'No')}</div>
       <div class="opt-label">Número de rondas</div>
       <div class="opts">${opt('rounds',1,'1')}${opt('rounds',2,'2')}${opt('rounds',3,'3')}</div>
-      <div class="opt-label">Cliente enojado</div>
-      <div class="opt-desc">Local lleno: si recibe un cliente nuevo, resta 1</div>
-      <div class="opts">${opt('fullPenalty',true,'Sí')}${opt('fullPenalty',false,'No')}</div>
+      <div class="opt-label">Clientes en cadena</div>
+      <div class="opt-desc">Edificio Pequeño lleno da un cliente extra a un Mediano del mismo rubro y Edificio Mediano lleno da un cliente extra a un Grande del mismo rubro</div>
+      <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>
       <div class="opt-label">Elegir criterios en simultáneo</div>
       <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
       <div class="opts">${opt('simPick',true,'Sí')}${opt('simPick',false,'No')}</div>
@@ -604,11 +669,12 @@ function render(){
   const me = S.players[0];
   const needPick = !S.over && (S.pendingPick || S.prePick);
   const needDiscard = !S.over && S.pendingDiscard;
-  const needPlay = !S.over && !needPick && !needDiscard;
+  const needPlay = !S.over && !needPick && !needDiscard && !S.pendingBonus;
 
   let html = '';
   let handHTML = '';
-  if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
+  if(S.pendingBonus) html += `<div class="banner">Clientes en cadena: elegí en qué ${LBL[NEXT_SIZE[S.pendingBonus.src.s]]} de ${LBL[S.pendingBonus.src.r]} sumar el cliente extra</div>`;
+  else if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
   else if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
   else if(S.pendingPick && S.simQueue.length) html += `<div class="banner">Elegí tu criterio de puntuación</div>`;
   else if(S.pendingPick) html += `<div class="banner">Elegí un criterio nuevo</div>`;
@@ -688,6 +754,11 @@ document.addEventListener('click', e=>{
     const id = +cardEl.dataset.card;
     const me = S.players[0];
     S.front = id;
+    if(S.pendingBonus){
+      const bt = me.street.find(c=>c.id===id);
+      if(bt) chooseBonus(bt);
+      return;
+    }
     if(S.pendingDiscard){
       const dc = me.hand.find(c=>c.id===id);
       if(dc){

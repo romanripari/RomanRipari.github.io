@@ -1,5 +1,12 @@
 
-from reportlab.pdfgen import canvas as rl_canvas
+# =============================================================================
+# CV - Roman Ariel Ripari (English)
+# Requires: pip install reportlab pypdf
+# Fonts:    sudo apt install fonts-dejavu  (Linux)
+#           On Windows/Mac: update FONT_REGULAR and FONT_BOLD with local paths
+# =============================================================================
+
+from reportlab.pdfgen import canvas as pdf_canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib import colors
@@ -9,76 +16,123 @@ from reportlab.platypus import Paragraph, Frame, Spacer
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus.flowables import HRFlowable
 
-# ── Fonts ──────────────────────────────────────────────────────────────────
-pdfmetrics.registerFont(TTFont("DV",   "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"))
-pdfmetrics.registerFont(TTFont("DV-B", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"))
+# =============================================================================
+# CONFIGURATION — edit these variables to customize the CV
+# =============================================================================
 
-W, H = A4
+OUTPUT_FILE = "CV_RomanRipari_Eng.pdf"
 
-# ── Colors ─────────────────────────────────────────────────────────────────
-BLACK   = colors.HexColor("#1a1a1a")
-DARK    = colors.HexColor("#333333")
-MID     = colors.HexColor("#555555")
-GREY    = colors.HexColor("#888888")
-LGREY   = colors.HexColor("#bbbbbb")
-RULE    = colors.HexColor("#cccccc")
-WHITE   = colors.white
+FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+FONT_BOLD    = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
-# ── Layout — 3 columns ────────────────────────────────────────────────────
-MARGIN_X = 11 * mm
-MARGIN_Y = 8 * mm
-TOTAL_W  = W - 2 * MARGIN_X
+# Colors
+COLOR_BLACK       = colors.HexColor("#1a1a1a")   # name and job titles
+COLOR_DARK        = colors.HexColor("#333333")   # main body text
+COLOR_MEDIUM      = colors.HexColor("#555555")   # company / header subtitle
+COLOR_GREY        = colors.HexColor("#888888")   # dates
+COLOR_LIGHT_GREY  = colors.HexColor("#bbbbbb")   # section headers
+COLOR_RULE        = colors.HexColor("#cccccc")   # divider lines
+COLOR_WHITE       = colors.white
 
-COL_L_W  = 42 * mm
-COL_M_W  = 93 * mm
-COL_R_W  = TOTAL_W - COL_L_W - COL_M_W - 6 * mm
-GAP      = 3 * mm
+# Margins and columns
+MARGIN_LEFT_RIGHT = 11 * mm
+MARGIN_TOP_BOTTOM = 8  * mm
+PAGE_WIDTH, PAGE_HEIGHT = A4
+USABLE_WIDTH = PAGE_WIDTH - 2 * MARGIN_LEFT_RIGHT
 
-COL_L_X  = MARGIN_X
-COL_M_X  = COL_L_X + COL_L_W + GAP
-COL_R_X  = COL_M_X + COL_M_W + GAP
+LEFT_COL_WIDTH   = 42 * mm   # left column: contact / skills / certs
+CENTER_COL_WIDTH = 93 * mm   # center column: experience
+RIGHT_COL_WIDTH  = USABLE_WIDTH - LEFT_COL_WIDTH - CENTER_COL_WIDTH - 6 * mm  # education
+COL_GAP          = 3 * mm    # gap between columns
 
-HEADER_H = 22 * mm
-BODY_Y   = H - MARGIN_Y - HEADER_H - 2 * mm
-BODY_H   = BODY_Y - MARGIN_Y
+LEFT_COL_X   = MARGIN_LEFT_RIGHT
+CENTER_COL_X = LEFT_COL_X + LEFT_COL_WIDTH + COL_GAP
+RIGHT_COL_X  = CENTER_COL_X + CENTER_COL_WIDTH + COL_GAP
 
-# ── Style helper ───────────────────────────────────────────────────────────
-def S(name, font="DV", size=7.5, leading=11, color=DARK, sb=0, sa=2, align=0):
-    return ParagraphStyle(name, fontName=font, fontSize=size, leading=leading,
-                          textColor=color, spaceBefore=sb, spaceAfter=sa, alignment=align)
+HEADER_HEIGHT = 22 * mm
+BODY_TOP_Y    = PAGE_HEIGHT - MARGIN_TOP_BOTTOM - HEADER_HEIGHT - 2 * mm
+BODY_HEIGHT   = BODY_TOP_Y - MARGIN_TOP_BOTTOM
 
-sSecHdr  = S("sSecHdr",  "DV",    6.5, 9,    LGREY, sb=0,  sa=3,   align=0)
-sJobT    = S("sJobT",    "DV-B",  8,   11,   BLACK, sb=6,  sa=0)
-sJobC    = S("sJobC",    "DV-B",  7,   10,   MID,   sb=0,  sa=0)
-sJobD    = S("sJobD",    "DV",    6.5, 9,    GREY,  sb=0,  sa=3)
-sBul     = S("sBul",     "DV",    6.8, 10.2, DARK,  sb=0,  sa=2.2)
-sLabel   = S("sLabel",   "DV-B",  7,   10,   BLACK, sb=4,  sa=1)
-sLBody   = S("sLBody",   "DV",    7,   10.5, DARK,  sb=0,  sa=2)
-sSkill   = S("sSkill",   "DV",    7,   10,   DARK,  sb=0,  sa=2.5)
-sEduT    = S("sEduT",    "DV-B",  7.5, 11,   BLACK, sb=5,  sa=0)
-sEduI    = S("sEduI",    "DV",    7,   10,   MID,   sb=0,  sa=0)
-sEduD    = S("sEduD",    "DV",    6.5, 9,    GREY,  sb=0,  sa=4)
-sCert    = S("sCert",    "DV",    6.5, 9.5,  DARK,  sb=0,  sa=2)
-sCertB   = S("sCertB",   "DV-B",  6.5, 9.5,  DARK,  sb=4,  sa=0)
+# =============================================================================
+# FONT REGISTRATION
+# =============================================================================
 
-def rule(w, color=RULE, t=0.5, sa=3):
-    return HRFlowable(width=w, color=color, thickness=t, spaceAfter=sa)
+pdfmetrics.registerFont(TTFont("Regular", FONT_REGULAR))
+pdfmetrics.registerFont(TTFont("Bold",    FONT_BOLD))
 
-def sec(label):
-    return [Paragraph(label, sSecHdr), rule(99999)]
+# =============================================================================
+# PARAGRAPH STYLES
+# Helper: make_style(name, font, size, line_height, color, space_before, space_after, alignment)
+# =============================================================================
 
-# ── LEFT COLUMN ────────────────────────────────────────────────────────────
-def left_col():
-    s = []
+def make_style(name, font="Regular", size=7.5, line_height=11, color=COLOR_DARK,
+               space_before=0, space_after=2, alignment=0):
+    return ParagraphStyle(
+        name,
+        fontName=font,
+        fontSize=size,
+        leading=line_height,
+        textColor=color,
+        spaceBefore=space_before,
+        spaceAfter=space_after,
+        alignment=alignment,
+    )
 
-    s += sec("C o n t a c t")
-    s += [Paragraph("romanripari@gmail.com", sLBody),
-          Paragraph("linkedin.com/in/romanripari", sLBody),
-          Paragraph("https://romanripari.ar", sLBody),
-          Paragraph("Buenos Aires, Argentina", sLBody)]
+style_section_header  = make_style("section_header", "Regular", 6.5, 9,    COLOR_LIGHT_GREY, space_after=3)
+style_job_title       = make_style("job_title",       "Bold",    8,   11,   COLOR_BLACK,      space_before=6)
+style_company         = make_style("company",         "Bold",    7,   10,   COLOR_MEDIUM)
+style_date            = make_style("date",            "Regular", 6.5, 9,    COLOR_GREY,       space_after=3)
+style_bullet          = make_style("bullet",          "Regular", 6.8, 10.2, COLOR_DARK,       space_after=2.2)
+style_left_body       = make_style("left_body",       "Regular", 7,   10.5, COLOR_DARK,       space_after=2)
+style_skill           = make_style("skill",           "Regular", 7,   10,   COLOR_DARK,       space_after=2.5)
+style_edu_title       = make_style("edu_title",       "Bold",    7.5, 11,   COLOR_BLACK,      space_before=5)
+style_edu_institution = make_style("edu_institution", "Regular", 7,   10,   COLOR_MEDIUM)
+style_edu_date        = make_style("edu_date",        "Regular", 6.5, 9,    COLOR_GREY,       space_after=4)
+style_cert_regular    = make_style("cert_regular",    "Regular", 6.5, 9.5,  COLOR_DARK,       space_after=2)
+style_cert_bold       = make_style("cert_bold",       "Bold",    6.5, 9.5,  COLOR_DARK,       space_before=4)
 
-    s += sec("S k i l l s")
-    for sk in [
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+def horizontal_line(width=99999, color=COLOR_RULE, thickness=0.5, space_after=3):
+    """Horizontal divider line."""
+    return HRFlowable(width=width, color=color, thickness=thickness, spaceAfter=space_after)
+
+def section_header(label):
+    """Section header with divider line below (e.g. 'S k i l l s')."""
+    return [Paragraph(label, style_section_header), horizontal_line()]
+
+def render_column(canvas, x_position, width, content_list):
+    """Renders a list of flowables into a column and returns any overflow."""
+    frame = Frame(
+        x_position, MARGIN_TOP_BOTTOM,
+        width, BODY_HEIGHT,
+        leftPadding=0, rightPadding=0,
+        topPadding=0, bottomPadding=0,
+        showBoundary=0,
+    )
+    overflow = list(content_list)
+    frame.addFromList(overflow, canvas)
+    return overflow
+
+# =============================================================================
+# LEFT COLUMN — Contact, Skills, Languages, Certifications
+# =============================================================================
+
+def build_left_column():
+    content = []
+
+    content += section_header("C o n t a c t")
+    content += [
+        Paragraph("romanripari@gmail.com",       style_left_body),
+        Paragraph("linkedin.com/in/romanripari", style_left_body),
+        Paragraph("https://romanripari.ar",      style_left_body),
+        Paragraph("Buenos Aires, Argentina",     style_left_body),
+    ]
+
+    content += section_header("S k i l l s")
+    skills = [
         "Excel / VBA",
         "Python",
         "SQL (SSMS)",
@@ -93,33 +147,41 @@ def left_col():
         "Database Management",
         "Competitive Intelligence",
         "Data Storytelling",
-    ]:
-        s.append(Paragraph(f"• {sk}", sSkill))
+    ]
+    for skill in skills:
+        content.append(Paragraph(f"• {skill}", style_skill))
 
-    s += sec("L a n g u a g e s")
-    s += [Paragraph("English — Advanced", sLBody),
-          Paragraph("Spanish — Native", sLBody)]
+    content += section_header("L a n g u a g e s")
+    content += [
+        Paragraph("English — Advanced", style_left_body),
+        Paragraph("Spanish — Native",   style_left_body),
+    ]
 
-    s += sec("C e r t i f i c a t i o n s")
-    s += [Paragraph("EF Standard English Test", sCert),
-          Paragraph("(EF SET)", sCert),
-          Spacer(1, 2*mm),
-          Paragraph("[PCEP-30-02] PCEP –", sCertB),
-          Paragraph("Certified Entry-Level", sCert),
-          Paragraph("Python Programmer", sCert)]
+    content += section_header("C e r t i f i c a t i o n s")
+    content += [
+        Paragraph("EF Standard English Test",  style_cert_regular),
+        Paragraph("(EF SET)",                  style_cert_regular),
+        Spacer(1, 2 * mm),
+        Paragraph("[PCEP-30-02] PCEP –",       style_cert_bold),
+        Paragraph("Certified Entry-Level",     style_cert_regular),
+        Paragraph("Python Programmer",         style_cert_regular),
+    ]
 
-    return s
+    return content
 
-# ── CENTER COLUMN — Experience ─────────────────────────────────────────────
-def center_col():
-    s = []
-    s += sec("E x p e r i e n c e")
+# =============================================================================
+# CENTER COLUMN — Experience
+# =============================================================================
 
-    # PGD
-    s.append(Paragraph("Senior Data Analyst", sJobT))
-    s.append(Paragraph("Publicis Global Delivery (PGD)", sJobC))
-    s.append(Paragraph("Jul. 2021 – Present  ·  United States", sJobD))
-    for b in [
+def build_center_column():
+    content = []
+    content += section_header("E x p e r i e n c e")
+
+    # ── PGD ──────────────────────────────────────────────────────────────────
+    content.append(Paragraph("Senior Data Analyst",                   style_job_title))
+    content.append(Paragraph("Publicis Global Delivery (PGD)",        style_company))
+    content.append(Paragraph("Jul. 2021 – Present  ·  United States", style_date))
+    pgd_bullets = [
         "Lead the analysis, production, and delivery of monthly and ad-hoc Competitive Intelligence reports for top-tier global accounts including The Coca-Cola Company (CPG / FMCG).",
         "Process and transform large-scale datasets (100K+ records) covering ad spend, impressions, creative performance, and share of voice across brands, categories, and channels (video, social, OTT, display).",
         "Develop custom automated reporting and data analysis tools in Excel (VBA / Macros), significantly optimizing processing times for international teams.",
@@ -127,111 +189,117 @@ def center_col():
         "Translate internal business requirements from stakeholders into actionable data solutions; provide ongoing technical support for implemented tools.",
         "Manage the full data project lifecycle in Azure DevOps: planning, sprint tracking, quality control, and deadline management.",
         "Act as Performance Manager: mentor team members in technical skills development, productivity, and career growth.",
-    ]:
-        s.append(Paragraph(f"◦ {b}", sBul))
+    ]
+    for bullet in pgd_bullets:
+        content.append(Paragraph(f"◦ {bullet}", style_bullet))
 
-    # EY
-    s.append(Paragraph("Senior Analyst VBA + Alteryx", sJobT))
-    s.append(Paragraph("EY International", sJobC))
-    s.append(Paragraph("Jun. 2019 – Jul. 2021", sJobD))
-    for b in [
+    # ── EY ───────────────────────────────────────────────────────────────────
+    content.append(Paragraph("Senior Analyst VBA + Alteryx", style_job_title))
+    content.append(Paragraph("EY International",             style_company))
+    content.append(Paragraph("Jun. 2019 – Jul. 2021",        style_date))
+    ey_bullets = [
         "Business Intelligence (BI) team lead: people management, task allocation, and deliverable quality control.",
         "Developed interactive dashboards and automation tools in Excel-VBA and Power BI for multiple business units.",
         "ETL and data wrangling: cleaning, transformation, and integration of data from heterogeneous sources using Alteryx.",
         "Structured data analysis and reporting from multiple sources; daily creation and maintenance of SQL (SSMS) databases.",
         "End-to-end project management from planning to execution using Azure DevOps.",
         "Delivered technical training in Excel, VBA, and Alteryx to internal teams.",
-    ]:
-        s.append(Paragraph(f"◦ {b}", sBul))
+    ]
+    for bullet in ey_bullets:
+        content.append(Paragraph(f"◦ {bullet}", style_bullet))
 
-    # IPG
-    s.append(Paragraph("Data Projects Analyst", sJobT))
-    s.append(Paragraph("IPG Mediabrands", sJobC))
-    s.append(Paragraph("Sep. 2018 – Jun. 2019", sJobD))
-    for b in [
+    # ── IPG ──────────────────────────────────────────────────────────────────
+    content.append(Paragraph("Data Projects Analyst", style_job_title))
+    content.append(Paragraph("IPG Mediabrands",       style_company))
+    content.append(Paragraph("Sep. 2018 – Jun. 2019", style_date))
+    ipg_bullets = [
         "Multi-dimensional business analysis: sales, brand equity, search interest, competitiveness, web traffic, social media, and advertising activity.",
         "Built and maintained Power BI dashboards to surface commercial and media insights; identified performance drivers and gaps.",
         "End-to-end data process oversight and cross-functional stakeholder coordination (clients, agencies, internal teams, vendors).",
-    ]:
-        s.append(Paragraph(f"◦ {b}", sBul))
+    ]
+    for bullet in ipg_bullets:
+        content.append(Paragraph(f"◦ {bullet}", style_bullet))
 
-    # Nielsen
-    s.append(Paragraph("Senior Analyst", sJobT))
-    s.append(Paragraph("Nielsen", sJobC))
-    s.append(Paragraph("Dec. 2011 – Apr. 2018", sJobD))
-    for b in [
+    # ── NIELSEN ──────────────────────────────────────────────────────────────
+    content.append(Paragraph("Senior Analyst",        style_job_title))
+    content.append(Paragraph("Nielsen",               style_company))
+    content.append(Paragraph("Dec. 2011 – Apr. 2018", style_date))
+    nielsen_bullets = [
         "Data Analysis and Business Intelligence (BI) for internal and external clients across Argentina and Latin America.",
         "Generated KPI reports for multiple management levels; queried and analyzed structured databases using specialized software.",
         "Served global clients directly: Danone, The Coca-Cola Company, Unilever, PepsiCo, Clorox, Genomma, Procter &amp; Gamble, Mead Johnson, Peñaflor, Mondelez, and others.",
         "Developed custom reports tailored to each client's specific business needs and market dynamics.",
         "Internal reporting tasks: category management, economic performance tracking via custom \"baskets\", and wholesale market reporting.",
-    ]:
-        s.append(Paragraph(f"◦ {b}", sBul))
+    ]
+    for bullet in nielsen_bullets:
+        content.append(Paragraph(f"◦ {bullet}", style_bullet))
 
-    return s
+    return content
 
-# ── RIGHT COLUMN — Education ───────────────────────────────────────────────
-def right_col():
-    s = []
-    s += sec("E d u c a t i o n")
+# =============================================================================
+# RIGHT COLUMN — Education
+# =============================================================================
 
-    for title, inst, date in [
-        ("B.S. in Data Science\n(in progress)", "Universidad de\nBuenos Aires", "2020 – Present"),
-        ("Android App\nDevelopment", "Educación IT", "2018 – 2019"),
-        ("B.A. in Literature", "Universidad de\nBuenos Aires", "2011 – 2014"),
-        ("B.S. in Commerce", "Universidad Nacional\nde Quilmes", "2011 – 2014"),
-    ]:
-        s.append(Paragraph(title.replace("\n", "<br/>"), sEduT))
-        s.append(Paragraph(inst.replace("\n", "<br/>"), sEduI))
-        s.append(Paragraph(date, sEduD))
+def build_right_column():
+    content = []
+    content += section_header("E d u c a t i o n")
 
-    return s
+    education = [
+        ("B.S. in Data Science\n(in progress)", "Universidad de\nBuenos Aires",     "2020 – Present"),
+        ("Android App\nDevelopment",             "Educación IT",                    "2018 – 2019"),
+        ("B.A. in Literature",                   "Universidad de\nBuenos Aires",    "2011 – 2014"),
+        ("B.S. in Commerce",                     "Universidad Nacional\nde Quilmes","2011 – 2014"),
+    ]
+    for degree_title, institution, years in education:
+        content.append(Paragraph(degree_title.replace("\n", "<br/>"), style_edu_title))
+        content.append(Paragraph(institution.replace("\n", "<br/>"), style_edu_institution))
+        content.append(Paragraph(years, style_edu_date))
 
-# ── BUILD PDF ──────────────────────────────────────────────────────────────
-OUT = "/tmp/CV_RomanRipari_Eng.pdf"
-c = rl_canvas.Canvas(OUT, pagesize=A4)
+    return content
 
-c.setFillColor(WHITE)
-c.rect(0, 0, W, H, fill=1, stroke=0)
+# =============================================================================
+# BUILD THE PDF
+# =============================================================================
 
-# Header
-c.setFillColor(BLACK)
-c.setFont("DV-B", 22)
-name_y = H - MARGIN_Y - 10 * mm
-c.drawCentredString(W / 2, name_y, "Roman Ariel Ripari")
+canvas = pdf_canvas.Canvas(OUTPUT_FILE, pagesize=A4)
 
-c.setFont("DV", 10)
-c.setFillColor(MID)
-c.drawCentredString(W / 2, name_y - 7 * mm, "Senior Data Analyst  |  Business Intelligence  |  Competitive Intelligence")
+# White background
+canvas.setFillColor(COLOR_WHITE)
+canvas.rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT, fill=1, stroke=0)
 
-c.setStrokeColor(RULE)
-c.setLineWidth(0.5)
-c.line(MARGIN_X, H - MARGIN_Y - HEADER_H, W - MARGIN_X, H - MARGIN_Y - HEADER_H)
+# ── Header: Name and subtitle centered ───────────────────────────────────
+name_y = PAGE_HEIGHT - MARGIN_TOP_BOTTOM - 10 * mm
 
-# Frames
-def make_frame(x, w, story):
-    fr = Frame(x, MARGIN_Y, w, BODY_H,
-               leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
-               showBoundary=0)
-    overflow = list(story)
-    fr.addFromList(overflow, c)
-    return overflow
+canvas.setFillColor(COLOR_BLACK)
+canvas.setFont("Bold", 22)
+canvas.drawCentredString(PAGE_WIDTH / 2, name_y, "Roman Ariel Ripari")
 
-ls = left_col()
-ms = center_col()
-rs = right_col()
+canvas.setFont("Regular", 10)
+canvas.setFillColor(COLOR_MEDIUM)
+canvas.drawCentredString(PAGE_WIDTH / 2, name_y - 7 * mm,
+                         "Senior Data Analyst  |  Business Intelligence  |  Competitive Intelligence")
 
-lo = make_frame(COL_L_X, COL_L_W, ls)
-mo = make_frame(COL_M_X, COL_M_W, ms)
-ro = make_frame(COL_R_X, COL_R_W, rs)
+# Divider line below header
+canvas.setStrokeColor(COLOR_RULE)
+canvas.setLineWidth(0.5)
+canvas.line(MARGIN_LEFT_RIGHT, PAGE_HEIGHT - MARGIN_TOP_BOTTOM - HEADER_HEIGHT,
+            PAGE_WIDTH - MARGIN_LEFT_RIGHT, PAGE_HEIGHT - MARGIN_TOP_BOTTOM - HEADER_HEIGHT)
 
-for col_name, overflow in [("Left", lo), ("Center", mo), ("Right", ro)]:
+# ── Render the three columns ──────────────────────────────────────────────
+left_content   = build_left_column()
+center_content = build_center_column()
+right_content  = build_right_column()
+
+left_overflow   = render_column(canvas, LEFT_COL_X,   LEFT_COL_WIDTH,   left_content)
+center_overflow = render_column(canvas, CENTER_COL_X, CENTER_COL_WIDTH, center_content)
+right_overflow  = render_column(canvas, RIGHT_COL_X,  RIGHT_COL_WIDTH,  right_content)
+
+for col_name, overflow in [("Left", left_overflow), ("Center", center_overflow), ("Right", right_overflow)]:
     if overflow:
-        print(f"⚠ {col_name} col overflow: {len(overflow)} items", flush=True)
+        print(f"⚠ Column {col_name}: {len(overflow)} items did not fit", flush=True)
     else:
-        print(f"✓ {col_name} col fits", flush=True)
+        print(f"✓ Column {col_name}: OK", flush=True)
 
-c.showPage()
-c.save()
-print(f"✓ Saved: {OUT}", flush=True)
-print("DONE", flush=True)
+canvas.showPage()
+canvas.save()
+print(f"✓ PDF saved: {OUTPUT_FILE}", flush=True)

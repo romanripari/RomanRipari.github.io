@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Paseo Comercial v2</title>
+<title>Paseo Comercial</title>
 <style>
-:root{--w:130px}
 *{box-sizing:border-box}
 html,body{margin:0;font-family:system-ui,sans-serif}
 body{background:#efe9dd;color:#222}
@@ -22,34 +21,40 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .lg{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:3px;border-radius:6px;opacity:.4}
 .lg.act{opacity:1;background:#fff9;outline:2px solid #e0007a}
 .lg span{font-size:11px;font-weight:700;color:#111}
-.lg img{height:34px;width:auto}
+.lg svg{height:30px;width:30px}
 .street{background:#fff;border-radius:10px;padding:8px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
 .street.glow{box-shadow:0 0 0 3px #00b86b,0 0 14px #00b86b88}
-.street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
-.row{display:flex;overflow-x:auto;min-height:calc(var(--w) * 1.391 + 12px);padding:6px 4px 4px 4px}
-/* La carta conserva sus esquinas originales. El solapado corta sobre la línea divisoria del arte (≈68 % del ancho). */
-.card{position:relative;flex:0 0 var(--w);width:var(--w);height:calc(var(--w) * 1.391);margin-right:calc(var(--w) * -0.319)}
+.row{display:flex;overflow-x:auto;min-height:150px;padding:6px 4px 4px 4px}
+.handrow{min-height:150px}
+.card{flex:0 0 120px;width:120px;height:146px;margin-right:-56px;border:2px solid #444;border-radius:8px;display:flex;overflow:hidden;position:relative;background:#fff}
 .card:last-child{margin-right:0}
-.handrow .card{margin-right:10px}
-.card img.art{display:block;width:100%;height:100%}
-.card.sel{outline:4px solid #e0a000}
-.card.dsel{outline:4px solid #e0302a}
+.handrow .card{margin-right:8px}
+.card.sel{outline:3px solid #e0a000}
 .card.ext{outline:3px dashed #e0007a;cursor:pointer}
 .card.hand{cursor:pointer}
-.card.bonusmark{box-shadow:0 0 0 3px #00b86b,0 0 10px #00b86b}
+.card.bonusmark{outline:3px solid #00b86b;box-shadow:0 0 10px #00b86b}
 .card.bonus{outline:3px dashed #00b86b;cursor:pointer}
-/* Clientes: se ubican sobre los círculos del arte, según el tamaño del edificio */
-.dot{position:absolute;width:calc(var(--w) * 0.1);height:calc(var(--w) * 0.1);border-radius:50%;transform:translate(-50%,-50%);border:1.5px solid #e0007a;background:#fff8}
+.street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
+.card.dsel{outline:3px solid #e0302a;box-shadow:0 0 10px #e0302a}
+button.danger{background:#e0302a}
+.main{width:70px;flex:0 0 70px;display:flex;flex-direction:column;align-items:center;padding:2px 2px 0 2px}
+.top{display:flex;justify-content:space-between;width:100%}
+.top svg{width:22px;height:22px}
+.bld svg{display:block}
+.sz{font-size:11px;font-weight:700;color:#111;line-height:1.1}
+.strip{flex:1;border-left:2px dashed #0006;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#111;background:#fff9;text-align:center;padding:2px;gap:2px;min-width:0}
+.strip b{font-size:9px;line-height:1.1;word-break:break-word}
+.strip svg{width:24px;height:24px}
+.dots{display:grid;grid-template-columns:repeat(3,9px);gap:2px;justify-content:start;margin:2px 0 0 4px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid #e0007a;background:none}
 .dot.on{background:#e0007a}
-.angry{position:absolute;top:6px;left:44%;background:#e0302a;color:#fff;font-size:11px;font-weight:700;border-radius:8px;padding:0 5px}
 .empty{color:#888;font-size:12px;align-self:center}
 button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
 button:disabled{opacity:.4;cursor:default}
 button.alt{background:#8a6d00}
 button.ghost{background:#5b7a6c}
-button.danger{background:#e0302a}
 button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2s infinite}
 @keyframes pulse{50%{transform:scale(1.05)}}
 .banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
@@ -62,7 +67,7 @@ button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2
 table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 
-/* menú de inicio */
+/* menú de inicio: estética alegre */
 .setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;min-height:100vh;padding:24px 16px 150px;display:flex;justify-content:center;overflow:hidden}
 .setup::after{content:"";position:absolute;left:0;right:0;bottom:0;height:78px;background:repeating-linear-gradient(90deg,#b9b9b9 0 46px,#a7a7a7 46px 48px);border-top:10px solid #e4787a;box-shadow:inset 0 10px 0 #fff,inset 0 -6px 0 #7a7a7a}
 .setup-wrap{display:flex;flex-wrap:wrap;gap:28px;max-width:1000px;width:100%;position:relative;z-index:1}
@@ -106,30 +111,61 @@ const DATA = [
 ];
 const NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
 const POOL = ['Pe','Me','Gr','Ma','Ta','No','Ba','El','Ju','Ro'];
-const HORARIOS = ['Ma','Ta','No'];
 const LBL = {_TOT:'Bonus de Clientela',Ma:'Mañana',Ta:'Tarde',No:'Noche',Pe:'Pequeño',Me:'Mediano',Gr:'Grande',Ba:'Bazar',El:'Electrónica',Ju:'Juguetería',Ro:'Ropa'};
 const CAP3 = {Pe:3,Me:4,Gr:5};
 const CAP4 = {Pe:4,Me:5,Gr:6};
 const SLOTS = [5,3,1];
+const BGT = {Ma:'#fff1a8',Ta:'#ffd9a0',No:'#cdd6dc'};
+const BCOL = {Ba:'#f29a2e',El:'#3b86c4',Ju:'#e0443a',Ro:'#8c4bc8'};
+const BSZ = {Pe:{w:34,h:30},Me:{w:44,h:46},Gr:{w:50,h:62}};
 const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6KyIMqNLaXGmAMazl8/edit?usp=sharing';
 
-/* ===== ARTE: cartas e íconos desde la carpeta Cartas/ ===== */
-// Carta: inicial horario + inicial rubro + inicial tamaño. Ej.: trp.png = tarde, ropa, pequeño
-const TM = {Ma:'m',Ta:'t',No:'n'};
-const RB = {Ba:'b',Ju:'j',Ro:'r',El:'e'};
-const SZ = {Pe:'p',Me:'m',Gr:'g'};
-function cardSrc(c){ return `Cartas/${TM[c.t]}${RB[c.r]}${SZ[c.s]}.png`; }
-// Íconos: "ico_" + 3 primeras letras
-const ICO = {Ma:'ico_man',Ta:'ico_tar',No:'ico_noc',Pe:'ico_peq',Me:'ico_med',Gr:'ico_gra',Ba:'ico_baz',El:'ico_ele',Ju:'ico_jug',Ro:'ico_rop'};
-function iconImg(code){ return `<img src="Cartas/${ICO[code]}.png" alt="${LBL[code]}">`; }
-
-// Posiciones de los círculos de cliente en el arte (porcentaje del ancho y alto de la carta).
-// Pequeño: 5 círculos · Mediano: 4 en el arte + 1 extra (ver nota) · Grande: 6 círculos
-const SLOTS_ART = {
-  Pe:[[24.3,81.1],[43.6,81.3],[15.4,92.1],[34.2,92.3],[53.2,92.5]],
-  Me:[[23.0,80.8],[41.8,81.3],[32.5,92.3],[51.2,92.8],[61.5,92.5]],
-  Gr:[[11.4,81.0],[30.5,81.3],[49.2,81.0],[20.3,92.1],[39.3,92.3],[58.3,92.5]]
-};
+/* ===== ÍCONOS ===== */
+function timeSVG(t){
+  if(t==='Ma') return `<svg viewBox="0 0 24 24"><g stroke="#e8a400" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g><circle cx="12" cy="12" r="5" fill="#ffd21f" stroke="#222"/></svg>`;
+  if(t==='Ta') return `<svg viewBox="0 0 24 24"><path d="M3 17 A9 9 0 0 1 21 17 Z" fill="#f08a24" stroke="#222"/><line x1="1" y1="20" x2="23" y2="20" stroke="#f08a24" stroke-width="2"/><line x1="12" y1="2" x2="12" y2="5" stroke="#f08a24" stroke-width="1.5"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><path d="M15 3 A9 9 0 1 0 21 16 A7 7 0 0 1 15 3 Z" fill="#fff" stroke="#222"/></svg>`;
+}
+function rubroSVG(r){
+  if(r==='Ba') return `<svg viewBox="0 0 24 24"><path d="M6 3 L18 3 L15 10 L9 10 Z" fill="#ffd21f" stroke="#222"/><line x1="12" y1="10" x2="12" y2="18" stroke="#222" stroke-width="1.5"/><rect x="8" y="18" width="8" height="3" fill="#8c6a1c" stroke="#222"/></svg>`;
+  if(r==='El') return `<svg viewBox="0 0 24 24"><path d="M4 15 A8 8 0 0 1 20 15" fill="none" stroke="#1ea3e8" stroke-width="2.5"/><rect x="2" y="13" width="4" height="7" rx="1.5" fill="#1ea3e8"/><rect x="18" y="13" width="4" height="7" rx="1.5" fill="#1ea3e8"/></svg>`;
+  if(r==='Ju') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="13" height="7" fill="#3fb34f" stroke="#222"/><path d="M15 6 L21 6 L21 16 L15 16 Z" fill="#e0443a" stroke="#222"/><circle cx="6" cy="18" r="2.2" fill="#222"/><circle cx="12" cy="18" r="2.2" fill="#222"/><circle cx="19" cy="18" r="2.2" fill="#222"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><path d="M9 3 L15 3 L16 7 L19 22 L5 22 L8 7 Z" fill="#b25ee0" stroke="#222"/><path d="M9 3 L10 7 L14 7 L15 3" fill="none" stroke="#222" stroke-width="1.2"/></svg>`;
+}
+function sizeSVG(s){
+  if(s==='Pe') return `<svg viewBox="0 0 24 24"><rect x="5" y="13" width="14" height="8" fill="#bbb" stroke="#222"/></svg>`;
+  if(s==='Me') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="10" height="12" fill="#888" stroke="#222"/><rect x="12" y="13" width="10" height="8" fill="#ddd" stroke="#222"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><rect x="1" y="14" width="6" height="7" fill="#ddd" stroke="#222"/><rect x="8" y="8" width="7" height="13" fill="#999" stroke="#222"/><rect x="16" y="3" width="7" height="18" fill="#444" stroke="#222"/></svg>`;
+}
+function iconFor(code){
+  if(['Ma','Ta','No'].includes(code)) return timeSVG(code);
+  if(['Pe','Me','Gr'].includes(code)) return sizeSVG(code);
+  return rubroSVG(code);
+}
+function bldgSVG(r,s){
+  const d=BSZ[s], col=BCOL[r], base=80, x=(60-d.w)/2, y=base-d.h;
+  let roof='', extra='', wins='';
+  if(r==='El'){
+    roof=`<line x1="30" y1="${y}" x2="30" y2="${y-12}" stroke="#222" stroke-width="2"/><line x1="24" y1="${y-10}" x2="36" y2="${y-10}" stroke="#222" stroke-width="2"/>`;
+  } else if(r==='Ba'){
+    roof=`<polygon points="${x-3},${y} 30,${y-14} ${x+d.w+3},${y}" fill="#c96a1a" stroke="#222" stroke-width="2"/>`;
+  } else if(r==='Ju'){
+    let st=''; for(let i=0;i<6;i++) st+=`<rect x="${x+i*(d.w/6)}" y="${y+2}" width="${d.w/6}" height="7" fill="${i%2?'#3fb34f':'#fff'}" stroke="#222" stroke-width="0.8"/>`;
+    extra=st;
+  } else {
+    roof=`<rect x="${x-2}" y="${y-4}" width="${d.w+4}" height="4" fill="#5b2d86" stroke="#222"/>`;
+  }
+  const rows=Math.max(1,Math.floor((d.h-22)/16));
+  for(let rw=0;rw<rows;rw++) for(let c=0;c<3;c++)
+    wins+=`<rect x="${x+6+c*((d.w-12)/3)}" y="${y+7+rw*16}" width="${(d.w-12)/3-5}" height="8" fill="#fffb" stroke="#222" stroke-width="1"/>`;
+  return `<svg viewBox="0 0 60 84" width="62" height="72">
+    ${roof}
+    <rect x="${x}" y="${y}" width="${d.w}" height="${d.h}" fill="${col}" stroke="#222" stroke-width="2"/>
+    ${wins}${extra}
+    <rect x="25" y="${base-14}" width="10" height="14" fill="#fff" stroke="#222"/>
+    <line x1="2" y1="${base}" x2="58" y2="${base}" stroke="#666" stroke-width="2"/>
+  </svg>`;
+}
 
 /* ===== ESTADO ===== */
 let S = null;
@@ -158,7 +194,7 @@ function newGame(){
     discard: [],
     active: [], turn:1, totalTurns:5, start: starter,
     round:1, rounds: SETUP.rounds, totalPts: [], roundResults: [],
-    pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, discardSel:null, front:null,
+    pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
     simQueue:[], simDone:false,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
     fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, critMode: SETUP.critMode, chain: SETUP.chainBonus, newFull:[], bonusQ:[], pendingBonus:null, afterBonus:null, log:[]
@@ -169,12 +205,12 @@ function newGame(){
 }
 
 function beginRound(){
-  S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.discardSel=null; S.extraMode=false;
+  S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.extraMode=false;
   S.pendingPick=false; S.prePick=false; S.pendingDiscard=false;
   S.simQueue=[]; S.simDone=false;
   S.players.forEach(p=>p.extras=0);
   S.totalTurns = S.round===1 ? (S.n===4 ? 5 : S.cards) : 3;
-  S.active = S.critMode==='horario' ? [HORARIOS[S.round-1]] : shuffle(POOL.slice()).slice(0,2);
+  S.active = S.critMode==='horario' ? [['Ma','Ta','No'][S.round-1]] : shuffle(POOL.slice()).slice(0,2);
   log(`— Ronda ${S.round} —`);
   log(`Criterios iniciales: ${S.active.map(x=>LBL[x]).join(', ')}.`);
   log(`Empieza ${S.players[S.start].name}.`);
@@ -207,15 +243,6 @@ function completeTurn(){
   S.turn++;
   if(S.turn>S.totalTurns) endRound(); else render();
 }
-function confirmDiscard(){
-  const me = S.players[0];
-  if(!S.pendingDiscard || !S.discardSel) return;
-  discardFrom(me, S.discardSel);
-  log(`Descartaste #${S.discardSel.id}.`);
-  S.discardSel = null;
-  drawCards(me,2);
-  completeTurn();
-}
 
 /* ===== MECÁNICA ===== */
 function giveClients(src){
@@ -227,7 +254,9 @@ function giveClients(src){
 }
 
 /* ===== CLIENTES EN CADENA ===== */
-// Un edificio Pequeño o Mediano lleno da un cliente extra a otro edificio del mismo rubro de la misma vereda (de cualquier tamaño). Los Grandes no disparan.
+// Cualquier edificio lleno da un cliente extra a otro edificio del mismo rubro de la misma vereda, sin importar el tamaño.
+// Solo se consideran los locales del propio jugador que tengan lugar libre.
+const NEXT_SIZE = {Pe:'Me', Me:'Gr'};
 function bonusTargets(owner, src){
   return owner.street.filter(c=>c!==src && c.r===src.r && c.clients<capOf(c));
 }
@@ -309,9 +338,9 @@ function botDiscard(p){
   return worst;
 }
 
-// Criterios que se pueden elegir en el tercer turno (en Por Horario no se eligen horarios)
 function pickablePool(){
-  return POOL.filter(x=>!S.active.includes(x) && !(S.critMode==='horario' && HORARIOS.includes(x)));
+  const horarios=['Ma','Ta','No'];
+  return POOL.filter(x=>!S.active.includes(x) && !(S.critMode==='horario' && horarios.includes(x)));
 }
 function countOwn(p,crit){return p.street.filter(c=>has(c,crit)).length}
 function totOf(q,k){ return k==='_TOT' ? totalClients(q) : q.street.filter(c=>has(c,k)).reduce((s,c)=>s+c.clients,0); }
@@ -359,6 +388,7 @@ function doTurn(humanId){
 }
 
 function afterReveal(){
+
   // Inauguración: el jugador inicial de los turnos 1 y 2 de la ronda 1 recibe 1 extra
   if(S.round===1 && S.inaug && S.turn<=2) S.players[S.start].extras += 1;
 
@@ -534,25 +564,36 @@ function nextRound(){
   beginRound();
 }
 
+function confirmDiscard(){
+  const me = S.players[0];
+  if(!S.pendingDiscard || !S.discardSel) return;
+  discardFrom(me, S.discardSel);
+  log(`Descartaste #${S.discardSel.id}.`);
+  S.discardSel = null;
+  drawCards(me,2);
+  completeTurn();
+}
+
 /* ===== RENDER ===== */
 function cardHTML(c, cls=''){
   const cp = capOf(c);
-  const slots = SLOTS_ART[c.s];
-  const dots = Array.from({length:cp},(_,i)=>{
-    const [x,y] = slots[i];
-    return `<i class="dot ${i<c.clients?'on':''}" style="left:${x}%;top:${y}%"></i>`;
-  }).join('');
+  const dots = Array.from({length:cp},(_,i)=>`<i class="dot ${i<c.clients?'on':''}"></i>`).join('');
   const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
-  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
-    <img class="art" src="${cardSrc(c)}" alt="">
-    ${dots}
-    ${c.angry?'<div class="angry">−1</div>':''}
+  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" style="background:${BGT[c.t]}" data-card="${c.id}"${front}>
+    <div class="main">
+      <div class="top">${timeSVG(c.t)}${rubroSVG(c.r)}</div>
+      <div class="bld">${bldgSVG(c.r,c.s)}</div>
+      <div class="sz">${LBL[c.s]}</div>
+      ${c.angry?'<div style="position:absolute;top:4px;left:4px;background:#e0302a;color:#fff;font-size:10px;font-weight:700;border-radius:8px;padding:0 5px">−1</div>':''}
+      <div class="dots">${dots}</div>
+    </div>
+    <div class="strip"><span>da a</span>${iconFor(c.tgt)}<b>${LBL[c.tgt]}</b></div>
   </div>`;
 }
 
 function losetaHTML(){
-  const item = (code) => `<div class="lg ${S && S.active.includes(code)?'act':''}">${iconImg(code)}<span>${LBL[code]}</span></div>`;
+  const item = (code) => `<div class="lg ${S && S.active.includes(code)?'act':''}">${iconFor(code)}<span>${LBL[code]}</span></div>`;
   return ['Ma','Ta','No','Pe','Me','Gr','Ba','El','Ju','Ro'].map(item).join('');
 }
 
@@ -577,29 +618,28 @@ function setupHTML(){
     </div>
     <div class="setup-right">
       <div class="opt-label">Rivales (bots)</div>
-      <div class="opt-desc">Cantidad de bots: 2 para partidas de 3 jugadores, 3 para partidas de 4.</div>
       <div class="opts">${opt('rivals',2,'2')}${opt('rivals',3,'3')}</div>
       ${SETUP.rivals===2 ? `<div class="opt-label">Cartas jugadas</div>
-      <div class="opt-desc">Solo con 2 rivales. 5 locales: capacidad menor (3/4/5). 6 locales: capacidad estándar (4/5/6).</div>
       <div class="opts">${opt('cards',5,'5 locales (menos capacidad)')}${opt('cards',6,'6 locales (capacidad estándar)')}</div>` : ''}
+      <div class="opt-label">Dificultad de los bots</div>
       <div class="opt-label">Dificultad de los bots</div>
       <div class="opt-desc">Difícil: el bot cuenta las cartas visibles, evita darles clientes a los rivales y prioriza los criterios activos. Fácil: el bot solo mira su mano y juega al azar.</div>
       <div class="opts">${opt('diff','dificil','Difícil')}${opt('diff','facil','Fácil')}</div>
       <div class="opt-label">Empieza</div>
-      <div class="opt-desc">Quién es el jugador inicial de la primera ronda.</div>
       <div class="opts">${opt('starter','azar','Al azar')}${opt('starter','yo','Yo')}</div>
       <div class="opt-label">Ver puntuación en vivo</div>
-      <div class="opt-desc">Muestra los puntos de cada jugador y el detalle de cada criterio mientras se juega.</div>
       <div class="opts">${opt('live',true,'Sí')}${opt('live',false,'No')}</div>
       <div class="opt-label">Número de rondas</div>
-      <div class="opt-desc">1 ronda según el manual. 2 o 3 rondas: al terminar una, cada jugador conserva sus 2 locales más recientes que tengan lugar libre y al menos una ficha colocada, y el resto vuelve al mazo.</div>
       <div class="opts">${opt('rounds',1,'1')}${opt('rounds',2,'2')}${opt('rounds',3,'3')}</div>
-      <div class="opt-label">Modo de criterios iniciales</div>
-      <div class="opt-desc">Criterios iniciales al azar: 2 criterios sorteados al empezar. Por Horario: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
-      <div class="opts">${opt('critMode','horario','Por Horario')}${opt('critMode','azar','Criterios iniciales al azar')}</div>
       <div class="opt-label">Clientes en cadena</div>
       <div class="opt-desc">Un edificio Pequeño o Mediano lleno da un cliente extra a otro edificio del mismo rubro de tu vereda, de cualquier tamaño</div>
       <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>
+      <div class="opt-label">Modo de criterios iniciales</div>
+      <div class="opt-desc">Criterios al azar: 2 criterios sorteados al empezar. Horario por ronda: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
+      <div class="opts">${opt('critMode','horario','Por Horario')}${opt('critMode','azar','Criterios iniciales al azar')}</div>
+      ${SETUP.simPick ? '' : `<div class="opt-label">Inauguración</div>
+      <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
+      <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>`}
       <div class="opt-label">Bonus de Clientela</div>
       <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
       <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
@@ -723,7 +763,7 @@ document.addEventListener('click', e=>{
     if(a==='showscore'){ S.hideOverlay=false; render(); return; }
     if(a==='nextround'){ nextRound(); return; }
     if(S.over) return;
-    if(a==='play' && S.selCard && !S.pendingPick && !S.prePick && !S.pendingDiscard && !S.pendingBonus){ doTurn(S.selCard.id); return; }
+    if(a==='play' && S.selCard && !S.pendingPick && !S.prePick && !S.pendingDiscard){ doTurn(S.selCard.id); return; }
     if(a==='extra'){ S.extraMode = !S.extraMode; render(); return; }
     if(a==='crit'){ pickCriterion(act.dataset.crit); return; }
     if(a==='confirmDiscard'){ confirmDiscard(); return; }

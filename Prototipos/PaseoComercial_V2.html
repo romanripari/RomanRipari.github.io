@@ -29,19 +29,19 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
 .row{display:flex;overflow-x:auto;min-height:calc(var(--w) * 1.391 + 12px);padding:6px 4px 4px 4px}
-/* Carta: el arte ya trae la franja "da a" a la derecha; el corte de solapado cae sobre su línea divisoria (≈68 % del ancho) */
-.card{position:relative;flex:0 0 var(--w);width:var(--w);height:calc(var(--w) * 1.391);margin-right:calc(var(--w) * -0.319);border-radius:8px}
+/* La carta conserva sus esquinas originales. El solapado corta sobre la línea divisoria del arte (≈68 % del ancho). */
+.card{position:relative;flex:0 0 var(--w);width:var(--w);height:calc(var(--w) * 1.391);margin-right:calc(var(--w) * -0.319)}
 .card:last-child{margin-right:0}
 .handrow .card{margin-right:10px}
-.card img.art{display:block;width:100%;height:100%;border-radius:8px}
-.card.sel{outline:4px solid #e0a000;border-radius:8px}
-.card.dsel{outline:4px solid #e0302a;border-radius:8px}
+.card img.art{display:block;width:100%;height:100%}
+.card.sel{outline:4px solid #e0a000}
+.card.dsel{outline:4px solid #e0302a}
 .card.ext{outline:3px dashed #e0007a;cursor:pointer}
 .card.hand{cursor:pointer}
 .card.bonusmark{box-shadow:0 0 0 3px #00b86b,0 0 10px #00b86b}
 .card.bonus{outline:3px dashed #00b86b;cursor:pointer}
-.dots{position:absolute;left:4%;bottom:3%;display:grid;grid-template-columns:repeat(3,10px);gap:2px}
-.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid #e0007a;background:#fff}
+/* Clientes: se ubican sobre los círculos del arte, según el tamaño del edificio */
+.dot{position:absolute;width:calc(var(--w) * 0.1);height:calc(var(--w) * 0.1);border-radius:50%;transform:translate(-50%,-50%);border:1.5px solid #e0007a;background:#fff8}
 .dot.on{background:#e0007a}
 .angry{position:absolute;top:6px;left:44%;background:#e0302a;color:#fff;font-size:11px;font-weight:700;border-radius:8px;padding:0 5px}
 .empty{color:#888;font-size:12px;align-self:center}
@@ -122,6 +122,14 @@ function cardSrc(c){ return `Cartas/${TM[c.t]}${RB[c.r]}${SZ[c.s]}.png`; }
 // Íconos: "ico_" + 3 primeras letras
 const ICO = {Ma:'ico_man',Ta:'ico_tar',No:'ico_noc',Pe:'ico_peq',Me:'ico_med',Gr:'ico_gra',Ba:'ico_baz',El:'ico_ele',Ju:'ico_jug',Ro:'ico_rop'};
 function iconImg(code){ return `<img src="Cartas/${ICO[code]}.png" alt="${LBL[code]}">`; }
+
+// Posiciones de los círculos de cliente en el arte (porcentaje del ancho y alto de la carta).
+// Pequeño: 5 círculos · Mediano: 4 en el arte + 1 extra (ver nota) · Grande: 6 círculos
+const SLOTS_ART = {
+  Pe:[[24.3,81.1],[43.6,81.3],[15.4,92.1],[34.2,92.3],[53.2,92.5]],
+  Me:[[23.0,80.8],[41.8,81.3],[32.5,92.3],[51.2,92.8],[61.5,92.5]],
+  Gr:[[11.4,81.0],[30.5,81.3],[49.2,81.0],[20.3,92.1],[39.3,92.3],[58.3,92.5]]
+};
 
 /* ===== ESTADO ===== */
 let S = null;
@@ -529,12 +537,16 @@ function nextRound(){
 /* ===== RENDER ===== */
 function cardHTML(c, cls=''){
   const cp = capOf(c);
-  const dots = Array.from({length:cp},(_,i)=>`<i class="dot ${i<c.clients?'on':''}"></i>`).join('');
+  const slots = SLOTS_ART[c.s];
+  const dots = Array.from({length:cp},(_,i)=>{
+    const [x,y] = slots[i];
+    return `<i class="dot ${i<c.clients?'on':''}" style="left:${x}%;top:${y}%"></i>`;
+  }).join('');
   const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
   return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
     <img class="art" src="${cardSrc(c)}" alt="">
-    <div class="dots">${dots}</div>
+    ${dots}
     ${c.angry?'<div class="angry">−1</div>':''}
   </div>`;
 }

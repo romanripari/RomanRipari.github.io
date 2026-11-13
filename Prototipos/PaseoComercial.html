@@ -169,7 +169,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:true, simPick:true, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:true, simPick:true, critMode:'azar', rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -197,7 +197,7 @@ function newGame(){
     pendingPick:false, prePick:false, pendingDiscard:false, extraMode:false, selCard:null, front:null,
     simQueue:[], simDone:false,
     over:false, hideOverlay:false, live: SETUP.live, diff: SETUP.diff,
-    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, chain: SETUP.chainBonus, newFull:[], bonusQ:[], pendingBonus:null, afterBonus:null, log:[]
+    fullPenalty: SETUP.fullPenalty, inaug: SETUP.inaug && !SETUP.simPick, extraClients: SETUP.extraClients, discardMode: SETUP.discardMode, simPick: SETUP.simPick, critMode: SETUP.critMode, chain: SETUP.chainBonus, newFull:[], bonusQ:[], pendingBonus:null, afterBonus:null, log:[]
   };
   S.totalPts = S.players.map(()=>0);
   S.players.forEach(p=>{for(let i=0;i<5;i++) p.hand.push(mkCard(S.deck.pop(),p))});
@@ -210,7 +210,7 @@ function beginRound(){
   S.simQueue=[]; S.simDone=false;
   S.players.forEach(p=>p.extras=0);
   S.totalTurns = S.round===1 ? (S.n===4 ? 5 : S.cards) : 3;
-  S.active = shuffle(POOL.slice()).slice(0,2);
+  S.active = S.critMode==='horario' ? [['Ma','Ta','No'][S.round-1]] : shuffle(POOL.slice()).slice(0,2);
   log(`— Ronda ${S.round} —`);
   log(`Criterios iniciales: ${S.active.map(x=>LBL[x]).join(', ')}.`);
   log(`Empieza ${S.players[S.start].name}.`);
@@ -266,7 +266,7 @@ function isBonusTarget(c){
 function queueNewFull(){
   const list = S.newFull; S.newFull = [];
   list.forEach(src=>{
-    if(!S.chain) return;
+    if(!S.chain || src.s==='Gr') return;
     if(!bonusTargets(src.owner, src).length) return;
     src.bonusMark = true;
     S.bonusQ.push({owner: src.owner, src});
@@ -602,10 +602,13 @@ function setupHTML(){
       <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios de puntuación que se activan en cada ronda.</p>
       <h4>Paso a paso</h4>
       <ul>
-        <li>Cada turno, todos bajan una carta a la vez y se revelan en simultáneo.</li>
-        <li>Cada carta da 1 cliente a todos los locales de la mesa que cumplan con alguna característica.</li>
-        <li>El jugador inicial elige criterios de puntuación nuevos en los turnos 1 a 3 (y 4 con cuatro jugadores).</li>
-        <li>Al final de cada ronda, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes.</li>
+        <li>Por defecto: 4 jugadores (vos y 3 bots) y 3 rondas.</li>
+        <li>Cada turno, todos bajan una carta a la vez y se revelan en simultáneo. Cada carta da 1 cliente a los locales de la mesa que cumplan con su mismo atributo (tamaño, horario o rubro).</li>
+        <li>Cuando un jugador tiene 3 cartas en su vereda, todos eligen un criterio de puntuación en orden desde el jugador inicial.</li>
+        <li>Después de cada turno, descartás una carta en secreto y robás dos.</li>
+        <li>Un local Pequeño o Mediano lleno da un cliente extra a otro local del mismo rubro de tu vereda.</li>
+        <li>Al final de cada ronda, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes. El Bonus de Clientela suma un criterio más por total de clientes.</li>
+        <li>Entre rondas, conservás tus 2 locales más recientes que tengan lugar libre y al menos una ficha.</li>
       </ul>
       <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
     </div>
@@ -623,8 +626,11 @@ function setupHTML(){
       <div class="opt-label">Número de rondas</div>
       <div class="opts">${opt('rounds',1,'1')}${opt('rounds',2,'2')}${opt('rounds',3,'3')}</div>
       <div class="opt-label">Clientes en cadena</div>
-      <div class="opt-desc">Un edificio lleno da un cliente extra a otro edificio del mismo rubro de tu vereda, de cualquier tamaño</div>
+      <div class="opt-desc">Un edificio Pequeño o Mediano lleno da un cliente extra a otro edificio del mismo rubro de tu vereda, de cualquier tamaño</div>
       <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>
+      <div class="opt-label">Modo de criterios iniciales</div>
+      <div class="opt-desc">Criterios al azar: 2 criterios sorteados al empezar. Horario por ronda: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
+      <div class="opts">${opt('critMode','azar','Criterios iniciales al azar')}${opt('critMode','horario','Por Horario')}</div>
       <div class="opt-label">Elegir criterios en simultáneo</div>
       <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
       <div class="opts">${opt('simPick',true,'Sí')}${opt('simPick',false,'No')}</div>

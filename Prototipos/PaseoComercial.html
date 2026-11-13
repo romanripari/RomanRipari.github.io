@@ -36,6 +36,9 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .card.hand{cursor:pointer}
 .card.bonusmark{outline:3px solid #00b86b;box-shadow:0 0 10px #00b86b}
 .card.bonus{outline:3px dashed #00b86b;cursor:pointer}
+.street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
+.card.dsel{outline:3px solid #e0302a;box-shadow:0 0 10px #e0302a}
+button.danger{background:#e0302a}
 .main{width:70px;flex:0 0 70px;display:flex;flex-direction:column;align-items:center;padding:2px 2px 0 2px}
 .top{display:flex;justify-content:space-between;width:100%}
 .top svg{width:22px;height:22px}
@@ -166,7 +169,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:false, simPick:true, rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:true, simPick:true, rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -251,13 +254,11 @@ function giveClients(src){
 }
 
 /* ===== CLIENTES EN CADENA ===== */
-// Pequeño lleno -> cliente extra a un Mediano del mismo rubro; Mediano lleno -> a un Grande del mismo rubro.
+// Cualquier edificio lleno da un cliente extra a otro edificio del mismo rubro de la misma vereda, sin importar el tamaño.
 // Solo se consideran los locales del propio jugador que tengan lugar libre.
 const NEXT_SIZE = {Pe:'Me', Me:'Gr'};
 function bonusTargets(owner, src){
-  const ns = NEXT_SIZE[src.s];
-  if(!ns) return [];
-  return owner.street.filter(c=>c.r===src.r && c.s===ns && c.clients<capOf(c));
+  return owner.street.filter(c=>c!==src && c.r===src.r && c.clients<capOf(c));
 }
 function isBonusTarget(c){
   return !!S.pendingBonus && bonusTargets(S.pendingBonus.owner, S.pendingBonus.src).includes(c);
@@ -265,7 +266,7 @@ function isBonusTarget(c){
 function queueNewFull(){
   const list = S.newFull; S.newFull = [];
   list.forEach(src=>{
-    if(!S.chain || !NEXT_SIZE[src.s]) return;
+    if(!S.chain) return;
     if(!bonusTargets(src.owner, src).length) return;
     src.bonusMark = true;
     S.bonusQ.push({owner: src.owner, src});
@@ -559,11 +560,21 @@ function nextRound(){
   beginRound();
 }
 
+function confirmDiscard(){
+  const me = S.players[0];
+  if(!S.pendingDiscard || !S.discardSel) return;
+  discardFrom(me, S.discardSel);
+  log(`Descartaste #${S.discardSel.id}.`);
+  S.discardSel = null;
+  drawCards(me,2);
+  completeTurn();
+}
+
 /* ===== RENDER ===== */
 function cardHTML(c, cls=''){
   const cp = capOf(c);
   const dots = Array.from({length:cp},(_,i)=>`<i class="dot ${i<c.clients?'on':''}"></i>`).join('');
-  const sel = S.selCard===c ? ' sel' : '';
+  const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
   return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" style="background:${BGT[c.t]}" data-card="${c.id}"${front}>
     <div class="main">
@@ -612,7 +623,7 @@ function setupHTML(){
       <div class="opt-label">Número de rondas</div>
       <div class="opts">${opt('rounds',1,'1')}${opt('rounds',2,'2')}${opt('rounds',3,'3')}</div>
       <div class="opt-label">Clientes en cadena</div>
-      <div class="opt-desc">Edificio Pequeño lleno da un cliente extra a un Mediano del mismo rubro y Edificio Mediano lleno da un cliente extra a un Grande del mismo rubro</div>
+      <div class="opt-desc">Un edificio lleno da un cliente extra a otro edificio del mismo rubro de tu vereda, de cualquier tamaño</div>
       <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>
       <div class="opt-label">Elegir criterios en simultáneo</div>
       <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
@@ -623,9 +634,6 @@ function setupHTML(){
       <div class="opt-label">Bonus de Clientela</div>
       <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
       <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
-      <div class="opt-label">Modo descarte</div>
-      <div class="opt-desc">Después de cada turno, descartás una carta y robás dos</div>
-      <div class="opts">${opt('discardMode',true,'Sí')}${opt('discardMode',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start">▷ Empezar partida</button>
     </div>
@@ -673,7 +681,7 @@ function render(){
 
   let html = '';
   let handHTML = '';
-  if(S.pendingBonus) html += `<div class="banner">Clientes en cadena: elegí en qué ${LBL[NEXT_SIZE[S.pendingBonus.src.s]]} de ${LBL[S.pendingBonus.src.r]} sumar el cliente extra</div>`;
+  if(S.pendingBonus) html += `<div class="banner">Clientes en cadena: elegí en qué edificio de ${LBL[S.pendingBonus.src.r]} sumar el cliente extra</div>`;
   else if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
   else if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio</div>`;
   else if(S.pendingPick && S.simQueue.length) html += `<div class="banner">Elegí tu criterio de puntuación</div>`;
@@ -687,10 +695,11 @@ function render(){
   });
 
   if(!S.over){
-    const handGlow = (needPlay && !S.selCard) || needDiscard ? ' glow' : '';
-    handHTML = `<div class="street handdock${handGlow}"><h3><span>Tu mano</span><span>${needDiscard?'Tocá la carta que querés descartar':(S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta')}</span></h3>
+    const handGlow = needDiscard ? ' glowred' : ((needPlay && !S.selCard) ? ' glow' : '');
+    handHTML = `<div class="street handdock${handGlow}"><h3><span>Tu mano</span><span>${needDiscard?(S.discardSel?'Elegida para descartar #'+S.discardSel.id:'Tocá la carta que querés descartar'):(S.selCard?'Elegida #'+S.selCard.id:'Elegí una carta')}</span></h3>
       <div class="row handrow">${me.hand.map(c=>cardHTML(c,'hand')).join('')}</div>
       <div>
+        ${needDiscard ? `<button class="danger${S.discardSel?' glowbtn':''}" data-act="confirmDiscard" ${S.discardSel?'':'disabled'}>Confirmar descarte</button>` : ''}
         <button data-act="play" class="${needPlay && S.selCard?'glowbtn':''}" ${(!S.selCard || !needPlay)?'disabled':''}>Bajar carta</button>
         <button class="alt" data-act="extra" ${(me.extras<=0 || !needPlay)?'disabled':''}>${S.extraMode?'Cancelar colocar':'Colocar cliente extra'} (${me.extras})</button>
       </div></div>`;
@@ -748,6 +757,7 @@ document.addEventListener('click', e=>{
     if(a==='play' && S.selCard && !S.pendingPick && !S.prePick && !S.pendingDiscard){ doTurn(S.selCard.id); return; }
     if(a==='extra'){ S.extraMode = !S.extraMode; render(); return; }
     if(a==='crit'){ pickCriterion(act.dataset.crit); return; }
+    if(a==='confirmDiscard'){ confirmDiscard(); return; }
   }
   const cardEl = e.target.closest('[data-card]');
   if(cardEl && S && !S.over){
@@ -761,12 +771,7 @@ document.addEventListener('click', e=>{
     }
     if(S.pendingDiscard){
       const dc = me.hand.find(c=>c.id===id);
-      if(dc){
-        discardFrom(me,dc);
-        log(`Descartaste #${dc.id}.`);
-        drawCards(me,2);
-        completeTurn();
-      }
+      if(dc){ S.discardSel = dc; render(); }
       return;
     }
     if(S.extraMode){

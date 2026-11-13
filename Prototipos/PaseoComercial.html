@@ -631,9 +631,6 @@ function setupHTML(){
       <div class="opt-label">Modo de criterios iniciales</div>
       <div class="opt-desc">Criterios al azar: 2 criterios sorteados al empezar. Horario por ronda: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
       <div class="opts">${opt('critMode','azar','Criterios iniciales al azar')}${opt('critMode','horario','Por Horario')}</div>
-      <div class="opt-label">Elegir criterios en simultáneo</div>
-      <div class="opt-desc">Al bajar la tercera carta, todos eligen un criterio, en orden desde el jugador inicial</div>
-      <div class="opts">${opt('simPick',true,'Sí')}${opt('simPick',false,'No')}</div>
       ${SETUP.simPick ? '' : `<div class="opt-label">Inauguración</div>
       <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
       <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>`}

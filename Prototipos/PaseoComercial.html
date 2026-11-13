@@ -169,7 +169,7 @@ function bldgSVG(r,s){
 
 /* ===== ESTADO ===== */
 let S = null;
-let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:true, simPick:true, critMode:'azar', rounds:3, name:''};
+let SETUP = {rivals:3, cards:5, diff:'dificil', starter:'azar', live:true, fullPenalty:false, chainBonus:true, inaug:false, extraClients:true, discardMode:true, simPick:true, critMode:'horario', rounds:3, name:''};
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
@@ -338,6 +338,10 @@ function botDiscard(p){
   return worst;
 }
 
+function pickablePool(){
+  const horarios=['Ma','Ta','No'];
+  return POOL.filter(x=>!S.active.includes(x) && !(S.critMode==='horario' && horarios.includes(x)));
+}
 function countOwn(p,crit){return p.street.filter(c=>has(c,crit)).length}
 function totOf(q,k){ return k==='_TOT' ? totalClients(q) : q.street.filter(c=>has(c,k)).reduce((s,c)=>s+c.clients,0); }
 // cuántos criterios activos (incluido el bonus) lidera hoy este jugador
@@ -354,7 +358,7 @@ function critValue(p,crit){
 }
 
 function botCrit(p){
-  const cand = POOL.filter(x=>!S.active.includes(x));
+  const cand = pickablePool();
   if(S.diff==='facil') return cand[Math.floor(Math.random()*cand.length)];
   cand.sort((a,b)=> (critValue(p,b)-critValue(p,a)) + (Math.random()-0.5));
   return cand[0];
@@ -602,9 +606,9 @@ function setupHTML(){
       <p>Abrí locales en la cuadra, atraé clientes y ganá la mayoría en los criterios de puntuación que se activan en cada ronda.</p>
       <h4>Paso a paso</h4>
       <ul>
-        <li>Por defecto: 4 jugadores (vos y 3 bots) y 3 rondas.</li>
+        <li>Por defecto: 4 jugadores (vos y 3 bots), 3 rondas y criterios iniciales por horario: ronda 1 mañana, ronda 2 tarde y ronda 3 noche.</li>
         <li>Cada turno, todos bajan una carta a la vez y se revelan en simultáneo. Cada carta da 1 cliente a los locales de la mesa que cumplan con su mismo atributo (tamaño, horario o rubro).</li>
-        <li>Cuando un jugador tiene 3 cartas en su vereda, todos eligen un criterio de puntuación en orden desde el jugador inicial.</li>
+        <li>Cuando un jugador tiene 3 cartas en su vereda, todos eligen un criterio de puntuación en orden desde el jugador inicial. En el modo Por Horario, el criterio elegido es de tamaño o rubro.</li>
         <li>Después de cada turno, descartás una carta en secreto y robás dos.</li>
         <li>Un local Pequeño o Mediano lleno da un cliente extra a otro local del mismo rubro de tu vereda.</li>
         <li>Al final de cada ronda, cada criterio da 5, 3 y 1 puntos a los tres jugadores con más clientes. El Bonus de Clientela suma un criterio más por total de clientes.</li>
@@ -618,9 +622,11 @@ function setupHTML(){
       ${SETUP.rivals===2 ? `<div class="opt-label">Cartas jugadas</div>
       <div class="opts">${opt('cards',5,'5 locales (menos capacidad)')}${opt('cards',6,'6 locales (capacidad estándar)')}</div>` : ''}
       <div class="opt-label">Dificultad de los bots</div>
-      <div class="opts">${opt('diff','facil','Fácil')}${opt('diff','dificil','Difícil')}</div>
+      <div class="opt-label">Dificultad de los bots</div>
+      <div class="opt-desc">Difícil: el bot cuenta las cartas visibles, evita darles clientes a los rivales y prioriza los criterios activos. Fácil: el bot solo mira su mano y juega al azar.</div>
+      <div class="opts">${opt('diff','dificil','Difícil')}${opt('diff','facil','Fácil')}</div>
       <div class="opt-label">Empieza</div>
-      <div class="opts">${opt('starter','yo','Yo')}${opt('starter','azar','Al azar')}</div>
+      <div class="opts">${opt('starter','azar','Al azar')}${opt('starter','yo','Yo')}</div>
       <div class="opt-label">Ver puntuación en vivo</div>
       <div class="opts">${opt('live',true,'Sí')}${opt('live',false,'No')}</div>
       <div class="opt-label">Número de rondas</div>
@@ -630,7 +636,7 @@ function setupHTML(){
       <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>
       <div class="opt-label">Modo de criterios iniciales</div>
       <div class="opt-desc">Criterios al azar: 2 criterios sorteados al empezar. Horario por ronda: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
-      <div class="opts">${opt('critMode','azar','Criterios iniciales al azar')}${opt('critMode','horario','Por Horario')}</div>
+      <div class="opts">${opt('critMode','horario','Por Horario')}${opt('critMode','azar','Criterios iniciales al azar')}</div>
       ${SETUP.simPick ? '' : `<div class="opt-label">Inauguración</div>
       <div class="opt-desc">Extra de 1 para jugadores 1 y 2</div>
       <div class="opts">${opt('inaug',true,'Sí')}${opt('inaug',false,'No')}</div>`}
@@ -709,7 +715,7 @@ function render(){
     if(needPick){
       const title = S.prePick ? 'Elegí el criterio para la ronda' : (S.simQueue.length ? 'Elegí tu criterio de puntuación' : 'Sos jugador inicial: elegí un criterio');
       html += `<div class="panel"><b>${title}</b>
-        <div class="crit-grid" style="margin-top:6px">${POOL.filter(x=>!S.active.includes(x)).map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
+        <div class="crit-grid" style="margin-top:6px">${pickablePool().map(x=>`<button class="glowbtn" data-act="crit" data-crit="${x}">${LBL[x]}</button>`).join('')}</div></div>`;
     }
   } else {
     const res = S.roundResults[S.roundResults.length-1];

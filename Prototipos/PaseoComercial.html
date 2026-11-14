@@ -146,8 +146,8 @@ let SETUP = {rivals:3, diff:'dificil', starter:'azar', live:true, fullPenalty:fa
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function has(c,k){return c.t===k||c.r===k||c.s===k}
-// 3 jugadores: locales 3/4/5 siempre. 4 y 5 jugadores: 4/5/6.
-function capOf(c){ return (S.n===3 ? CAP3 : CAP4)[c.s]; }
+// 3, 4 y 5 jugadores: 4/5/6.
+function capOf(c){ return CAP4[c.s]; }
 // Mano según jugadores: 5 con 3 o 4 jugadores, 4 con 5 jugadores
 function handSize(){ return S.n===5 ? 4 : 5; }
 // Turnos de la primera ronda: 6 con 3 jugadores, 5 con 4 o 5
@@ -592,7 +592,7 @@ function setupHTML(){
     </div>
     <div class="setup-right">
       <div class="opt-label">Jugadores (bots)</div>
-      <div class="opt-desc">3 jugadores: mano de 5, 6 cartas por ronda, locales 3/4/5. 4 jugadores: mano de 5, 5 cartas por ronda, locales 4/5/6. 5 jugadores: mano de 4, 5 cartas por ronda, locales 4/5/6.</div>
+      <div class="opt-desc">3 jugadores: mano de 5, 6 cartas por ronda. 4 jugadores: mano de 5, 5 cartas por ronda. 5 jugadores: mano de 4, 5 cartas por ronda. Los locales siempre tienen capacidad 4/5/6.</div>
       <div class="opts">${opt('rivals',2,'3 jugadores')}${opt('rivals',3,'4 jugadores')}${opt('rivals',4,'5 jugadores')}</div>
       <div class="opt-label">Dificultad de los bots</div>
       <div class="opt-desc">Difícil: el bot cuenta las cartas visibles, evita darles clientes a los rivales y prioriza los criterios activos. Fácil: el bot solo mira su mano y juega al azar.</div>

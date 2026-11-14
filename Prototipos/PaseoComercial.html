@@ -65,6 +65,9 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .card .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
 .card .caption .c-der{display:block}
 .card:hover .caption{display:block}
+.card .back{width:100%;height:100%;border-radius:8px;background:repeating-linear-gradient(45deg,#7d8f85 0 10px,#667a70 10px 20px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;font-weight:800}
+.card .plus{position:absolute;left:50%;top:30%;transform:translate(-50%,0);color:#e0007a;font-weight:900;font-size:26px;text-shadow:0 0 3px #fff,0 0 6px #fff;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}30%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:0;transform:translate(-50%,-30px) scale(1)}}
 
 /* menú de inicio */
 .setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;min-height:100vh;padding:24px 16px 150px;display:flex;justify-content:center;overflow:hidden}
@@ -238,7 +241,7 @@ function confirmDiscard(){
 function giveClients(src){
   tableCards().forEach(x=>{
     if(x===src || !has(x,src.tgt)) return;
-    if(x.clients<capOf(x)){ x.clients++; if(x.clients===capOf(x)) S.newFull.push(x); }
+    if(x.clients<capOf(x)){ x.clients++; src.gave.push(x); if(x.clients===capOf(x)) S.newFull.push(x); }
     else if(S.fullPenalty && x.clients>0){ x.clients--; x.angry=true; log(`Cliente enojado: a un local de ${x.owner.name} se le restó uno.`); }
   });
 }
@@ -262,6 +265,8 @@ function queueNewFull(){
 }
 function applyBonusTo(target){
   target.clients++;
+  target.shown = target.clients;
+  target.plusTs = Date.now();
   if(target.clients===capOf(target)) S.newFull.push(target);
 }
 function runBonuses(then){
@@ -368,11 +373,32 @@ function doTurn(humanId){
   S.players.forEach((p,i)=>{
     p.hand = p.hand.filter(c=>c!==picks[i]);
     p.street.push(picks[i]);
+    picks[i].revealed = false;
+    picks[i].gave = [];
   });
+  tableCards().forEach(x=>{ x.shown = x.clients; });
   log(`— Turno ${S.turn}: ${S.players.map((p,i)=>`${p.name} bajó #${picks[i].id}`).join(' · ')}`);
   picks.forEach(c=>giveClients(c));
   S.selCard = null;
-  runBonuses(()=>afterReveal());
+  S.revealOrder = [...Array(S.n).keys()].map(k=>picks[(S.start+k)%S.n]);
+  S.animating = true;
+  render();
+  revealStep(0);
+}
+
+function revealStep(i){
+  if(!S) return;
+  if(i>=S.revealOrder.length){
+    S.animating = false;
+    tableCards().forEach(x=>{ x.shown = x.clients; });
+    runBonuses(()=>afterReveal());
+    return;
+  }
+  const src = S.revealOrder[i];
+  src.revealed = true;
+  src.gave.forEach(t=>{ t.shown = (t.shown ?? 0) + 1; t.plusTs = Date.now(); });
+  render();
+  setTimeout(()=>revealStep(i+1), 1000);
 }
 
 function afterReveal(){
@@ -461,6 +487,7 @@ function finishTurn(crit){
   if(crit) S.active.push(crit);
   S.pendingPick = false;
   S.players.filter(p=>!p.human).forEach(botExtras);
+  tableCards().forEach(x=>{ x.shown = x.clients; });
   runBonuses(null);
   S.start = (S.start+1) % S.n;
 
@@ -478,6 +505,8 @@ function placeExtra(card){
   if(me.extras<=0){ log('No te quedan clientes extra.'); render(); return; }
   if(card.clients>=capOf(card)){ log('Ese local ya está lleno.'); render(); return; }
   card.clients++;
+  card.shown = card.clients;
+  card.plusTs = Date.now();
   if(card.clients===capOf(card)) S.newFull.push(card);
   me.extras--;
   if(me.extras===0) S.extraMode=false;
@@ -550,19 +579,25 @@ function nextRound(){
 function cardHTML(c, cls=''){
   const cp = capOf(c);
   const slots = SLOTS_ART[c.s];
-  const dots = Array.from({length:cp},(_,i)=>{
+  const shownN = c.shown ?? c.clients;
+  const hidden = c.revealed===false;
+  const dots = hidden ? '' : Array.from({length:cp},(_,i)=>{
     const [x,y] = slots[i];
-    return `<i class="dot ${i<c.clients?'on':''}" style="left:${x}%;top:${y}%"></i>`;
+    return `<i class="dot ${i<shownN?'on':''}" style="left:${x}%;top:${y}%"></i>`;
   }).join('');
+  const plus = (c.plusTs && Date.now()-c.plusTs<1000) ? '<div class="plus">+1</div>' : '';
   const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
-  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
-    <div class="caption">
+  const face = hidden ? '<div class="back">?</div>' : `<img class="art" src="${cardSrc(c)}" alt="">`;
+  const caption = hidden ? '' : `<div class="caption">
       <span class="c-izq">${LBL[c.t]} / ${LBL[c.r]} / ${LBL[c.s]}</span>
       <span class="c-der">Da un cliente a ${LBL[c.tgt]}</span>
-    </div>
-    <img class="art" src="${cardSrc(c)}" alt="">
+    </div>`;
+  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
+    ${caption}
+    ${face}
     ${dots}
+    ${plus}
     ${c.angry?'<div class="angry">−1</div>':''}
   </div>`;
 }
@@ -666,11 +701,12 @@ function render(){
 
   const me = S.players[0];
   const needDiscard = !S.over && S.pendingDiscard;
-  const needPlay = !S.over && !picking && !needDiscard && !S.pendingBonus;
+  const needPlay = !S.over && !picking && !needDiscard && !S.pendingBonus && !S.animating;
 
   let html = '';
   let handHTML = '';
-  if(S.pendingBonus) html += `<div class="banner">Clientes en cadena: elegí en qué edificio de ${LBL[S.pendingBonus.src.r]} sumar el cliente extra</div>`;
+  if(S.animating) html += `<div class="banner">Bajando cartas...</div>`;
+  else if(S.pendingBonus) html += `<div class="banner">Clientes en cadena: elegí en qué edificio de ${LBL[S.pendingBonus.src.r]} sumar el cliente extra</div>`;
   else if(needDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
   else if(S.prePick) html += `<div class="banner">Antes de empezar, elegí un criterio: tocá un ícono verde de arriba</div>`;
   else if(S.pendingPick && S.simQueue.length) html += `<div class="banner">Elegí tu criterio de puntuación: tocá un ícono verde de arriba</div>`;
@@ -718,6 +754,7 @@ function render(){
 /* ===== EVENTOS ===== */
 document.addEventListener('click', e=>{
   // Elegir criterio tocando un ícono verde de la loseta
+  if(S && S.animating && e.target.closest('[data-card],[data-crit],[data-act="play"],[data-act="extra"],[data-act="confirmDiscard"]')) return;
   const crit = e.target.closest('[data-crit]');
   if(crit && S && !S.over){ pickCriterion(crit.dataset.crit); return; }
 

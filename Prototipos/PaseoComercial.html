@@ -68,6 +68,8 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .card .back{width:100%;height:100%;border-radius:8px;background:repeating-linear-gradient(45deg,#7d8f85 0 10px,#667a70 10px 20px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:48px;font-weight:800}
 .card .plus{position:absolute;left:50%;top:30%;transform:translate(-50%,0);color:#e0007a;font-weight:900;font-size:26px;text-shadow:0 0 3px #fff,0 0 6px #fff;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
 @keyframes floatup{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}30%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:0;transform:translate(-50%,-30px) scale(1)}}
+.card.act{outline:4px solid #e0007a;box-shadow:0 0 14px #e0007a}
+.card .sq{position:absolute;top:6px;left:6px;width:14px;height:14px;background:#e0007a;border-radius:3px;box-shadow:0 0 6px #e0007a;z-index:25}
 
 /* menú de inicio */
 .setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;min-height:100vh;padding:24px 16px 150px;display:flex;justify-content:center;overflow:hidden}
@@ -370,35 +372,39 @@ function botExtras(p){
 
 function doTurn(humanId){
   const picks = S.players.map(p => p.human ? p.hand.find(c=>c.id===humanId) : botPick(p));
+  // Foto de los clientes antes de bajar: así no se ven cambios hasta que cada carta se active
+  const before = new Map(tableCards().map(x=>[x, x.clients]));
   S.players.forEach((p,i)=>{
     p.hand = p.hand.filter(c=>c!==picks[i]);
     p.street.push(picks[i]);
-    picks[i].revealed = false;
     picks[i].gave = [];
+    picks[i].act = false;
+    picks[i].revealed = true;
   });
-  tableCards().forEach(x=>{ x.shown = x.clients; });
+  tableCards().forEach(x=>{ x.shown = before.has(x) ? before.get(x) : 0; x.plusTs = 0; });
   log(`— Turno ${S.turn}: ${S.players.map((p,i)=>`${p.name} bajó #${picks[i].id}`).join(' · ')}`);
   picks.forEach(c=>giveClients(c));
   S.selCard = null;
   S.revealOrder = [...Array(S.n).keys()].map(k=>picks[(S.start+k)%S.n]);
   S.animating = true;
   render();
-  revealStep(0);
+  setTimeout(()=>activateStep(0), 600);
 }
 
-function revealStep(i){
+function activateStep(i){
   if(!S) return;
+  tableCards().forEach(x=>{ x.act = false; });
   if(i>=S.revealOrder.length){
     S.animating = false;
-    tableCards().forEach(x=>{ x.shown = x.clients; });
+    tableCards().forEach(x=>{ x.shown = x.clients; x.plusTs = 0; });
     runBonuses(()=>afterReveal());
     return;
   }
   const src = S.revealOrder[i];
-  src.revealed = true;
+  src.act = true;
   src.gave.forEach(t=>{ t.shown = (t.shown ?? 0) + 1; t.plusTs = Date.now(); });
   render();
-  setTimeout(()=>revealStep(i+1), 1000);
+  setTimeout(()=>activateStep(i+1), 1000);
 }
 
 function afterReveal(){
@@ -580,23 +586,23 @@ function cardHTML(c, cls=''){
   const cp = capOf(c);
   const slots = SLOTS_ART[c.s];
   const shownN = c.shown ?? c.clients;
-  const hidden = c.revealed===false;
-  const dots = hidden ? '' : Array.from({length:cp},(_,i)=>{
+  const dots = Array.from({length:cp},(_,i)=>{
     const [x,y] = slots[i];
     return `<i class="dot ${i<shownN?'on':''}" style="left:${x}%;top:${y}%"></i>`;
   }).join('');
   const plus = (c.plusTs && Date.now()-c.plusTs<1000) ? '<div class="plus">+1</div>' : '';
+  const sq = c.act ? '<div class="sq"></div>' : '';
+  const actCls = c.act ? ' act' : '';
   const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
-  const face = hidden ? '<div class="back">?</div>' : `<img class="art" src="${cardSrc(c)}" alt="">`;
-  const caption = hidden ? '' : `<div class="caption">
+  return `<div class="card ${cls}${sel}${actCls}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
+    <div class="caption">
       <span class="c-izq">${LBL[c.t]} / ${LBL[c.r]} / ${LBL[c.s]}</span>
       <span class="c-der">Da un cliente a ${LBL[c.tgt]}</span>
-    </div>`;
-  return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
-    ${caption}
-    ${face}
+    </div>
+    <img class="art" src="${cardSrc(c)}" alt="">
     ${dots}
+    ${sq}
     ${plus}
     ${c.angry?'<div class="angry">−1</div>':''}
   </div>`;

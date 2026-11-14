@@ -30,7 +30,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
-.row{display:flex;overflow-x:auto;min-height:calc(var(--w) * 1.391 + 12px);padding:6px 4px 4px 4px}
+.row{display:flex;overflow-x:auto;min-height:calc(var(--w) * 1.391 + 12px);padding:46px 4px 4px 4px}
 /* La carta conserva sus esquinas originales. El solapado corta sobre la línea divisoria del arte (≈68 % del ancho). */
 .card{position:relative;flex:0 0 var(--w);width:var(--w);height:calc(var(--w) * 1.391);margin-right:calc(var(--w) * -0.319)}
 .card:last-child{margin-right:0}
@@ -61,6 +61,10 @@ button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2
 .overlay .panel{max-width:460px;width:100%;max-height:92vh;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
+.card .caption{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2d4a3e;color:#fff;font-size:12px;border-radius:8px;padding:6px 8px;white-space:nowrap;z-index:200;pointer-events:none;box-shadow:0 2px 6px #0005}
+.card .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
+.card .caption .c-der{display:block}
+.card:hover .caption{display:block}
 
 /* menú de inicio */
 .setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;min-height:100vh;padding:24px 16px 150px;display:flex;justify-content:center;overflow:hidden}
@@ -553,6 +557,10 @@ function cardHTML(c, cls=''){
   const sel = (S.selCard===c ? ' sel' : '') + (S.discardSel===c ? ' dsel' : '');
   const front = S.front===c.id ? ' style="z-index:20"' : '';
   return `<div class="card ${cls}${sel}${c.bonusMark?' bonusmark':''}${isBonusTarget(c)?' bonus':''}" data-card="${c.id}"${front}>
+    <div class="caption">
+      <span class="c-izq">${LBL[c.t]} / ${LBL[c.r]} / ${LBL[c.s]}</span>
+      <span class="c-der">Da un cliente a ${LBL[c.tgt]}</span>
+    </div>
     <img class="art" src="${cardSrc(c)}" alt="">
     ${dots}
     ${c.angry?'<div class="angry">−1</div>':''}

@@ -621,6 +621,7 @@ function setupHTML(){
       <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
     </div>
     <div class="setup-right">
+      ${err ? `<div class="cfg-error">${err}</div>` : ''}
       <div class="opt-label">Jugar contra (bots)</div>
       <div class="opt-desc">Entre 2 y 4 bots. Con 2 bots se juega entre 3 jugadores, con 4 entre 5.</div>
       <div class="opts">${opt('bots',2,'2 bots')}${opt('bots',3,'3 bots')}${opt('bots',4,'4 bots')}</div>
@@ -652,7 +653,6 @@ function setupHTML(){
       <div class="opt-desc">Puntuación Extra por mayoría de clientes 5/3/1</div>
       <div class="opts">${opt('extraClients',true,'Sí')}${opt('extraClients',false,'No')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
-      ${err ? `<div class="cfg-error">${err}</div>` : ''}
       <button class="start" data-act="start" ${err?'disabled':''}>▷ Empezar partida</button>
     </div>
   </div></div>`;

@@ -776,7 +776,7 @@ document.addEventListener('click', e=>{
   if(cardEl && S && !S.over){
     const uid = +cardEl.dataset.card;
     const me = S.players[0];
-    S.front = uid;
+    if(!S.extraMode) S.front = uid;
     if(S.pendingBonus){
       const bt = me.street.find(c=>c.uid===uid);
       if(bt) chooseBonus(bt);

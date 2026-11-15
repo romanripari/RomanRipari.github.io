@@ -153,7 +153,7 @@ const SLOTS_ART = {
 /* ===== ESTADO ===== */
 let S = null;
 // hand y largo en null = automático según cantidad de bots
-let SETUP = {bots:3, dup:false, hand:null, largo:null, diff:'dificil', starter:'azar', rounds:3, critMode:'horario', chainBonus:true, extraClients:true, name:''};
+let SETUP = {bots:3, dup:false, hand:null, largo:null, diff:'dificil', starter:'azar', rounds:3, critMode:'horario', chainBonus:true, extraClients:true, discard:false, name:''};
 let UID = 0;
 
 // Valores efectivos de la portada (si están en automático, se calculan según los bots)
@@ -211,7 +211,7 @@ function newGame(){
     pendingPick:false, pendingDiscard:false, extraMode:false, selCard:null, discardSel:null, front:null,
     simQueue:[], simDone:false, animating:false,
     over:false, hideOverlay:false, diff: SETUP.diff,
-    chain: SETUP.chainBonus, extraClients: SETUP.extraClients, critMode: SETUP.critMode,
+    chain: SETUP.chainBonus, extraClients: SETUP.extraClients, critMode: SETUP.critMode, discardOn: SETUP.discard,
     newFull:[], bonusQ:[], pendingBonus:null, afterBonus:null, log:[]
   };
   S.totalPts = S.players.map(()=>0);
@@ -467,14 +467,24 @@ function pickCriterion(crit){
 
 // Después de bajar y elegir criterio: los bots descartan en silencio y roban 2; vos elegís qué descartar.
 // En el último turno de la ronda no hay descarte.
+// Al terminar el turno: primero se resuelven los clientes en cadena, y después sigue endOfTurn.
 function finishTurn(crit){
   if(crit) S.active.push(crit);
   S.pendingPick = false;
   S.players.filter(p=>!p.human).forEach(botExtras);
   tableCards().forEach(x=>{ x.shown = x.clients; });
-  runBonuses(null);
-  S.start = (S.start+1) % S.n;
+  runBonuses(()=>endOfTurn());
+}
 
+function endOfTurn(){
+  S.start = (S.start+1) % S.n;
+  // Sin descarte: todos roban 1 carta, como en el manual
+  if(!S.discardOn){
+    if(S.turn<S.totalTurns) S.players.forEach(p=>drawCards(p,1));
+    completeTurn();
+    return;
+  }
+  // Con descarte: los bots descartan en silencio y roban 2; vos elegís qué descartar
   if(S.turn>=S.totalTurns){ completeTurn(); return; }
   S.players.filter(p=>!p.human).forEach(p=>{
     discardFrom(p, botDiscard(p));
@@ -646,6 +656,9 @@ function setupHTML(){
       <div class="opt-label">Modo de criterios iniciales</div>
       <div class="opt-desc">2 Criterios iniciales al azar: 2 criterios sorteados al empezar. Por Horario: en cada ronda, el horario de esa ronda (mañana, tarde, noche). En ambos casos, cada jugador elige uno más en el tercer turno.</div>
       <div class="opts">${opt('critMode','horario','Por Horario')}${opt('critMode','azar','2 Criterios iniciales al azar')}</div>
+      <div class="opt-label">Modo descarte</div>
+      <div class="opt-desc">Después de cada turno, descartás una carta en secreto y robás dos. Si está en No, todos roban 1 carta por turno, como en el manual.</div>
+      <div class="opts">${opt('discard',true,'Sí')}${opt('discard',false,'No')}</div>
       <div class="opt-label">Clientes en cadena</div>
       <div class="opt-desc">Un edificio Pequeño o Mediano al llenarse, y por única vez, da un cliente extra a otro edificio del mismo rubro de tu vereda, de cualquier tamaño.</div>
       <div class="opts">${opt('chainBonus',true,'Sí')}${opt('chainBonus',false,'No')}</div>

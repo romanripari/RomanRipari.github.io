@@ -27,20 +27,30 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
-.row{display:flex;gap:8px;overflow-x:auto;padding:22px 4px 6px}
-.bld{position:relative;flex:0 0 116px;width:116px;min-height:150px;background:#fff;border:2px solid #444;border-radius:12px;padding:6px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;font-size:12px}
+
+.row{display:flex;gap:10px;overflow-x:auto;padding:22px 4px 6px}
+.bld{position:relative;flex:0 0 210px;height:230px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:hidden;font-size:11px}
 .bld.full{border-color:#00b86b;box-shadow:0 0 10px #00b86b}
 .bld.act{outline:4px solid #e0007a}
 .bld.sel{outline:4px solid #e0a000}
 .bld.dsel{outline:4px solid #e0302a}
 .bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
 .bld.hand{cursor:pointer}
-.bld .top{display:flex;justify-content:space-between;width:100%;font-size:18px;align-items:center}
-.bld .top svg{width:22px;height:22px}
-.bld .type{font-size:40px;line-height:1}
-.bld .name{font-weight:700;font-size:12px}
-.bld .mats{display:flex;gap:6px;font-size:12px;font-weight:700}
-.bld .give{font-size:11px;text-align:center}
+.bld .main{flex:1;display:flex;flex-direction:column;padding:6px;min-width:0}
+.bld .top3{display:flex;gap:8px;align-items:center;font-size:16px;height:26px}
+.bld .top3 svg{width:20px;height:20px}
+.bld .mid{display:flex;align-items:center;gap:6px;flex:1}
+.bld .labs{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700;color:#333;text-align:right;flex:1}
+.bld .sqr{width:64px;height:64px;border:2px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:38px;background:#f7f3ea}
+.bld .need{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.bld .need .ln{display:flex;gap:3px;align-items:center;font-size:13px}
+.bld .slot{display:inline-block;width:14px;height:14px;border:1.5px solid #444;border-radius:3px;background:#fff}
+.bld .slot.on{background:#8a5a2b}
+.bld .slot.mt.on{background:#7d8a96}
+.bld .strip{width:62px;flex:0 0 62px;border-left:2px dashed #0006;background:#fff9;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:3px}
+.bld .strip b{font-size:10px;line-height:1.1}
+.bld .strip .mi{font-size:18px}
+
 .plus{position:absolute;top:-10px;right:-6px;background:#e0007a;color:#fff;font-weight:900;font-size:14px;border-radius:10px;padding:0 6px;animation:floatup 1s ease-out forwards;z-index:30}
 @keyframes floatup{0%{opacity:0;transform:translateY(6px)}30%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
 @keyframes pulse{50%{transform:scale(1.05)}}
@@ -531,27 +541,42 @@ function nextRound(){
 }
 
 /* ===== RENDER ===== */
-function bldHTML(b){
+js
+function slotsHTML(n, cap, mat){
+  let s='';
+  for(let i=0;i<cap;i++) s+=`<i class="slot ${mat==='MT'?'mt':''} ${i<n?'on':''}"></i>`;
+  return s;
+}
+function bldInner(b, hand){
   const c = CAP[b.est];
-  const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
-  const pl = (b.plusTs && Date.now()-b.plusTs<1000) ? '<div class="plus">+1</div>' : '';
-  return `<div class="${cls}" data-card="${b.uid}">
-    <div class="top"><span>${ERA_ICON[b.era]}</span>${estrSVG(b.est)}</div>
-    <div class="type">${TIPO_ICON[b.tipo]}</div>
-    <div class="name">${LBL[b.tipo]}</div>
-    <div class="mats"><span>${MAT_ICON.MD} ${b.md}/${c.MD}</span><span>${MAT_ICON.MT} ${b.mt}/${c.MT}</span></div>
+  const md = hand ? 0 : b.md;
+  const mt = hand ? 0 : b.mt;
+  const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? '<div class="plus">+1</div>' : '';
+  return `<div class="main">
+    <div class="top3"><span>${ERA_ICON[b.era]}</span><span>${TIPO_ICON[b.tipo]}</span>${estrSVG(b.est)}</div>
+    <div class="mid">
+      <div class="labs"><span>${ERA_LBL[b.era]}</span><span>${LBL[b.tipo]}</span><span>${EST_LBL[b.est]}</span></div>
+      <div class="sqr">${TIPO_ICON[b.tipo]}</div>
+    </div>
+    <div class="need">
+      <div class="ln">${MAT_ICON.MD} ${slotsHTML(md,c.MD,'MD')}</div>
+      <div class="ln">${MAT_ICON.MT} ${slotsHTML(mt,c.MT,'MT')}</div>
+    </div>
     ${pl}
   </div>`;
 }
+function stripHTML(c){
+  return `<div class="strip"><span>Da</span><span class="mi">${MAT_ICON[c.mat]}</span><span>a</span>${iconFor(c.tgt)}<b>${LBL[c.tgt]}</b></div>`;
+}
+function bldHTML(b){
+  const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
+  return `<div class="${cls}" data-card="${b.uid}">${bldInner(b,false)}${stripHTML(b)}</div>`;
+}
 function handCardHTML(c){
   const sel = (S.selCard===c?' sel':'') + (S.discardSel===c?' dsel':'');
-  return `<div class="bld hand${sel}" data-card="${c.uid}">
-    <div class="top"><span>${ERA_ICON[c.era]}</span>${estrSVG(c.est)}</div>
-    <div class="type">${TIPO_ICON[c.tipo]}</div>
-    <div class="name">${LBL[c.tipo]}</div>
-    <div class="give">Da ${MAT_ICON[c.mat]} a ${iconFor(c.tgt)} ${LBL[c.tgt]}</div>
-  </div>`;
+  return `<div class="bld hand${sel}" data-card="${c.uid}">${bldInner(c,true)}${stripHTML(c)}</div>`;
 }
+
 function losetaHTML(){
   const pick = S && S.pendingPick ? pickablePool() : [];
   const item = k => {

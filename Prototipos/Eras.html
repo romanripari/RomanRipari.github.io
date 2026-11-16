@@ -134,6 +134,9 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .row:not(.handrow){gap:0}
 .row:not(.handrow) .bld{margin-right:-52px}
 .row:not(.handrow) .bld:last-child{margin-right:0}
+.row .bld.hand{margin-right:10px!important}
+.bld .caption{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%);width:190px;white-space:normal;text-align:center;font-size:11px;padding:8px 10px;z-index:60}
+.bld .poder-nm{font-size:9px;line-height:1.15;text-align:center;color:#333;padding:0 4px}
 </style>
 </head>
 <body>
@@ -182,6 +185,14 @@ const PODER_TXT = {
   TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
   TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
 };
+const PODER_RECURSOS = {
+  TI:'Roba 1 y devuelve 1',
+  TM:'Cambia 1 material de un edificio',
+  TT:'+1 Metal',
+  TP:'+1 Madera',
+  TC:'+1 Metal o Madera'
+};
+function poderTxt(t){ return SETUP.mode==='sellos' ? PODER_TXT[t] : PODER_RECURSOS[t]; }
 const MAT_LBL = {MD:'Madera',MT:'Metal'};
 const MAT_ICON = {MD:'🪵',MT:'⚙️'};
 
@@ -740,8 +751,9 @@ function bldInner(b, hand){
   return `<div class="main">
     <div class="sec-top era-${b.era}"><span>${ERA_ICON[b.era]}</span><span>${ERA_LBL[b.era]}</span></div>
     <div class="sec-mid">
-      <div class="sqr">${TIPO_ICON[b.tipo]}</div>
       <div class="tipo-nm">${LBL[b.tipo]}</div>
+      <div class="sqr">${TIPO_ICON[b.tipo]}</div>
+      <div class="poder-nm">${poderTxt(b.tipo)}</div>
     </div>
     <div class="sec-bot">
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
@@ -750,7 +762,6 @@ function bldInner(b, hand){
     ${pl}
   </div>`;
 }
-
 function stripHTML(c){
   const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🏷️</span>` : MAT_ICON[c.mat];
   return `<div class="strip">
@@ -759,19 +770,20 @@ function stripHTML(c){
     <b>${LBL[c.tgt]}</b>
   </div>`;
 }
+function captionHTML(b){
+  return `<div class="caption">
+    <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
+    <span class="c-der">Da ${SETUP.mode==='sellos' ? 'un sello' : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
+    <span class="c-der">Si se llena: ${poderTxt(b.tipo)}</span>
+  </div>`;
+}
 function bldHTML(b){
   const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
-  const dar = SETUP.mode==='sellos' ? 'un sello' : MAT_LBL[b.mat];
-  const cap = `<div class="caption">
-      <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
-      <span class="c-der">Da ${dar} a ${LBL[b.tgt]}</span>
-      <span class="c-der">Si se llena: ${PODER_TXT[b.tipo]}</span>
-    </div>`;
-  return `<div class="${cls}" data-card="${b.uid}">${cap}${bldInner(b,false)}${stripHTML(b)}</div>`;
+  return `<div class="${cls}" data-card="${b.uid}">${captionHTML(b)}${bldInner(b,false)}${stripHTML(b)}</div>`;
 }
 function handCardHTML(c){
   const sel = (S.selCard===c?' sel':'') + (S.discardSel===c?' dsel':'');
-  return `<div class="bld hand${sel}" data-card="${c.uid}">${bldInner(c,true)}${stripHTML(c)}</div>`;
+  return `<div class="bld hand${sel}" data-card="${c.uid}">${captionHTML(c)}${bldInner(c,true)}${stripHTML(c)}</div>`;
 }
 
 function losetaHTML(){

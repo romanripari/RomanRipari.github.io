@@ -201,7 +201,11 @@ function elems(b){
   if(SETUP.mode==='sellos') return b.st;
   return b.md+b.mt; 
 }
-function scoreVal(b){ return (SETUP.completeSix && isComplete(b)) ? 6 : elems(b); }
+function scoreVal(b){ 
+  let v = elems(b);
+  if(SETUP.mode==='recursos' && SETUP.completeSix && isComplete(b)) v += 1;
+  return v;
+}
 function countElems(p,k){ return p.street.filter(b=>matches(b,k)).reduce((s,b)=>s+scoreVal(b),0); }
 
 function addMat(b,mat){
@@ -325,10 +329,9 @@ function runPowers(then){
 function startHumanPower(o,b){
   const kind = b.tipo;
   if(SETUP.mode==='sellos'){
-    // Nuevos poderes para el modo sellos
     if(kind==='TI'){ // Iglesia: Mueve dos sellos de lugar
-      if(!o.street.some(x=>x.st>0) || o.street.filter(x=>x.st>0).length<1 && o.street.reduce((s,x)=>s+x.st,0)<2) return false;
-      S.pw = {owner:o, kind, stage:'src1', b, moved:0};
+      if(!o.street.some(x=>x.st>0) || (o.street.filter(x=>x.st>0).length<1 && o.street.reduce((s,x)=>s+x.st,0)<2)) return false;
+      S.pw = {owner:o, kind, stage:'src1', b};
       return true;
     }
     if(kind==='TM'){ // Mercado: Mueve un sello de lugar
@@ -353,7 +356,6 @@ function startHumanPower(o,b){
     }
     return false;
   } else {
-    // Modo recursos clásico
     if(kind==='TI'){
       drawCards(o,1);
       S.pw = {owner:o, kind, stage:'ret', b};
@@ -838,7 +840,7 @@ function setupHTML(){
       <div class="opts">${[4,5,6].map(v=>`<button class="opt ${SETUP.hand===v?'on':''}" data-opt="hand" data-val="${v}">${v}</button>`).join('')}</div>
       <div class="opt-label">Largo de village</div>
       <div class="opts">${[5,6].map(v=>`<button class="opt ${SETUP.village===v?'on':''}" data-opt="village" data-val="${v}">${v}</button>`).join('')}</div>
-      <div class="opt-label">Completados valen 6</div>
+      <div class="opt-label">Completados valen +1 (solo recursos)</div>
       <div class="opts">${opt('completeSix',true,'Sí')}${opt('completeSix',false,'No')}</div>
       <div class="opt-label">Modo descarte</div>
       <div class="opts">${opt('discard',true,'Sí')}${opt('discard',false,'No')}</div>

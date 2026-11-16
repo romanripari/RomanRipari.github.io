@@ -164,7 +164,7 @@ const DATA = [
 const ERAS = ['EA','EC','EM'];
 const ERA_LBL = {EA:'Era Antigua',EC:'Era Colonial',EM:'Era Moderna'};
 const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
-const EST_LBL = {ZB:'Básico',ZI:'Intermedio',ZR:'Reforzado'};
+const EST_LBL = {ZB:'I',ZI:'II',ZR:'III'};
 const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
@@ -750,7 +750,7 @@ function stripHTML(c){
 function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
-    <span class="c-der">+ ${SETUP.mode==='sellos' ? SELLO_ICON : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
+    <span class="c-der">+${SETUP.mode==='sellos' ? SELLO_ICON : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
     <span class="c-der">Lleno → ${poderTxt(b.tipo)}</span>
   </div>`;
 }

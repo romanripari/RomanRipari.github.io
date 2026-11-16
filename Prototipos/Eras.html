@@ -27,79 +27,85 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
-.row{display:flex;gap:10px;overflow-x:auto;padding:22px 4px 6px}
-.bld{position:relative;flex:0 0 210px;height:230px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:visible;font-size:11px}
-.bld .caption{display:block;opacity:0;visibility:hidden;transition:opacity .15s 1s,visibility 0s 1.15s}
-.bld:hover .caption{opacity:1;visibility:visible;transition:opacity .15s 1s,visibility 0s 1s}
-.bld .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
-.bld .caption .c-der{display:block;margin-top:2px}
+
+/* FILAS */
+.row{display:flex;justify-content:flex-start;gap:10px;overflow-x:auto;padding:22px 4px 6px;min-height:235px}
+.row.mesa{gap:0}
+.row.mesa .bld{margin-right:-38px;flex-shrink:0}
+.row.mesa .bld:last-child{margin-right:0}
+.row.mano .bld{margin-right:10px;flex-shrink:0}
+
+/* CARTA 63x88 proporcional (150x210) */
+.bld{position:relative;flex:0 0 150px;width:150px;height:210px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:visible;font-size:9px}
 .bld.full{border-color:#00b86b;box-shadow:0 0 10px #00b86b}
 .bld.act{outline:4px solid #e0007a}
 .bld.sel{outline:4px solid #e0a000}
 .bld.dsel{outline:4px solid #e0302a}
 .bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
 .bld.hand{cursor:pointer}
+
+/* Partes izquierda (3/4) */
 .bld .main{flex:3 1 0;display:flex;flex-direction:column;min-width:0;padding:0}
-.bld .top3{display:flex;justify-content:center;gap:8px;align-items:center;font-size:16px;height:26px;width:100%;padding:2px 4px;background:transparent}
-.bld .mid{display:flex;align-items:center;gap:6px;flex:1}
-.bld .labs{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700;color:#333;text-align:right;flex:1}
-.bld .sqr{width:64px;height:64px;border:2px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:38px;background:#f7f3ea}
-
-/* Contenedor de slots adaptativo en filas */
-.bld .need{display:flex;flex-direction:column;gap:3px;margin-top:6px;border-top:2px dashed #0006;padding-top:6px;align-items:center;justify-content:center}
-.bld .need .ln{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;width:100%}
-.bld .need .sl{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;max-width:110px}
-
+.bld .sec-top{flex:0 0 14.58%;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 4px;font-weight:700;font-size:9px}
+.bld .sec-mid{flex:0 0 43.75%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.bld .sec-mid .sqr{width:40px;height:40px;border:2px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;background:#f7f3ea}
+.bld .tipo-nm{font-weight:700;font-size:9px}
+.bld .sec-bot{flex:0 0 29.17%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:3px}
+.bld .est-nm{font-weight:700;font-size:8px;padding:1px 5px;border-radius:6px}
+.bld .need{display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center}
+.bld .need .ln{display:flex;align-items:center;justify-content:center;gap:3px;width:100%}
+.bld .need .sl{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;max-width:90px}
+.bld .ic{display:inline-block;width:14px;text-align:center;flex:0 0 14px;font-size:9px}
 .bld .slot{display:inline-block;flex:0 0 14px;width:14px;height:14px;border:1.5px solid #444;border-radius:3px;background:#fff}
 .bld .slot.on{background:#8a5a2b}
+.bld .slot.mt.on{background:#7d8a96}
 .bld .slot.st{width:10px;height:10px;flex:0 0 10px;border-radius:50%;border:1.5px solid #1f5f9e;background:#fff}
 .bld .slot.st.on{background:#2b7bc4}
-.plus.st{color:#2b7bc4}
-.bld .slot.mt.on{background:#7d8a96}
-.bld .slot.st.on{background:#d97706}
+.bld .poder-row{flex:0 0 12.5%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:7px;line-height:1.1;padding:0 3px;color:#333;border-top:1px dashed #0004}
+.bld .chk{color:#00b86b;font-weight:900;font-size:9px}
+.bld .si-llena{display:inline-block;background:#2d4a3e;color:#fff;border-radius:6px;padding:1px 4px;font-weight:700;margin-right:3px;font-size:7px}
 
-/* Lado derecho con fondo blanco limpio */
-.bld .strip{flex:1 1 0;min-width:0;width:auto;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:4px}
-.bld .strip .give-row{display:flex;align-items:center;gap:3px;font-weight:900;font-size:15px}
-.bld .strip b{font-size:10px;line-height:1.1;word-break:break-word;color:#222;padding:2px 4px;border-radius:4px}
-.bld .strip .targ-ico{padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:22px}
-.bld .strip .targ-ico svg{width:24px;height:24px}
-.bld .ic{display:inline-block;width:22px;text-align:center;flex:0 0 22px}
+/* Franja derecha (1/4) */
+.bld .strip{flex:1 1 0;min-width:0;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;font-size:8px;gap:3px}
+.bld .strip .give-row{display:flex;align-items:center;gap:2px;font-weight:900;font-size:11px}
+.bld .strip b{font-size:7px;line-height:1.1;word-break:break-word;color:#222;padding:1px 2px}
+.bld .strip .targ-ico{padding:2px 4px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+.bld .svg-ico svg{width:14px;height:14px}
+.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;font-size:14px}
 
-/* Sello redondo */
-.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:none;box-shadow:none;border-radius:0;font-size:18px}
+/* Tooltip: aparece tras 1 s de mouse quieto */
+.bld .caption{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:190px;background:#2d4a3e;color:#fff;font-size:11px;border-radius:8px;padding:8px 10px;text-align:center;white-space:normal;z-index:60;pointer-events:none;box-shadow:0 2px 6px #0005;opacity:0;visibility:hidden;transition:opacity .15s 1s,visibility 0s 1.15s}
+.bld:hover .caption{opacity:1;visibility:visible;transition:opacity .15s 1s,visibility 0s 1s}
+.bld .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
+.bld .caption .c-der{display:block;margin-top:2px}
 
 /* Colores de Eras y Estructuras */
 .era-EA, .lg.era-EA{background:#fff4b0;border-radius:8px}
 .era-EC, .lg.era-EC{background:#ffd9a6;border-radius:8px}
 .era-EM, .lg.era-EM{background:#bfdcf5;border-radius:8px}
-
 .est-ZB, .lg.est-ZB{background:#b1cda5;border-radius:8px}
 .est-ZI, .lg.est-ZI{background:#ceae8e;border-radius:8px}
 .est-ZR, .lg.est-ZR{background:#748393;border-radius:8px;color:#fff}
 .lg.est-ZR span{color:#fff}
 
-.bld .svg-ico svg{width:20px;height:20px}
-.plus{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:900;font-size:34px;text-shadow:0 0 4px #fff,0 0 8px #fff,0 2px 4px #0006;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
+.plus{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:900;font-size:26px;text-shadow:0 0 4px #fff,0 0 8px #fff,0 2px 4px #0006;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
 .plus.md{color:#f28c28}
 .plus.mt{color:#b8c2cc}
-.plus.st{color:#d97706}
+.plus.st{color:#2b7bc4}
 @keyframes floatup{0%{opacity:0;transform:translateY(6px)}30%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
 @keyframes pulse{50%{transform:scale(1.05)}}
 .empty{color:#888;font-size:12px;align-self:center}
 button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
 button:disabled{opacity:.4;cursor:default}
-button.alt{background:#8a6d00}
 button.ghost{background:#5b7a6c}
 button.danger{background:#e0302a}
 button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2s infinite}
 .banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
 .banner button{background:#fff;color:#1d6b4a}
 .panel{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
-.log{font-size:12px;max-height:160px;overflow-y:auto;line-height:1.5}
+.log{font-size:12px;max-height:110px;overflow-y:auto;line-height:1.5}
 .infos{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
 .infos>.panel{flex:1 1 280px;min-width:0}
-.log{max-height:110px!important}
 .overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}
 .overlay .panel{max-width:460px;width:100%;max-height:92vh;overflow-y:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -125,39 +131,6 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
 .start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
 .cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
-.bld .sec-top{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;font-weight:700;font-size:12px}
-.bld .sec-mid{flex:3 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.bld .sec-mid .sqr{width:58px;height:58px;font-size:32px}
-.bld .tipo-nm{font-weight:700;font-size:12px}
-.bld .sec-bot{flex:1.4 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px}
-.bld .est-nm{font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px}
-.bld .need{margin-top:0;border-top:none;padding:0;border-bottom:none}
-.bld .sec-top{justify-content:center}
-.bld .labs{text-align:center}
-.row:not(.handrow){gap:0}
-.row:not(.handrow) .bld{margin-right:-52px}
-.row:not(.handrow) .bld:last-child{margin-right:0}
-.row .bld.hand{margin-right:10px!important}
-.bld .caption{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%);width:190px;white-space:normal;text-align:center;font-size:11px;padding:8px 10px;z-index:60}
-.bld .poder-nm{font-size:9px;line-height:1.15;text-align:center;color:#333;padding:0 4px}
-
-.bld{flex:0 0 150px;width:150px;height:210px;font-size:9px}
-.row{min-height:235px}
-.row:not(.handrow) .bld{margin-right:-38px}
-.bld .sec-top{font-size:9px}
-.bld .sec-mid .sqr{width:40px;height:40px;font-size:22px}
-.bld .tipo-nm{font-size:9px}
-.bld .est-nm{font-size:8px;padding:1px 5px}
-.bld .poder-row{font-size:7px}
-.bld .strip{font-size:8px;padding:2px}
-.bld .strip .give-row{font-size:11px}
-.bld .strip .targ-ico{font-size:14px;padding:2px 4px}
-.bld .strip b{font-size:7px}
-.bld .svg-ico svg{width:14px;height:14px}
-.bld .chk{color:#00b86b;font-weight:900;font-size:12px}
-.bld .si-llena{display:inline-block;background:#2d4a3e;color:#fff;border-radius:6px;padding:1px 6px;font-weight:700;margin-right:4px;font-size:9px}
-.row:not(.handrow){justify-content:flex-start!important;margin-left:0}
-.row:not(.handrow) .bld{margin-left:0;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -190,21 +163,19 @@ const EST_LBL = {ZB:'Básico',ZI:'Intermedio',ZR:'Reforzado'};
 const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'⛪',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🏰'};
-// Poder al llenarse (modo Sellos). "destino" son los tipos que pueden recibir el efecto.
 const PODER = {
-  TI:{accion:'sumar',  cantidad:1, destino:['TI','TM','TT','TP','TC']},
-  TM:{accion:'mover',  cantidad:1, destino:'cualquiera'},
-  TT:{accion:'sumar',  cantidad:1, destino:['TP','TC']},
-  TP:{accion:'sumar',  cantidad:1, destino:['TM','TI']},
-  TC:{accion:'sumar',  cantidad:1, destino:['TT','TM']}
+  TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+  TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
+  TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+  TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
+  TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
 };
-// Texto que se muestra al jugador
 const PODER_TXT = {
-  TI:`+1 🧿 a cualquier edificio tuyo con lugar`,
-  TM:`Mover 1 🧿 entre tus edificios`,
-  TT:`+1 🧿 a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
-  TP:`+1 🧿 a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
-  TC:`+1 🧿 a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
+  TI:`+1 sello a cualquier edificio tuyo con lugar`,
+  TM:`Mover 1 sello entre tus edificios`,
+  TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
+  TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
+  TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
 };
 const PODER_RECURSOS = {
   TI:'Roba 1 y devuelve 1',
@@ -216,8 +187,9 @@ const PODER_RECURSOS = {
 function poderTxt(t){ return SETUP.mode==='sellos' ? PODER_TXT[t] : PODER_RECURSOS[t]; }
 const MAT_LBL = {MD:'Madera',MT:'Metal'};
 const MAT_ICON = {MD:'🪵',MT:'⚙️'};
+const SELLO_ICON = '🧿';
 
-const CAP = {ZB:{MD:3,MT:1,ST:4}, ZI:{MD:2,MT:2,ST:5}, ZR:{MD:1,MT:3,ST:6}};
+const CAP = {ZB:{MD:3,MT:1,ST:4}, ZI:{MD:2,MT:2,ST:5}, ZR:{MD:1,MT:3,ST:7}};
 const LBL = {...ERA_LBL,...EST_LBL,...TIPO_LBL};
 const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
 const SLOTS = [5,3,1];
@@ -258,22 +230,19 @@ function mkCard(row,owner){
 }
 function tableCards(){ return S.players.flatMap(p=>p.street); }
 
-function isComplete(b){ 
-  const c=CAP[b.est]; 
+function isComplete(b){
+  const c=CAP[b.est];
   if(SETUP.mode==='sellos') return b.st>=c.ST;
-  return b.md===c.MD && b.mt===c.MT; 
+  return b.md===c.MD && b.mt===c.MT;
 }
-function hasRoom(b,mat){ 
-  const c=CAP[b.est]; 
+function hasRoom(b,mat){
+  const c=CAP[b.est];
   if(SETUP.mode==='sellos') return b.st<c.ST;
-  return mat==='MD' ? b.md<c.MD : b.mt<c.MT; 
+  return mat==='MD' ? b.md<c.MD : b.mt<c.MT;
 }
 function matches(b,k){ return b.era===k || b.est===k || b.tipo===k; }
-function elems(b){ 
-  if(SETUP.mode==='sellos') return b.st;
-  return b.md+b.mt; 
-}
-function scoreVal(b){ 
+function elems(b){ return SETUP.mode==='sellos' ? b.st : b.md+b.mt; }
+function scoreVal(b){
   let v = elems(b);
   if(SETUP.mode==='recursos' && SETUP.completeSix && isComplete(b)) v += 1;
   return v;
@@ -283,18 +252,16 @@ function countElems(p,k){ return p.street.filter(b=>matches(b,k)).reduce((s,b)=>
 function addMat(b,mat){
   if(!hasRoom(b,mat)) return false;
   if(SETUP.mode==='sellos'){
-    b.st++;
-    b.plusTs = Date.now();
-    b.plusMat = 'ST';
+    b.st++; b.plusMat='ST';
   } else {
     if(mat==='MD') b.md++; else b.mt++;
-    b.plusTs = Date.now();
-    b.plusMat = mat;
+    b.plusMat=mat;
   }
+  b.plusTs = Date.now();
   if(isComplete(b) && !b.fired){ b.fired=true; S.pwQ.push({owner:b.owner, b}); }
   return true;
 }
-function removeMat(b,mat){ 
+function removeMat(b,mat){
   if(SETUP.mode==='sellos'){ if(b.st>0) b.st--; }
   else { if(mat==='MD') b.md--; else b.mt--; }
 }
@@ -405,15 +372,13 @@ function startHumanPower(o,b){
     if(!p) return false;
     if(p.accion==='mover'){
       if(!o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y,'ST')))) return false;
-      S.pw = {owner:o, kind, stage: kind==='TI' ? 'src1' : 'src', cantidad:p.cantidad, hechos:0, b};
+      S.pw = {owner:o, kind, stage:'src', cantidad:p.cantidad, hechos:0, b};
       return true;
     }
-    // sumar: el destino son los tipos permitidos en PODER
     if(!o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'))) return false;
     S.pw = {owner:o, kind, stage:'dest_target', allowed:p.destino, b};
     return true;
   }
-  // Modo Dos Recursos
   if(kind==='TI'){
     drawCards(o,1);
     S.pw = {owner:o, kind, stage:'ret', b};
@@ -439,26 +404,21 @@ function pwValid(b){
   const pw = S.pw;
   if(!pw || b.owner!==pw.owner) return false;
   if(SETUP.mode==='sellos'){
+    if(pw.kind==='TM' && pw.stage==='src') return b.st>0;
+    if(pw.kind==='TM' && pw.stage==='dst') return b!==pw.src && hasRoom(b,'ST');
     if(pw.kind==='TI'){
       if(pw.stage==='src1' || pw.stage==='src2') return b.st>0;
       if(pw.stage==='dst1' || pw.stage==='dst2') return b!==pw.src && hasRoom(b,'ST');
     }
-    if(pw.kind==='TM'){
-      if(pw.stage==='src') return b.st>0;
-      if(pw.stage==='dst') return b!==pw.src && hasRoom(b,'ST');
-    }
-    if(pw.stage==='dest_target'){
-      return pw.allowed.includes(b.tipo) && hasRoom(b,'ST');
-    }
-    return false;
-  } else {
-    if(pw.stage==='src') return b.md>0 || b.mt>0;
-    if(pw.stage==='dst'){
-      if(pw.kind==='TM') return b!==pw.src && hasRoom(b,pw.mat);
-      return hasRoom(b,pw.mat);
-    }
+    if(pw.stage==='dest_target') return pw.allowed.includes(b.tipo) && hasRoom(b,'ST');
     return false;
   }
+  if(pw.stage==='src') return b.md>0 || b.mt>0;
+  if(pw.stage==='dst'){
+    if(pw.kind==='TM') return b!==pw.src && hasRoom(b,pw.mat);
+    return hasRoom(b,pw.mat);
+  }
+  return false;
 }
 
 function pwClick(b){
@@ -466,43 +426,35 @@ function pwClick(b){
   if(!pw || !pwValid(b)) return;
   if(SETUP.mode==='sellos'){
     if(pw.kind==='TM'){
-      if(pw.stage==='src'){ pw.src = b; pw.stage = 'dst'; render(); return; }
+      if(pw.stage==='src'){ pw.src=b; pw.stage='dst'; render(); return; }
       if(pw.stage==='dst'){
-        pw.src.st--;
-        addMat(b,'ST');
-        log(`Mercado: moviste 1 🧿 de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
-        finishPw();
-        return;
+        pw.src.st--; addMat(b,'ST');
+        log(`Mercado: moviste 1 sello de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
+        finishPw(); return;
       }
     }
     if(pw.kind==='TI'){
-      if(pw.stage==='src1'){ pw.src = b; pw.stage = 'dst1'; render(); return; }
+      if(pw.stage==='src1'){ pw.src=b; pw.stage='dst1'; render(); return; }
       if(pw.stage==='dst1'){
-        pw.src.st--;
-        addMat(b,'ST');
-        log(`Iglesia (1/2): moviste 1 🧿 a ${LBL[b.tipo]}.`);
+        pw.src.st--; addMat(b,'ST');
+        log(`Iglesia (1/2): moviste 1 sello a ${LBL[b.tipo]}.`);
         if(!S.players[0].street.some(x=>x.st>0)){ finishPw(); return; }
-        pw.stage = 'src2';
-        render();
-        return;
+        pw.stage='src2'; render(); return;
       }
-      if(pw.stage==='src2'){ pw.src = b; pw.stage = 'dst2'; render(); return; }
+      if(pw.stage==='src2'){ pw.src=b; pw.stage='dst2'; render(); return; }
       if(pw.stage==='dst2'){
-        pw.src.st--;
-        addMat(b,'ST');
-        log(`Iglesia (2/2): moviste 1 🧿 a ${LBL[b.tipo]}.`);
-        finishPw();
-        return;
+        pw.src.st--; addMat(b,'ST');
+        log(`Iglesia (2/2): moviste 1 sello a ${LBL[b.tipo]}.`);
+        finishPw(); return;
       }
     }
     if(pw.stage==='dest_target'){
       addMat(b,'ST');
-      log(`${LBL[pw.kind]}: sumaste 1 🧿 a ${LBL[b.tipo]}.`);
-      finishPw();
-      return;
+      log(`${LBL[pw.kind]}: sumaste 1 sello a ${LBL[b.tipo]}.`);
+      finishPw(); return;
     }
   } else {
-    if(pw.stage==='src'){ pw.src = b; pw.stage = 'mat'; render(); return; }
+    if(pw.stage==='src'){ pw.src=b; pw.stage='mat'; render(); return; }
     if(pw.stage==='dst'){
       if(pw.kind==='TM'){
         removeMat(pw.src, pw.mat);
@@ -518,9 +470,7 @@ function pwClick(b){
 function pwChooseMat(mat){
   const pw = S.pw;
   if(!pw || pw.stage!=='mat') return;
-  pw.mat = mat;
-  pw.stage = 'dst';
-  render();
+  pw.mat = mat; pw.stage = 'dst'; render();
 }
 
 function finishPw(){
@@ -542,17 +492,14 @@ function botPower(o,b){
         const s = srcs[0];
         const d = dsts.find(x=>x!==s);
         if(!d) break;
-        s.st--;
-        addMat(d,'ST');
+        s.st--; addMat(d,'ST');
       }
       return;
     }
-    // sumar: +1 sello a un edificio de los tipos permitidos
     const targets = o.street.filter(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
     if(targets.length) addMat(targets[0],'ST');
     return;
   }
-  // Modo Dos Recursos (sin cambios)
   if(kind==='TI'){
     drawCards(o,1);
     if(o.hand.length){
@@ -629,11 +576,7 @@ function startSimPick(){
 function runSimQueue(){
   while(S.simQueue.length){
     const p = S.players[S.simQueue[0]];
-    if(p.human){
-      S.pendingPick = true;
-      render();
-      return;
-    }
+    if(p.human){ S.pendingPick = true; render(); return; }
     const k = botCrit(p);
     S.active.push(k);
     S.simQueue.shift();
@@ -715,6 +658,7 @@ function endRound(){
   render();
 }
 
+// Se guardan siempre las 2 últimas cartas de cada vereda (las más recientes)
 function nextRound(){
   const kept = new Set();
   S.players.forEach(p=>{ p.street.slice(-2).forEach(b=>kept.add(b)); });
@@ -737,32 +681,23 @@ function slotsHTML(b, hand){
   const c = CAP[b.est];
   if(SETUP.mode==='sellos'){
     const n = hand ? 0 : b.st;
-    let total = c.ST; 
-    let row1Count = total === 4 ? 2 : (total === 5 ? 3 : 4);
-    let row2Count = total - row1Count;
-
-    let r1 = '', r2 = '';
-    for(let i=0; i<row1Count; i++){
-      r1 += `<i class="slot st ${i<n?'on':''}"></i>`;
-    }
-    for(let i=0; i<row2Count; i++){
-      let idx = row1Count + i;
-      r2 += `<i class="slot st ${idx<n?'on':''}"></i>`;
-    }
+    const total = c.ST;
+    const row1Count = total === 4 ? 2 : (total === 5 ? 3 : 4);
+    const row2Count = total - row1Count;
+    let r1='', r2='';
+    for(let i=0;i<row1Count;i++) r1 += `<i class="slot st ${i<n?'on':''}"></i>`;
+    for(let i=0;i<row2Count;i++) r2 += `<i class="slot st ${(row1Count+i)<n?'on':''}"></i>`;
     return `<div class="ln"><span class="sl">${r1}</span></div><div class="ln"><span class="sl">${r2}</span></div>`;
-  } else {
-    let md = hand ? 0 : b.md;
-    let mt = hand ? 0 : b.mt;
-    let s1='';
-    for(let i=0;i<c.MD;i++) s1+=`<i class="slot ${i<md?'on':''}"></i>`;
-    let s2='';
-    for(let i=0;i<c.MT;i++) s2+=`<i class="slot mt ${i<mt?'on':''}"></i>`;
-    return `<div class="ln"><span class="ic">${MAT_ICON.MD}</span><span class="sl">${s1}</span></div>
-            <div class="ln"><span class="ic">${MAT_ICON.MT}</span><span class="sl">${s2}</span></div>`;
   }
+  const md = hand ? 0 : b.md;
+  const mt = hand ? 0 : b.mt;
+  let s1='', s2='';
+  for(let i=0;i<c.MD;i++) s1 += `<i class="slot ${i<md?'on':''}"></i>`;
+  for(let i=0;i<c.MT;i++) s2 += `<i class="slot mt ${i<mt?'on':''}"></i>`;
+  return `<div class="ln"><span class="ic">${MAT_ICON.MD}</span><span class="sl">${s1}</span></div>
+          <div class="ln"><span class="ic">${MAT_ICON.MT}</span><span class="sl">${s2}</span></div>`;
 }
 
-// Un poder está listo cuando el edificio está completo y hay un destino válido para cumplirlo
 function powerReady(b){
   if(!isComplete(b)) return false;
   const o = b.owner;
@@ -782,7 +717,8 @@ function powerReady(b){
 }
 
 function bldInner(b, hand){
-  const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus ${b.plusMat==='ST'?'st':(b.plusMat==='MD'?'md':'mt')}">+1</div>` : '';
+  const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000)
+    ? `<div class="plus ${b.plusMat==='ST'?'st':(b.plusMat==='MD'?'md':'mt')}">+1</div>` : '';
   return `<div class="main">
     <div class="sec-top era-${b.era}"><span>${ERA_ICON[b.era]}</span><span>${ERA_LBL[b.era]}</span></div>
     <div class="sec-mid">
@@ -793,13 +729,13 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row"><span class="si-llena">✓→</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
+    <div class="poder-row"><span class="si-llena">Completo →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
 
 function stripHTML(c){
-  const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🧿</span>` : MAT_ICON[c.mat];
+  const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">${SELLO_ICON}</span>` : MAT_ICON[c.mat];
   return `<div class="strip">
     <div class="give-row"><span>+</span>${giveIcon}</div>
     <span class="targ-ico est-${c.tgt}">${iconFor(c.tgt)}</span>
@@ -809,8 +745,8 @@ function stripHTML(c){
 function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
-    <span class="c-der">+ ${SETUP.mode==='sellos' ? '🧿' : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
-    <span class="c-der">✓→${poderTxt(b.tipo)}</span>
+    <span class="c-der">+ ${SETUP.mode==='sellos' ? SELLO_ICON : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
+    <span class="c-der">Completo → ${poderTxt(b.tipo)}</span>
   </div>`;
 }
 function bldHTML(b){
@@ -832,7 +768,6 @@ function losetaHTML(){
     if(k==='ZB') extraCls = ' est-ZB';
     if(k==='ZI') extraCls = ' est-ZI';
     if(k==='ZR') extraCls = ' est-ZR';
-
     return `<div class="lg${act}${isPick?' pick':''}${extraCls}" ${isPick?`data-crit="${k}"`:''}>${iconFor(k)}<span>${LBL[k]}</span></div>`;
   };
   return [...ERAS, ...Object.keys(TIPO_LBL), ...Object.keys(EST_LBL)].map(item).join('');
@@ -843,15 +778,14 @@ function pwBanner(){
   let msg = '';
   if(SETUP.mode==='sellos'){
     if(pw.kind==='TI'){
-      if(pw.stage==='src1') msg = 'Iglesia (1/2): Tocá un edificio propio con 🧿 para mover uno.';
+      if(pw.stage==='src1') msg = 'Iglesia (1/2): Tocá un edificio propio con sellos para mover uno.';
       else if(pw.stage==='dst1') msg = 'Iglesia (1/2): Tocá el edificio de destino.';
-      else if(pw.stage==='src2') msg = 'Iglesia (2/2): Tocá otro edificio con 🧿 para mover el segundo.';
+      else if(pw.stage==='src2') msg = 'Iglesia (2/2): Tocá otro edificio con sellos para mover el segundo.';
       else if(pw.stage==='dst2') msg = 'Iglesia (2/2): Tocá el edificio de destino.';
     } else if(pw.kind==='TM'){
-      if(pw.stage==='src') msg = 'Mercado: Tocá el edificio del que querés mover un 🧿.';
-      else msg = 'Mercado: Tocá el edificio de destino.';
+      msg = pw.stage==='src' ? 'Mercado: Tocá el edificio del que querés mover un sello.' : 'Mercado: Tocá el edificio de destino.';
     } else if(pw.stage==='dest_target'){
-      msg = `${LBL[pw.kind]}: Tocá el edificio válido (${pw.allowed.map(x=>LBL[x]).join(' o ')}) para +1🧿.`;
+      msg = `${LBL[pw.kind]}: Tocá el edificio válido (${pw.allowed.map(x=>LBL[x]).join(' o ')}) para sumarle 1 sello.`;
     }
   } else {
     if(pw.kind==='TI') msg = 'Iglesia: tocá una carta de tu mano para devolverla al mazo (se mezcla).';
@@ -909,14 +843,14 @@ function setupHTML(){
         <li>Si un edificio se completa, su poder se hace en el momento, una sola vez. Los poderes pueden encadenarse.</li>
         <li>Cuando alguien tiene 3 edificios, cada jugador elige un criterio nuevo (nunca una era).</li>
         <li>Al final de cada ronda puntúa la era de esa ronda, más los criterios elegidos.</li>
-        <li>Entre rondas, conservás tus 2 últimos edificios con lugar libre y al menos un marcador.</li>
+        <li>Entre rondas, conservás tus 2 últimos edificios.</li>
       </ul>
       <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
     </div>
     <div class="setup-right">
       ${err ? `<div class="cfg-error">${err}</div>` : ''}
       <div class="opt-label">Modo de juego</div>
-      <div class="opts">${opt('mode','recursos','🪵⚙️ Dos Recursos')}${opt('mode','sellos','🧿 Sellos de Influencia')}</div>
+      <div class="opts">${opt('mode','recursos','🪵⚙️ Dos Recursos')}${opt('mode','sellos',`${SELLO_ICON} Sellos de Influencia`)}</div>
       <div class="opt-label">Jugar contra (bots)</div>
       <div class="opt-desc">Los bots siempre juegan en Difícil.</div>
       <div class="opts">${opt('bots',2,'2 bots (3 jugadores)')}${opt('bots',3,'3 bots (4 jugadores)')}${opt('bots',4,'4 bots (5 jugadores)')}</div>
@@ -966,8 +900,8 @@ function render(){
   else if(!S.over) html += `<div class="banner">Bajá la carta elegida</div>`;
 
   S.players.forEach((p,i)=>{
-    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda · ${S.totals[i]} total</span>
-      <div class="row">${p.street.length ? p.street.map(bldHTML).join('') : '<span class="empty">Sin edificios aún</span>'}</div></div>`;
+    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda · ${S.totals[i]} total</span><span class="tot">${p.street.length} edificios</span></h3>
+      <div class="row mesa">${p.street.length ? p.street.map(bldHTML).join('') : '<span class="empty">Sin edificios aún</span>'}</div></div>`;
   });
 
   if(!S.over){
@@ -977,7 +911,7 @@ function render(){
       ? (S.discardSel ? `Elegida para descartar #${S.discardSel.id}` : 'Tocá la carta que querés descartar')
       : (S.selCard ? `Elegida #${S.selCard.id}` : 'Elegí una carta');
     handHTML = `<div class="street handdock${glow}"><h3><span>Tu mano</span><span>${head}</span></h3>
-      <div class="row">${me.hand.map(handCardHTML).join('')}</div>
+      <div class="row mano">${me.hand.map(handCardHTML).join('')}</div>
       <div>
         ${S.pendingDiscard ? `<button class="danger${S.discardSel?' glowbtn':''}" data-act="confirmDiscard" ${S.discardSel?'':'disabled'}>Confirmar descarte</button>` : ''}
         <button data-act="play" class="${needPlay && S.selCard ? 'glowbtn' : ''}" ${(!S.selCard || !needPlay)?'disabled':''}>Bajar carta</button>

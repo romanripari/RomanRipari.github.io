@@ -35,7 +35,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld.dsel{outline:4px solid #e0302a}
 .bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
 .bld.hand{cursor:pointer}
-.bld .main{flex:1;display:flex;flex-direction:column;padding:6px;min-width:0}
+.bld .main{flex:3 1 0;display:flex;flex-direction:column;min-width:0;padding:0}
 .bld .top3{display:flex;justify-content:center;gap:8px;align-items:center;font-size:16px;height:26px;width:100%;padding:2px 4px;background:transparent}
 .bld .mid{display:flex;align-items:center;gap:6px;flex:1}
 .bld .labs{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700;color:#333;text-align:right;flex:1}
@@ -52,7 +52,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .slot.st.on{background:#d97706}
 
 /* Lado derecho con fondo blanco limpio */
-.bld .strip{width:68px;flex:0 0 68px;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:4px}
+.bld .strip{flex:1 1 0;min-width:0;width:auto;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:4px}
 .bld .strip .give-row{display:flex;align-items:center;gap:3px;font-weight:900;font-size:15px}
 .bld .strip b{font-size:10px;line-height:1.1;word-break:break-word;color:#222;padding:2px 4px;border-radius:4px}
 .bld .strip .targ-ico{padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:22px}
@@ -117,6 +117,12 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
 .start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
 .cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
+.bld .sec-top{flex:1 1 0;display:flex;align-items:center;gap:6px;padding:0 6px;font-weight:700;font-size:12px;border-bottom:1px dashed #0004}
+.bld .sec-mid{flex:3 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.bld .sec-mid .sqr{width:58px;height:58px;font-size:32px}
+.bld .tipo-nm{font-weight:700;font-size:12px}
+.bld .sec-bot{flex:2 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-top:2px dashed #0006;padding:4px}
+.bld .est-nm{font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -418,8 +424,8 @@ function pwClick(b){
     if(pw.kind==='TM'){
       if(pw.stage==='src'){ pw.src = b; pw.stage = 'dst'; render(); return; }
       if(pw.stage==='dst'){
-        b.st++;
         pw.src.st--;
+        addMat(b,'ST');
         log(`Mercado: moviste 1 sello de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
         finishPw();
         return;
@@ -428,8 +434,8 @@ function pwClick(b){
     if(pw.kind==='TI'){
       if(pw.stage==='src1'){ pw.src = b; pw.stage = 'dst1'; render(); return; }
       if(pw.stage==='dst1'){
-        b.st++;
         pw.src.st--;
+        addMat(b,'ST');
         log(`Iglesia (1/2): moviste 1 sello a ${LBL[b.tipo]}.`);
         pw.stage = 'src2';
         render();
@@ -437,15 +443,15 @@ function pwClick(b){
       }
       if(pw.stage==='src2'){ pw.src = b; pw.stage = 'dst2'; render(); return; }
       if(pw.stage==='dst2'){
-        b.st++;
         pw.src.st--;
+        addMat(b,'ST');
         log(`Iglesia (2/2): moviste 1 sello a ${LBL[b.tipo]}.`);
         finishPw();
         return;
       }
     }
     if(pw.stage==='dest_target'){
-      b.st++;
+      addMat(b,'ST');
       log(`${LBL[pw.kind]}: sumaste 1 sello a ${LBL[b.tipo]}.`);
       finishPw();
       return;
@@ -464,7 +470,6 @@ function pwClick(b){
     }
   }
 }
-
 function pwChooseMat(mat){
   const pw = S.pw;
   if(!pw || pw.stage!=='mat') return;
@@ -487,61 +492,60 @@ function botPower(o,b){
       const dsts = o.street.filter(x=>hasRoom(x,'ST'));
       if(srcs.length && dsts.length){
         const s = srcs[0], d = dsts.find(x=>x!==s) || dsts[0];
-        if(s && d && s!==d){ s.st--; d.st++; }
+        if(s && d && s!==d){ s.st--; addMat(d,'ST'); }
       }
-    } else if(kind==='TI'){
-      for(let i=0; i<2; i++){
+      return;
+    }
+    if(kind==='TI'){
+      for(let i=0;i<2;i++){
         const srcs = o.street.filter(x=>x.st>0);
         const dsts = o.street.filter(x=>hasRoom(x,'ST'));
         if(srcs.length && dsts.length){
           const s = srcs[0], d = dsts.find(x=>x!==s) || dsts[0];
-          if(s && d && s!==d){ s.st--; d.st++; }
+          if(s && d && s!==d){ s.st--; addMat(d,'ST'); }
         }
       }
-    } else {
-      let targetTypes = [];
-      if(kind==='TT') targetTypes = ['TP','TC'];
-      else if(kind==='TP') targetTypes = ['TM','TI'];
-      else if(kind==='TC') targetTypes = ['TT','TM'];
-      const targets = o.street.filter(x=>targetTypes.includes(x.tipo) && hasRoom(x,'ST'));
-      if(targets.length){
-        targets[0].st++;
-      }
+      return;
+    }
+    let targetTypes = [];
+    if(kind==='TT') targetTypes = ['TP','TC'];
+    else if(kind==='TP') targetTypes = ['TM','TI'];
+    else if(kind==='TC') targetTypes = ['TT','TM'];
+    const targets = o.street.filter(x=>targetTypes.includes(x.tipo) && hasRoom(x,'ST'));
+    if(targets.length) addMat(targets[0],'ST');
+    return;
+  }
+  if(kind==='TI'){
+    drawCards(o,1);
+    if(o.hand.length){
+      const c = o.hand[Math.floor(Math.random()*o.hand.length)];
+      discardCardToDeck(o,c);
     }
     return;
-  } else {
-    if(kind==='TI'){
-      drawCards(o,1);
-      if(o.hand.length){
-        const c = o.hand[Math.floor(Math.random()*o.hand.length)];
-        discardCardToDeck(o,c);
-      }
-      return;
-    }
-    if(kind==='TM'){
-      const srcs = o.street.filter(x=>x.md>0 || x.mt>0);
-      if(!srcs.length) return;
-      const src = srcs[Math.floor(Math.random()*srcs.length)];
-      const mats = ['MD','MT'].filter(m=>(m==='MD'?src.md:src.mt)>0);
-      const mat = mats[Math.floor(Math.random()*mats.length)];
-      const dst = o.street.filter(x=>x!==src && hasRoom(x,mat));
-      if(!dst.length) return;
-      removeMat(src,mat);
-      addMat(dst[Math.floor(Math.random()*dst.length)], mat);
-      return;
-    }
-    if(kind==='TT' || kind==='TP'){
-      const mat = kind==='TT' ? 'MT' : 'MD';
-      const d = o.street.filter(x=>hasRoom(x,mat));
-      if(d.length) addMat(d[Math.floor(Math.random()*d.length)], mat);
-      return;
-    }
-    const opts = ['MD','MT'].filter(m=>o.street.some(x=>hasRoom(x,m)));
-    if(!opts.length) return;
-    const mat = opts[Math.floor(Math.random()*opts.length)];
-    const d = o.street.filter(x=>hasRoom(x,mat));
-    addMat(d[Math.floor(Math.random()*d.length)], mat);
   }
+  if(kind==='TM'){
+    const srcs = o.street.filter(x=>x.md>0 || x.mt>0);
+    if(!srcs.length) return;
+    const src = srcs[Math.floor(Math.random()*srcs.length)];
+    const mats = ['MD','MT'].filter(m=>(m==='MD'?src.md:src.mt)>0);
+    const mat = mats[Math.floor(Math.random()*mats.length)];
+    const dst = o.street.filter(x=>x!==src && hasRoom(x,mat));
+    if(!dst.length) return;
+    removeMat(src,mat);
+    addMat(dst[Math.floor(Math.random()*dst.length)], mat);
+    return;
+  }
+  if(kind==='TT' || kind==='TP'){
+    const mat = kind==='TT' ? 'MT' : 'MD';
+    const d = o.street.filter(x=>hasRoom(x,mat));
+    if(d.length) addMat(d[Math.floor(Math.random()*d.length)], mat);
+    return;
+  }
+  const opts = ['MD','MT'].filter(m=>o.street.some(x=>hasRoom(x,m)));
+  if(!opts.length) return;
+  const mat = opts[Math.floor(Math.random()*opts.length)];
+  const d = o.street.filter(x=>hasRoom(x,mat));
+  addMat(d[Math.floor(Math.random()*d.length)], mat);
 }
 
 /* ===== BOTS ===== */
@@ -729,13 +733,14 @@ function slotsHTML(b, hand){
 function bldInner(b, hand){
   const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus ${b.plusMat==='ST'?'st':(b.plusMat==='MD'?'md':'mt')}">+1</div>` : '';
   return `<div class="main">
-    <div class="top3"><span>${ERA_ICON[b.era]}</span><span>${TIPO_ICON[b.tipo]}</span>${estrSVG(b.est)}</div>
-    <div class="mid era-${b.era}">
-      <div class="labs"><span>${ERA_LBL[b.era]}</span><span>${LBL[b.tipo]}</span><span>${EST_LBL[b.est]}</span></div>
+    <div class="sec-top era-${b.era}"><span>${ERA_ICON[b.era]}</span><span>${ERA_LBL[b.era]}</span></div>
+    <div class="sec-mid">
       <div class="sqr">${TIPO_ICON[b.tipo]}</div>
+      <div class="tipo-nm">${LBL[b.tipo]}</div>
     </div>
-    <div class="need est-${b.est}">
-      ${slotsHTML(b,hand)}
+    <div class="sec-bot">
+      <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
+      <div class="need">${slotsHTML(b,hand)}</div>
     </div>
     ${pl}
   </div>`;

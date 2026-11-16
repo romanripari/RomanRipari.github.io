@@ -188,11 +188,11 @@ const PODER = {
 };
 // Texto que se muestra al jugador
 const PODER_TXT = {
-  TI:`+1 sello a cualquier edificio tuyo con lugar`,
-  TM:`Mover 1 sello entre tus edificios`,
-  TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
-  TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
-  TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
+  TI:`+1 🧿 a cualquier edificio tuyo con lugar`,
+  TM:`Mover 1 🧿 entre tus edificios`,
+  TT:`+1 🧿 a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
+  TP:`+1 🧿 a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
+  TC:`+1 🧿 a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
 };
 const PODER_RECURSOS = {
   TI:'Roba 1 y devuelve 1',
@@ -458,7 +458,7 @@ function pwClick(b){
       if(pw.stage==='dst'){
         pw.src.st--;
         addMat(b,'ST');
-        log(`Mercado: moviste 1 sello de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
+        log(`Mercado: moviste 1 🧿 de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
         finishPw();
         return;
       }
@@ -468,7 +468,7 @@ function pwClick(b){
       if(pw.stage==='dst1'){
         pw.src.st--;
         addMat(b,'ST');
-        log(`Iglesia (1/2): moviste 1 sello a ${LBL[b.tipo]}.`);
+        log(`Iglesia (1/2): moviste 1 🧿 a ${LBL[b.tipo]}.`);
         if(!S.players[0].street.some(x=>x.st>0)){ finishPw(); return; }
         pw.stage = 'src2';
         render();
@@ -478,14 +478,14 @@ function pwClick(b){
       if(pw.stage==='dst2'){
         pw.src.st--;
         addMat(b,'ST');
-        log(`Iglesia (2/2): moviste 1 sello a ${LBL[b.tipo]}.`);
+        log(`Iglesia (2/2): moviste 1 🧿 a ${LBL[b.tipo]}.`);
         finishPw();
         return;
       }
     }
     if(pw.stage==='dest_target'){
       addMat(b,'ST');
-      log(`${LBL[pw.kind]}: sumaste 1 sello a ${LBL[b.tipo]}.`);
+      log(`${LBL[pw.kind]}: sumaste 1 🧿 a ${LBL[b.tipo]}.`);
       finishPw();
       return;
     }
@@ -837,15 +837,15 @@ function pwBanner(){
   let msg = '';
   if(SETUP.mode==='sellos'){
     if(pw.kind==='TI'){
-      if(pw.stage==='src1') msg = 'Iglesia (1/2): Tocá un edificio propio con sellos para mover uno.';
+      if(pw.stage==='src1') msg = 'Iglesia (1/2): Tocá un edificio propio con 🧿 para mover uno.';
       else if(pw.stage==='dst1') msg = 'Iglesia (1/2): Tocá el edificio de destino.';
-      else if(pw.stage==='src2') msg = 'Iglesia (2/2): Tocá otro edificio con sellos para mover el segundo.';
+      else if(pw.stage==='src2') msg = 'Iglesia (2/2): Tocá otro edificio con 🧿 para mover el segundo.';
       else if(pw.stage==='dst2') msg = 'Iglesia (2/2): Tocá el edificio de destino.';
     } else if(pw.kind==='TM'){
-      if(pw.stage==='src') msg = 'Mercado: Tocá el edificio del que querés mover un sello.';
+      if(pw.stage==='src') msg = 'Mercado: Tocá el edificio del que querés mover un 🧿.';
       else msg = 'Mercado: Tocá el edificio de destino.';
     } else if(pw.stage==='dest_target'){
-      msg = `${LBL[pw.kind]}: Tocá el edificio válido (${pw.allowed.map(x=>LBL[x]).join(' o ')}) para sumarle 1 Sello.`;
+      msg = `${LBL[pw.kind]}: Tocá el edificio válido (${pw.allowed.map(x=>LBL[x]).join(' o ')}) para +1🧿.`;
     }
   } else {
     if(pw.kind==='TI') msg = 'Iglesia: tocá una carta de tu mano para devolverla al mazo (se mezcla).';

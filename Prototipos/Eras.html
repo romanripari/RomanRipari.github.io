@@ -907,7 +907,7 @@ function render(){
   else if(!S.over) html += `<div class="banner">Bajá la carta elegida</div>`;
 
   S.players.forEach((p,i)=>{
-    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda · ${S.totals[i]} total</span><span class="tot">${p.street.length} edificios</span></h3>
+    html += `<div class="street"><h3><span><b>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda</b> · ${S.totals[i]}${sc.pts[i]?`(+${sc.pts[i]})`:''} total</span><span class="tot">${p.street.length} edificios</span></h3>
       <div class="row mesa">${p.street.length ? p.street.map(bldHTML).join('') : '<span class="empty">Sin edificios aún</span>'}</div></div>`;
   });
 

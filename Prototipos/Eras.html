@@ -178,7 +178,7 @@ const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo
 const TIPO_ICON = {TI:'⛪',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🏰'};
 // Poder al llenarse (modo Sellos). "destino" son los tipos que pueden recibir el efecto.
 const PODER = {
-  TI:{accion:'mover',  cantidad:2, destino:'cualquiera'},
+  TI:{accion:'sumar',  cantidad:1, destino:['TI','TM','TT','TP','TC']},
   TM:{accion:'mover',  cantidad:1, destino:'cualquiera'},
   TT:{accion:'sumar',  cantidad:1, destino:['TP','TC']},
   TP:{accion:'sumar',  cantidad:1, destino:['TM','TI']},
@@ -186,7 +186,7 @@ const PODER = {
 };
 // Texto que se muestra al jugador
 const PODER_TXT = {
-  TI:`Mover 2 sellos entre tus edificios`,
+  TI:`+1 sello a cualquier edificio tuyo con lugar`,
   TM:`Mover 1 sello entre tus edificios`,
   TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
   TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
@@ -785,7 +785,7 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row"><span class="si-llena">Si se llena ➜</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
+    <div class="poder-row"><span class="si-llena">Completo →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
@@ -802,7 +802,7 @@ function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
     <span class="c-der">+ ${SETUP.mode==='sellos' ? '🧿' : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
-    <span class="c-der">Si se llena: ${poderTxt(b.tipo)}</span>
+    <span class="c-der">Completo → ${poderTxt(b.tipo)}</span>
   </div>`;
 }
 function bldHTML(b){

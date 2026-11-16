@@ -12,29 +12,29 @@ header{background:#2d4a3e;color:#fff;padding:10px 14px;display:flex;flex-wrap:wr
 h1{font-size:18px;margin:0}
 h3{margin:6px 0}
 .chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
-main{padding:10px;max-width:1100px;margin:auto}
+main{padding:10px;max-width:1200px;margin:auto}
 .panel{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
 .banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
-button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
+button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 12px;font-size:13px;cursor:pointer;margin:3px}
 button.ghost{background:#5b7a6c}
 button.danger{background:#e0302a}
-.suits{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-around;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:8px}
-.suit{display:flex;flex-direction:column;align-items:center;min-width:100px;padding:3px;border-radius:6px;font-size:11px;font-weight:700}
-.suit .ico{font-size:24px}
-.suit.free{opacity:.55}
-.row{display:flex;gap:6px;overflow-x:auto;padding:6px 4px 8px}
-.tile{flex:0 0 92px;height:124px;background:#fff;border:2px solid #444;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px;font-size:10px;text-align:center}
-.tile .ico{font-size:22px}
-.tile.here{outline:3px solid #e0007a}
-.tokens{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
-.tok{display:inline-flex;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;align-items:center;justify-content:center;border:1px solid #111}
-.card{width:72px;height:92px;border-radius:8px;border:2px solid #444;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-align:center}
+.suits{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:8px}
+.suit{background:#f4f8fa;border-radius:8px;padding:5px;font-size:12px}
+.suit .nm{font-weight:700;font-size:13px}
+.suit .ds{color:#444;font-size:11px}
+.suit.free{opacity:.7}
+.hand{display:flex;gap:6px;flex-wrap:wrap}
+.card{width:76px;height:94px;border-radius:8px;border:2px solid #444;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-align:center}
 .card .ico{font-size:24px}
+.tok{display:inline-flex;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;align-items:center;justify-content:center;border:1px solid #111}
 .infos{display:flex;flex-wrap:wrap;gap:8px}
-.infos>.panel{flex:1 1 280px;min-width:0}
-.log{font-size:12px;max-height:200px;overflow-y:auto;line-height:1.5}
+.infos>.panel{flex:1 1 300px;min-width:0}
+.log{font-size:12px;max-height:220px;overflow-y:auto;line-height:1.5}
 table{width:100%;border-collapse:collapse;font-size:13px}
 td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
+.legend span{display:inline-flex;align-items:center;gap:4px;margin:2px 10px 2px 0;font-size:11px}
+.sw{width:13px;height:13px;border-radius:50%;border:1px solid #333;display:inline-block}
+svg{width:100%;height:auto;display:block}
 .setup{background:linear-gradient(#bfe9fb,#e9f8ff 60%,#fff6dc);padding:20px;border-radius:12px}
 .setup h2{color:#2d6b4f;font-size:44px;margin:4px 0;text-shadow:3px 3px 0 #ffd66b}
 .opt-label{font-size:12px;letter-spacing:1px;color:#8a5a2b;font-weight:700;margin:12px 0 4px;text-transform:uppercase}
@@ -48,59 +48,93 @@ input{width:100%;padding:12px;border-radius:12px;border:2px solid #f2c46b;font-s
 <header><h1>Super Mario · Prototipo</h1><div id="hdr"></div></header>
 <main><div id="app"></div></main>
 <script>
-/* ===== DATOS (placeholders: mapas y valores a definir en el testeo) ===== */
+/* ===== TERRENOS Y TRAJES ===== */
+const TYPES={
+  n:{n:'Normal',c:'#ffffff',f:'#222'},
+  LAVA:{n:'Lava',c:'#f08a80',f:'#222'},
+  PIN:{n:'Pinchos',c:'#c5ea9a',f:'#222'},
+  PLA:{n:'Plantas',c:'#4f7d3a',f:'#fff'},
+  CAN:{n:'Cañonazos',c:'#f5a347',f:'#222'},
+  AGU:{n:'Agua',c:'#9fd8f0',f:'#222'},
+  PRE:{n:'Precipicios',c:'#b0b6bd',f:'#222'},
+  C:{n:'Castillo',c:'#7a5636',f:'#fff'},
+  B:{n:'Bowser',c:'#3f7a2e',f:'#fff'}
+};
 const SUITS={
-  RANA:{n:'Rana',i:'🐸',d:'AGUA'},
-  MAPACHE:{n:'Mapache',i:'🦝',d:'PRECIPICIO'},
-  BOTA:{n:'Bota',i:'🥾',d:'PINCHOS'},
-  HAMMER:{n:'Hammer',i:'🔨',d:'LAVA'},
-  TANOOKI:{n:'Tanooki',i:'🍂',d:'CANON'},
-  FUEGO:{n:'Dispara Fuego',i:'🔥',d:'PLANTAS'}
+  RANA:{n:'Rana',i:'🐸',d:'AGU',desc:'Agua: la cruzás sin tirar dado'},
+  MAPACHE:{n:'Mapache',i:'🦝',d:'PRE',desc:'Precipicios: los salteás sin caer'},
+  BOTA:{n:'Bota',i:'🥾',d:'PIN',desc:'Pinchos: los pisás sin problema'},
+  HAMMER:{n:'Hammer',i:'🔨',d:'LAVA',desc:'Lava: la pasás sin perder vida'},
+  TANOOKI:{n:'Tanooki',i:'🍂',d:'CAN',desc:'Cañonazos: los ignorás'},
+  FUEGO:{n:'Dispara Fuego',i:'🔥',d:'PLA',desc:'Plantas: las pisás sin problema'}
 };
 const SUIT_IDS=Object.keys(SUITS);
 const DANGER={
-  LAVA:{n:'Lava',i:'🌋',col:'#f08a80',pen:'vida',txt:'-1 vida'},
-  PINCHOS:{n:'Pinchos',i:'📍',col:'#c5ea9a',pen:'vida',txt:'-1 vida'},
-  PLANTAS:{n:'Plantas',i:'🌿',col:'#4f7d3a',pen:'vida',txt:'-1 vida',dark:true},
-  CANON:{n:'Cañonazos',i:'💣',col:'#f5a347',pen:'dado',txt:'dado impar: -1 vida'},
-  AGUA:{n:'Agua',i:'💧',col:'#9fd8f0',pen:'parar',txt:'dado impar: -1 vida y se detiene'},
-  PRECIPICIO:{n:'Precipicio',i:'🕳️',col:'#b0b6bd',pen:'parar',txt:'dado impar: -1 vida y se detiene'}
+  LAVA:{n:'Lava',pen:'vida',txt:'-1 vida al pasar'},
+  PIN:{n:'Pinchos',pen:'vida',txt:'-1 vida al pasar'},
+  PLA:{n:'Plantas',pen:'vida',txt:'-1 vida al pasar'},
+  CAN:{n:'Cañonazos',pen:'dado',txt:'si sale impar: -1 vida'},
+  AGU:{n:'Agua',pen:'parar',txt:'si sale impar: -1 vida y te detenés'},
+  PRE:{n:'Precipicios',pen:'parar',txt:'si sale impar: -1 vida y te detenés'}
 };
-const CARDS={
-  E:{n:'Estrella',i:'✨'},
-  H:{n:'Hongo',i:'🍄'},
-  F:{n:'Flor',i:'🌸'},
-  ESC:{n:'Escudo',i:'🛡️'},
-  SUP:{n:'Súper Estrella',i:'🌟'}
-};
+const CARDS={E:{n:'Estrella',i:'✨'},H:{n:'Hongo',i:'🍄'},F:{n:'Flor',i:'🌸'},ESC:{n:'Escudo',i:'🛡️'},SUP:{n:'Súper Estrella',i:'🌟'}};
 const SETS=[
   {cards:['E','E','E'],v:5,label:'3 Estrellas (+5 vidas)'},
   {cards:['H','H','H'],v:3,label:'3 Hongos (+3 vidas)'},
   {cards:['F','F','F'],v:2,label:'3 Flores (+2 vidas)'},
   {cards:['E','H','F'],v:1,label:'3 distintas (+1 vida)'}
 ];
-/* Mapa placeholder en fila: 0-11 Mundo 1 · 12-23 Mundo 2 · 24-35 Mundo 3 · 36-45 Mundo Koopa
-   n = normal · C1/C2/C3 = castillo · B = Bowser · resto = nombre de peligro */
-const MAP=[
-  'n','LAVA','n','PINCHOS','n','CANON','n','AGUA','n','PRECIPICIO','n','C1',
-  'n','PLANTAS','n','LAVA','n','AGUA','n','CANON','n','PINCHOS','n','C2',
-  'n','PRECIPICIO','n','PLANTAS','n','LAVA','n','AGUA','n','CANON','n','C3',
-  'n','LAVA','n','PINCHOS','n','PLANTAS','n','CANON','n','B'
-];
-const CASTLE_W={11:1,23:2,35:3};
-const WORLD_START=[0,12,24,36];
-const KOOPA_START=36, KOOPA_END=45, KOOPA_KEY=3;
-const START_HAND=2;
-const PLAYER_NAMES=['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
-const COLORS=['#2d6b4f','#c2410c','#2b7bc4','#8a3ffc','#b8860b','#c2185b'];
+
+/* ===== MAPA: 4 mundos de 4 × 10 nodos (40 por mundo) ===== */
+const DATA={
+  W1:['n','PIN','n','n','CAN','n','PLA','n','AGU','n',
+      'n','PRE','n','LAVA','n','n','n','PLA','n','CAN',
+      'n','n','AGU','n','PIN','n','n','LAVA','n','n',
+      'PRE','n','n','n','CAN','n','PLA','n','n','C'],
+  W2:['n','AGU','n','n','PLA','n','LAVA','n','n','CAN',
+      'n','PIN','n','n','PRE','n','n','AGU','n','n',
+      'PLA','n','n','LAVA','n','CAN','n','n','PRE','n',
+      'PIN','n','n','n','AGU','n','n','CAN','n','C'],
+  W3:['n','n','PIN','n','n','LAVA','n','PLA','n','n',
+      'AGU','n','CAN','n','n','PRE','n','n','PIN','n',
+      'LAVA','n','n','AGU','n','PLA','n','n','CAN','n',
+      'n','PRE','n','PIN','n','LAVA','n','n','AGU','C'],
+  W4:['n','LAVA','n','n','PIN','n','PLA','n','CAN','n',
+      'AGU','n','PRE','n','LAVA','n','n','PIN','n','PLA',
+      'n','CAN','n','AGU','n','PRE','n','LAVA','n','n',
+      'PIN','n','PLA','n','CAN','n','AGU','n','PRE','B']
+};
+const RUNGS={
+  W1:[[0,7],[12,19],[24,31],[33,38]],
+  W2:[[5,10],[17,22],[26,29],[34,37]],
+  W3:[[9,14],[16,23],[29,34]],
+  W4:[[5,10],[8,15],[21,26],[30,33]]
+};
+const CROSS=[['W1-39','W3-0'],['W2-39','W3-0'],['W3-39','W4-0']];
+const SPAWNS=['W1-0','W2-0','W1-2','W2-2','W1-4','W2-4'];
+const LAYOUT={W1:[40,60],W2:[40,580],W3:[340,320],W4:[640,60]};
+const NAMES={W1:'Mundo 1',W2:'Mundo 2',W3:'Mundo 3',W4:'Mundo Koopa'};
+const NODES={};
+for(const w of Object.keys(DATA)) DATA[w].forEach((t,k)=>{
+  const r=Math.floor(k/4), i=k%4, col=r%2===0?i:3-i;
+  NODES[`${w}-${k}`]={id:`${w}-${k}`,w,k,row:r,col,t,next:k<39?[`${w}-${k+1}`]:[]};
+});
+for(const w of Object.keys(RUNGS)) RUNGS[w].forEach(([a,b])=>NODES[`${w}-${a}`].next.push(`${w}-${b}`));
+CROSS.forEach(([a,b])=>NODES[a].next.push(b));
+
+/* ===== ESTADO ===== */
 const SETUP={bots:2,lives:3,coins:2,name:''};
 let S=null;
+const START_HAND=2, KOOPA_KEY=3;
 
 /* ===== UTILIDADES ===== */
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function roll(){return 1+Math.floor(Math.random()*6)}
 function log(m){S.log.push(m)}
+function wOf(id){return id.split('-')[0]}
+function wNum(id){return +wOf(id).slice(1)}
+function nodeLabel(id){const n=NODES[id];return `${NAMES[n.w]} · nodo ${n.k} (${TYPES[n.t].n})`}
 function buildDeck(){
   const d=[];
   for(let i=0;i<12;i++) d.push('E','H','F');
@@ -108,13 +142,8 @@ function buildDeck(){
   for(let i=0;i<6;i++) d.push('SUP');
   return shuffle(d);
 }
-function worldOf(pos){return pos<12?1:pos<24?2:pos<36?3:4}
-function worldName(pos){return worldOf(pos)===4?'Mundo Koopa':'Mundo '+worldOf(pos)}
-function startOfWorld(pos){return WORLD_START[worldOf(pos)-1]}
 function bankSuits(){return SUIT_IDS.filter(s=>!S.players.some(p=>p.suit===s))}
-function suitForDanger(t){return SUIT_IDS.find(s=>SUITS[s].d===t)}
-function occupiedBy(idx,me){return S.players.some(q=>q!==me&&q.pos===idx)}
-function freeFrom(i,p){while(i<KOOPA_END&&occupiedBy(i,p)) i++; return i}
+function occ(id,me){return S.players.some(q=>q!==me&&q.pos===id)}
 function removeCard(p,c){const i=p.hand.indexOf(c); if(i>=0) S.discard.push(p.hand.splice(i,1)[0])}
 function drawCard(p){
   if(!S.deck.length){
@@ -126,91 +155,89 @@ function drawCard(p){
   log(p.human?`${p.name} roba ${CARDS[c].i} ${CARDS[c].n}.`:`${p.name} roba una carta.`);
 }
 
-/* ===== REGLAS BASE ===== */
-function canEnter(p,nxt){
-  if(nxt>KOOPA_END) return false;
-  if(p.pos<KOOPA_START && nxt>=KOOPA_START && p.scepters.length<KOOPA_KEY) return false;
-  return !occupiedBy(nxt,p);
+/* ===== MOVIMIENTO EN EL GRAFO ===== */
+function canStep(p,to){
+  if(occ(to,p)) return false;
+  if(wOf(to)==='W4' && wOf(p.pos)!=='W4' && p.scepters.length<KOOPA_KEY) return false;
+  return true;
 }
-function maxSteps(p,max){let k=0; while(k<max && canEnter(p,p.pos+k+1)) k++; return k}
+/* Caminos de exactamente `steps` nodos, sin pasar por nodos ocupados. Un destino por camino. */
+function pathsOf(p,steps){
+  const res=new Map();
+  const dfs=(cur,path)=>{
+    if(path.length===steps){ const d=path[path.length-1]; if(!res.has(d)) res.set(d,path); return; }
+    for(const nx of NODES[cur].next){
+      if(!canStep(p,nx) || path.includes(nx)) continue;
+      dfs(nx,[...path,nx]);
+    }
+  };
+  dfs(p.pos,[]);
+  return [...res.values()];
+}
+function walk(p,path){
+  for(const id of path){
+    const t=NODES[id].t, d=DANGER[t];
+    const protectedBy=p.suit && SUITS[p.suit].d===t;
+    if(!d || protectedBy){ p.pos=id; continue; }
+    if(d.pen==='vida'){
+      p.pos=id; log(`${p.name} atraviesa ${d.n} y pierde 1 vida.`);
+      if(loseLife(p)==='dead') return true;
+    } else if(d.pen==='dado'){
+      p.pos=id; const r=roll();
+      if(r%2===1){ log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida.`); if(loseLife(p)==='dead') return true; }
+      else log(`${p.name} tira ${r} en ${d.n}: par, no pierde.`);
+    } else {
+      const r=roll();
+      if(r%2===1){ log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida y se detiene.`); return loseLife(p)==='dead'; }
+      p.pos=id;
+    }
+  }
+  return false;
+}
+function doMove(p,path){
+  const from=p.pos;
+  if(walk(p,path)) return;
+  if(p.pos!==from) landing(p);
+  else log(`${p.name} no avanza.`);
+}
+function landing(p){
+  const t=NODES[p.pos].t;
+  if(t==='n') drawCard(p);
+  else if(t==='C') castle(p,wNum(p.pos));
+}
 
+/* ===== VIDAS, MUERTE, CASTILLOS ===== */
 function loseLife(p){
   const e=p.hand.indexOf('ESC');
-  if(e>=0){
-    S.discard.push(p.hand.splice(e,1)[0]);
-    log(`${p.name} usa 🛡️ Escudo y no pierde vida.`);
-    return 'ok';
-  }
+  if(e>=0){ S.discard.push(p.hand.splice(e,1)[0]); log(`${p.name} usa 🛡️ Escudo y no pierde vida.`); return 'ok'; }
   p.lives--;
   log(`${p.name} pierde 1 vida (le quedan ${Math.max(p.lives,0)}).`);
   if(p.lives<=0){ die(p); return 'dead'; }
   return 'ok';
 }
 function die(p){
-  p.pos=freeFrom(startOfWorld(p.pos),p);
+  const w=wOf(p.pos);
+  p.pos=[...Array(40).keys()].map(k=>`${w}-${k}`).find(id=>!occ(id,p));
   p.lives=SETUP.lives;
-  log(`${p.name} muere y reaparece al inicio de su mundo. (Regla pendiente de diseño.)`);
-}
-
-/* Avanza hasta `steps` casillas aplicando peligros. Devuelve true si murió. */
-function walk(p,steps){
-  for(let k=0;k<steps;k++){
-    const nxt=p.pos+1;
-    if(!canEnter(p,nxt)) break;
-    const t=MAP[nxt], d=DANGER[t];
-    if(!d || (p.suit && SUITS[p.suit].d===t)){ p.pos=nxt; continue; }
-    if(d.pen==='vida'){
-      p.pos=nxt;
-      log(`${p.name} atraviesa ${d.n} y pierde 1 vida.`);
-      if(loseLife(p)==='dead') return true;
-    } else if(d.pen==='dado'){
-      p.pos=nxt;
-      const r=roll();
-      if(r%2===1){
-        log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida.`);
-        if(loseLife(p)==='dead') return true;
-      } else log(`${p.name} tira ${r} en ${d.n}: par, no pierde.`);
-    } else {
-      const r=roll();
-      if(r%2===1){
-        log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida y se detiene.`);
-        return loseLife(p)==='dead';
-      }
-      p.pos=nxt;
-    }
-  }
-  return false;
-}
-function doMove(p,steps){
-  const from=p.pos;
-  const died=walk(p,steps);
-  if(died) return;
-  if(p.pos!==from) landing(p);
-  else log(`${p.name} no avanza.`);
-}
-function landing(p){
-  const t=MAP[p.pos];
-  if(t==='n') drawCard(p);
-  else if(CASTLE_W[p.pos]) castle(p,CASTLE_W[p.pos]);
+  log(`${p.name} muere y reaparece al inicio de ${NAMES[w]}. (Regla pendiente de diseño.)`);
 }
 function castle(p,w){
   if(S.castleTaken[w]){ log(`Castillo ${w}: su Cetro ya fue tomado.`); return; }
   const sec=S.castleSuit[w];
-  log(`Castillo ${w}: se revela la debilidad secreta: ${SUITS[sec].i} ${SUITS[sec].n}.`);
+  log(`Castillo ${w}: se revela la debilidad: ${SUITS[sec].i} ${SUITS[sec].n}.`);
   if(p.suit===sec){
     S.castleTaken[w]=true; p.scepters.push(w);
-    log(`¡Ataque crítico! ${p.name} obtiene el Cetro del Mundo ${w} gratis y roba una carta extra.`);
-    drawCard(p);
-    return;
+    log(`¡Ataque crítico! ${p.name} obtiene el Cetro ${w} gratis y roba una carta extra.`);
+    drawCard(p); return;
   }
   S.pend={type:'wear',p,w};
 }
 
-/* ===== TRAJE (Fase 1) ===== */
+/* ===== FASE 1: TRAJE ===== */
 function suitOptions(p){
   const o=[{type:'keep',label:'Mantener traje (0 🪙)'}];
   if(p.coins>=1){
-    bankSuits().forEach(s=>o.push({type:'buy',suit:s,label:`Comprar ${SUITS[s].i} ${SUITS[s].n} (1 🪙)`}));
+    bankSuits().forEach(s=>o.push({type:'buy',suit:s,label:`Comprar ${SUITS[s].i} ${SUITS[s].n} (1 🪙): ${SUITS[s].desc}`}));
     S.players.forEach((v,i)=>{
       if(v!==p && v.suit) o.push({type:'steal',target:i,suit:v.suit,label:`Robar ${SUITS[v.suit].i} a ${v.name} (1 🪙)`});
     });
@@ -218,44 +245,39 @@ function suitOptions(p){
   return o;
 }
 function suitAction(p,act){
-  if(act.type==='buy'){
-    p.coins--; p.suit=act.suit;
-    log(`${p.name} compra ${SUITS[act.suit].i} ${SUITS[act.suit].n}.`);
-  } else if(act.type==='steal'){
+  if(act.type==='buy'){ p.coins--; p.suit=act.suit; log(`${p.name} compra ${SUITS[act.suit].i} ${SUITS[act.suit].n}.`); }
+  else if(act.type==='steal'){
     const v=S.players[act.target];
     p.coins--; v.coins++; v.suit=null; p.suit=act.suit;
     log(`${p.name} le roba ${SUITS[act.suit].i} a ${v.name} y le paga 1 moneda.`);
   } else log(`${p.name} mantiene su traje.`);
 }
 
-/* ===== ACCIÓN (Fase 2) ===== */
+/* ===== FASE 2: ACCIÓN ===== */
 function moveOptions(p){
   const o=[];
-  const m3=maxSteps(p,3);
-  if(m3>=1) o.push({type:'move',steps:1,label:'Mover 1'});
-  if(m3>=2) o.push({type:'move',steps:2,label:'Mover 2'});
-  if(m3>=1 && p.hand.includes('SUP')) o.push({type:'super',steps:m3,label:`Usar 🌟 Súper Estrella: mover hasta ${m3}`});
+  pathsOf(p,1).forEach(path=>o.push({type:'move',path,label:`Mover 1 → ${nodeLabel(path.at(-1))}`}));
+  pathsOf(p,2).forEach(path=>o.push({type:'move',path,label:`Mover 2 → ${nodeLabel(path.at(-1))}`}));
+  if(p.hand.includes('SUP')) pathsOf(p,3).forEach(path=>o.push({type:'super',path,label:`🌟 Mover 3 → ${nodeLabel(path.at(-1))}`}));
   o.push({type:'rest',label:'Descansar (+2 🪙)'});
-  if(p.pos===KOOPA_END && p.scepters.length) o.push({type:'hit',label:'Golpear a Bowser (gasta 1 Cetro)'});
+  if(p.pos==='W4-39' && p.scepters.length) o.push({type:'hit',label:'Golpear a Bowser (gasta 1 Cetro)'});
   return o;
 }
 function moveAction(p,opt){
   if(opt.type==='rest'){ p.coins+=2; log(`${p.name} descansa y gana 2 monedas.`); return; }
   if(opt.type==='hit'){ hitBowser(p); return; }
   if(opt.type==='super') removeCard(p,'SUP');
-  doMove(p,opt.steps);
+  doMove(p,opt.path);
 }
 function canjesOf(p){
   return SETS.filter(s=>{
-    const need={};
-    s.cards.forEach(c=>need[c]=(need[c]||0)+1);
+    const need={}; s.cards.forEach(c=>need[c]=(need[c]||0)+1);
     return Object.keys(need).every(c=>p.hand.filter(x=>x===c).length>=need[c]);
   });
 }
 function canjear(p,set){
   set.cards.forEach(c=>{ S.discard.push(...p.hand.splice(p.hand.indexOf(c),1)); });
-  p.lives+=set.v;
-  log(`${p.name} canjea ${set.label}.`);
+  p.lives+=set.v; log(`${p.name} canjea ${set.label}.`);
 }
 
 /* ===== CASTILLO Y BOWSER ===== */
@@ -271,16 +293,12 @@ function resolveWear(p,w,k){
   else if(k==='coins'){ p.coins-=4; log(`${p.name} paga 4 monedas.`); }
   else { if(loseLife(p)==='dead') return; }
   S.castleTaken[w]=true; p.scepters.push(w);
-  log(`${p.name} obtiene el Cetro del Mundo ${w}.`);
+  log(`${p.name} obtiene el Cetro ${w}.`);
 }
 function hitBowser(p){
-  p.scepters.pop(); S.bowserHits++; S.lastHitter=p;
+  p.scepters.pop(); S.bowserHits++;
   log(`${p.name} golpea a Bowser (${S.bowserHits}/3) y gasta 1 Cetro.`);
-  if(S.bowserHits>=3){
-    S.over=true; S.winner=p;
-    log(`¡${p.name} rescata a la princesa!`);
-    return;
-  }
+  if(S.bowserHits>=3){ S.over=true; S.winner=p; log(`¡${p.name} rescata a la princesa!`); return; }
   S.pend={type:'counter',p};
 }
 function counterOptions(p){
@@ -291,15 +309,9 @@ function counterOptions(p){
   return o;
 }
 function resolveCounter(p,k){
-  if(k==='pu'){
-    const c=p.hand.find(x=>x==='ESC'||x==='SUP');
-    removeCard(p,c);
-    log(`${p.name} descarta ${CARDS[c].n} para soportar el contraataque.`);
-  } else if(k==='suit'){
-    log(`${p.name} sacrifica su traje ante Bowser.`); p.suit=null;
-  } else {
-    if(loseLife(p)!=='dead') loseLife(p);
-  }
+  if(k==='pu'){ const c=p.hand.find(x=>x==='ESC'||x==='SUP'); removeCard(p,c); log(`${p.name} descarta ${CARDS[c].n}.`); }
+  else if(k==='suit'){ log(`${p.name} sacrifica su traje ante Bowser.`); p.suit=null; }
+  else { if(loseLife(p)!=='dead') loseLife(p); }
 }
 
 /* ===== PUNTUACIÓN ===== */
@@ -312,8 +324,7 @@ function scoreAll(){
   while(pos<n){
     let end=pos;
     while(end<n && S.players[order[end]].lives===S.players[order[pos]].lives) end++;
-    let sum=0;
-    for(let q=pos;q<end&&q<3;q++) sum+=slots[q];
+    let sum=0; for(let q=pos;q<end&&q<3;q++) sum+=slots[q];
     const avg=sum/(end-pos);
     for(let q=pos;q<end;q++) pv[order[q]]+=avg;
     pos=end;
@@ -326,24 +337,23 @@ function scoreAll(){
   });
   return pv.map(v=>Math.round(v*10)/10);
 }
-
+</script>
+<script>
 /* ===== FLUJO DE TURNO ===== */
 function newGame(){
-  const names=shuffle(PLAYER_NAMES.slice()).slice(0,SETUP.bots);
+  const names=shuffle(['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel']).slice(0,SETUP.bots);
+  const colors=['#2d6b4f','#c2410c','#2b7bc4','#8a3ffc','#b8860b'];
   S={
-    players:[SETUP.name.trim()||'Vos',...names].map((name,i)=>({
-      name,human:i===0,color:COLORS[i],pos:2*i,lives:SETUP.lives,coins:SETUP.coins,suit:null,hand:[],scepters:[]
-    })),
+    players:[SETUP.name.trim()||'Vos',...names].map((name,i)=>({name,human:i===0,color:colors[i],pos:SPAWNS[i],lives:SETUP.lives,coins:SETUP.coins,suit:null,hand:[],scepters:[]})),
     deck:buildDeck(),discard:[],
     castleSuit:{1:rnd(SUIT_IDS),2:rnd(SUIT_IDS),3:rnd(SUIT_IDS)},
     castleTaken:{1:false,2:false,3:false},
-    bowserHits:0,winner:null,lastHitter:null,over:false,
+    bowserHits:0,winner:null,over:false,
     cur:Math.floor(Math.random()*(SETUP.bots+1)),turnNo:1,step:'suit',pend:null,log:[]
   };
   S.players.forEach(p=>{ for(let i=0;i<START_HAND;i++) p.hand.push(S.deck.pop()); });
   log(`— Empieza ${S.players[S.cur].name} —`);
-  render();
-  scheduleBot();
+  render(); scheduleBot();
 }
 function endTurn(){
   S.pend=null;
@@ -351,8 +361,7 @@ function endTurn(){
   S.cur=(S.cur+1)%S.players.length;
   if(S.cur===0) S.turnNo++;
   S.step='suit';
-  render();
-  scheduleBot();
+  render(); scheduleBot();
 }
 function scheduleBot(){
   if(S && !S.over && !S.players[S.cur].human) setTimeout(botTurn,450);
@@ -363,7 +372,7 @@ function afterMove(){
   endTurn();
 }
 
-/* ===== BOTS (dificultad simple) ===== */
+/* ===== BOTS ===== */
 function botTurn(){
   if(!S||S.over) return;
   const p=S.players[S.cur];
@@ -374,8 +383,9 @@ function botTurn(){
   if(!p.suit && so.length>1 && Math.random()<.6) pick=so.find(o=>o.type==='buy')||so[0];
   suitAction(p,pick);
   const mo=moveOptions(p);
-  const m=mo.find(o=>o.type==='hit') || mo.find(o=>o.type==='move'&&o.steps===2) ||
-          mo.find(o=>o.type==='move') || mo.find(o=>o.type==='rest');
+  const twos=mo.filter(o=>o.type==='move'&&o.path.length===2);
+  const ones=mo.filter(o=>o.type==='move'&&o.path.length===1);
+  const m=mo.find(o=>o.type==='hit') || (twos.length?rnd(twos):null) || (ones.length?rnd(ones):null) || mo.find(o=>o.type==='rest');
   moveAction(p,m);
   if(S.pend){
     const pd=S.pend; S.pend=null;
@@ -385,7 +395,7 @@ function botTurn(){
   endTurn();
 }
 
-/* ===== UI (acciones del humano) ===== */
+/* ===== ACCIONES DEL HUMANO ===== */
 const UI={
   set(k,v){SETUP[k]=v; render()},
   start(){newGame()},
@@ -402,7 +412,7 @@ function setupHTML(){
   const opt=(k,v,l)=>`<button class="opt ${SETUP[k]===v?'on':''}" onclick="UI.set('${k}',${v})">${l}</button>`;
   return `<div class="setup">
     <h2>Super Mario</h2>
-    <p>Prototipo de juego de mesa. Mapas y final son placeholder: se diseñan en el testeo.</p>
+    <p>Prototipo jugable con el mapa de 4 mundos.</p>
     <div class="opt-label">Jugar contra (bots)</div>
     ${[1,2,3,4].map(v=>opt('bots',v,`${v} bot${v>1?'s':''}`)).join('')}
     <div class="opt-label">Vidas iniciales (a definir)</div>
@@ -419,7 +429,7 @@ function banner(){
   if(!cur.human) return `<div class="banner">Turno de ${cur.name}…</div>`;
   let txt;
   if(S.pend) txt = S.pend.type==='wear' ? `Castillo ${S.pend.w}: elegí cómo pagar el desgaste` : 'Bowser contraataca: elegí cómo sobrevivir';
-  else txt = S.step==='suit' ? 'Fase 1: gestión de traje' : 'Fase 2: elegí tu acción principal';
+  else txt = S.step==='suit' ? 'Fase 1: elegí qué hacer con tu traje' : 'Fase 2: elegí a qué casilla avanzar, descansar o atacar';
   return `<div class="banner">${txt}</div>`;
 }
 function actionsHTML(){
@@ -445,58 +455,65 @@ function endHTML(){
     <table><tr><th>Jugador</th><th>Vidas</th><th>Cetros</th><th>Monedas</th><th>PV</th></tr>${rows}</table>
     <button onclick="UI.newGame()">Nueva partida</button></div>`;
 }
-function mapHTML(){
-  const tiles=MAP.map((t,idx)=>{
-    const here=S.players.filter(p=>p.pos===idx);
-    let ico='', lbl='', style='background:#fff', extra='';
-    if(t==='n'){ ico='⬜'; lbl='Normal'; }
-    else if(DANGER[t]){
-      const d=DANGER[t], sid=suitForDanger(t);
-      ico=d.i; lbl=`${d.n}<br>${d.txt}<br>Protege: ${SUITS[sid].i}`;
-      style=`background:${d.col};${d.dark?'color:#fff':''}`;
-    }
-    else if(CASTLE_W[idx]){
-      const w=CASTLE_W[idx];
-      ico='🏰'; lbl=`Castillo ${w}<br>${S.castleTaken[w]?'✔ tomado':'❓ debilidad oculta'}`;
-      style='background:#7a5636;color:#fff';
-    }
-    else if(t==='B'){ ico='👑'; lbl='Bowser'; style='background:#3f7a2e;color:#fff'; }
-    if(WORLD_START.includes(idx)) lbl=`<b>Inicio ${worldName(idx)}</b><br>`+lbl;
-    return `<div class="tile ${here.length?'here':''}" style="${style}">
-      <span>${idx}</span><span class="ico">${ico}</span><span>${lbl}</span>
-      <div class="tokens">${here.map(p=>`<span class="tok" style="background:${p.color}" title="${p.name}">${p.name[0]}</span>`).join('')}</div>
-    </div>`;
-  }).join('');
-  return `<div class="panel"><b>Mapa (placeholder)</b><div class="row">${tiles}</div></div>`;
+function suitsHTML(){
+  return `<div class="suits">${SUIT_IDS.map(s=>{
+    const o=S.players.find(p=>p.suit===s);
+    return `<div class="suit ${o?'':'free'}"><div class="nm">${SUITS[s].i} ${SUITS[s].n}</div>
+      <div class="ds">${SUITS[s].desc}</div><div>${o?'Lo tiene: '+o.name:'En la banca'}</div></div>`;
+  }).join('')}</div>`;
 }
-function playersHTML(){
-  const rows=S.players.map((p,i)=>`<tr>
-    <td><span class="tok" style="background:${p.color}">${p.name[0]}</span> ${p.name}${p.human?' (vos)':''}${i===S.cur&&!S.over?' ◀':''}</td>
-    <td>${p.lives} ❤️</td><td>${p.coins} 🪙</td>
-    <td>${p.suit?SUITS[p.suit].i+' '+SUITS[p.suit].n:'—'}</td>
-    <td>${p.scepters.map(w=>'M'+w).join(', ')||'—'}</td>
-    <td>${worldName(p.pos)} (${p.pos})</td>
-    <td>${p.hand.length} cartas</td></tr>`).join('');
-  const handHTML=S.players[0].hand.map(c=>`<div class="card"><span class="ico">${CARDS[c].i}</span>${CARDS[c].n}</div>`).join('')||'<span>Sin cartas</span>';
-  return `<div class="panel"><table>
-      <tr><th>Jugador</th><th>Vidas</th><th>Monedas</th><th>Traje</th><th>Cetros</th><th>Posición</th><th>Mano</th></tr>${rows}
-    </table></div>
-    <div class="panel"><b>Tu mano</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${handHTML}</div></div>`;
+function mapSVG(dests){
+  const px=n=>LAYOUT[n.w][0]+30+n.col*52, py=n=>LAYOUT[n.w][1]+30+n.row*44;
+  let s='';
+  for(const w in LAYOUT){
+    const [x,y]=LAYOUT[w];
+    s+=`<rect x="${x}" y="${y}" width="200" height="470" rx="14" fill="#fff" stroke="#444" stroke-width="2"/>
+    <text x="${x+10}" y="${y+22}" font-weight="700" font-size="15">${NAMES[w]}</text>`;
+  }
+  const drawn=new Set();
+  Object.values(NODES).forEach(a=>a.next.forEach(bid=>{
+    const b=NODES[bid], key=[a.id,bid].sort().join('|');
+    if(drawn.has(key)) return; drawn.add(key);
+    let st;
+    if(a.w!==b.w) st='stroke="#7a5636" stroke-width="3" stroke-dasharray="10 5"';
+    else if(b.k!==a.k+1) st='stroke="#e0302a" stroke-width="2" stroke-dasharray="5 4"';
+    else st='stroke="#888" stroke-width="2"';
+    s+=`<line x1="${px(a)}" y1="${py(a)}" x2="${px(b)}" y2="${py(b)}" ${st}/>`;
+  }));
+  Object.values(NODES).forEach(n=>{
+    const T=TYPES[n.t], isStart=SPAWNS.includes(n.id), isDest=dests.includes(n.id);
+    s+=`<circle cx="${px(n)}" cy="${py(n)}" r="14" fill="${T.c}" stroke="${isDest?'#ffd66b':isStart?'#00b86b':'#333'}" stroke-width="${isDest||isStart?5:1.5}"/>
+    <text x="${px(n)}" y="${py(n)+3.5}" text-anchor="middle" font-size="9" fill="${T.f}">${n.k}</text>`;
+  });
+  S.players.forEach((p,i)=>{
+    const n=NODES[p.pos], cx=px(n)+(i-(S.players.length-1)/2)*8, cy=py(n)-17;
+    s+=`<circle cx="${cx}" cy="${cy}" r="7" fill="${p.color}" stroke="#111"/><text x="${cx}" y="${cy+3}" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">${p.name[0]}</text>`;
+  });
+  return `<svg viewBox="0 0 880 1080">${s}</svg>`;
+}
+function legendHTML(){
+  return Object.entries(TYPES).map(([k,t])=>`<span><i class="sw" style="background:${t.c}"></i>${t.n}${DANGER[k]?' ('+DANGER[k].txt+')':''}</span>`).join('')+
+  `<span><i class="sw" style="background:#fff;border:3px solid #ffd66b"></i>Destinos posibles</span>`;
 }
 function render(){
   const app=document.getElementById('app'), hdr=document.getElementById('hdr');
   if(!S){ hdr.innerHTML=''; app.innerHTML=setupHTML(); return; }
-  const cur=S.players[S.cur];
+  const cur=S.players[S.cur], me=S.players[0];
   hdr.innerHTML=`<span class="chip">Turno ${S.turnNo}</span>
     <span class="chip">Juega: ${cur.name}${cur.human?' (vos)':''}</span>
     <span class="chip">Mazo: ${S.deck.length}</span>
     <span class="chip">Bowser: ${S.bowserHits}/3</span>`;
-  const suits=`<div class="suits">${SUIT_IDS.map(s=>{
-      const o=S.players.find(p=>p.suit===s);
-      return `<div class="suit ${o?'':'free'}"><span class="ico">${SUITS[s].i}</span>${SUITS[s].n}<span>${o?o.name:'Banca'}</span></div>`;
-    }).join('')}</div>`;
+  const dests=(!S.over && cur===me && !S.pend && S.step==='move') ? moveOptions(me).filter(o=>o.path).map(o=>o.path.at(-1)) : [];
   const log=`<div class="infos"><div class="panel"><b>Registro</b><div class="log" id="lg">${S.log.slice(-80).map(l=>`<div>${l}</div>`).join('')}</div></div></div>`;
-  app.innerHTML=banner()+actionsHTML()+suits+mapHTML()+playersHTML()+log;
+  const players=`<div class="panel"><table>
+      <tr><th>Jugador</th><th>Vidas</th><th>Monedas</th><th>Traje</th><th>Cetros</th><th>Posición</th><th>Cartas</th></tr>
+      ${S.players.map((p,i)=>`<tr><td><span class="tok" style="background:${p.color}">${p.name[0]}</span> ${p.name}${p.human?' (vos)':''}${i===S.cur&&!S.over?' ◀':''}</td>
+      <td>${p.lives} ❤️</td><td>${p.coins} 🪙</td><td>${p.suit?SUITS[p.suit].i+' '+SUITS[p.suit].n:'—'}</td>
+      <td>${p.scepters.map(w=>'C'+w).join(', ')||'—'}</td><td>${NAMES[wOf(p.pos)]} (nodo ${NODES[p.pos].k})</td><td>${p.hand.length}</td></tr>`).join('')}
+    </table></div>`;
+  const hand=`<div class="panel"><b>Tu mano</b><div class="hand" style="margin-top:6px">${me.hand.map(c=>`<div class="card"><span class="ico">${CARDS[c].i}</span>${CARDS[c].n}</div>`).join('')||'<span>Sin cartas</span>'}</div></div>`;
+  const map=`<div class="panel"><div class="legend">${legendHTML()}</div>${mapSVG(dests)}</div>`;
+  app.innerHTML=banner()+actionsHTML()+suitsHTML()+map+players+hand+log;
   const lg=document.getElementById('lg'); if(lg) lg.scrollTop=lg.scrollHeight;
 }
 render();

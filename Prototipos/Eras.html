@@ -734,7 +734,7 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row"><span class="si-llena">Completo →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
+    <div class="poder-row"><span class="si-llena">Lleno →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
@@ -751,7 +751,7 @@ function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
     <span class="c-der">+ ${SETUP.mode==='sellos' ? SELLO_ICON : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
-    <span class="c-der">Completo → ${poderTxt(b.tipo)}</span>
+    <span class="c-der">Lleno → ${poderTxt(b.tipo)}</span>
   </div>`;
 }
 function bldHTML(b){

@@ -29,8 +29,8 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .tot{font-weight:400;color:#555}
 .row{display:flex;gap:10px;overflow-x:auto;padding:22px 4px 6px}
 .bld{position:relative;flex:0 0 210px;height:230px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:visible;font-size:11px}
-.bld .caption{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2d4a3e;color:#fff;font-size:12px;border-radius:8px;padding:6px 8px;white-space:normal;max-width:230px;z-index:200;pointer-events:none;box-shadow:0 2px 6px #0005}
-.bld:hover .caption{display:block}
+.bld .caption{display:block;opacity:0;visibility:hidden;transition:opacity .15s 1s,visibility 0s 1.15s}
+.bld:hover .caption{opacity:1;visibility:visible;transition:opacity .15s 1s,visibility 0s 1s}
 .bld .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
 .bld .caption .c-der{display:block;margin-top:2px}
 .bld.full{border-color:#00b86b;box-shadow:0 0 10px #00b86b}
@@ -52,6 +52,9 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 
 .bld .slot{display:inline-block;flex:0 0 14px;width:14px;height:14px;border:1.5px solid #444;border-radius:3px;background:#fff}
 .bld .slot.on{background:#8a5a2b}
+.bld .slot.st{width:10px;height:10px;flex:0 0 10px;border-radius:50%;border:1.5px solid #1f5f9e;background:#fff}
+.bld .slot.st.on{background:#2b7bc4}
+.plus.st{color:#2b7bc4}
 .bld .slot.mt.on{background:#7d8a96}
 .bld .slot.st.on{background:#d97706}
 
@@ -137,11 +140,20 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .row .bld.hand{margin-right:10px!important}
 .bld .caption{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%);width:190px;white-space:normal;text-align:center;font-size:11px;padding:8px 10px;z-index:60}
 .bld .poder-nm{font-size:9px;line-height:1.15;text-align:center;color:#333;padding:0 4px}
-.bld{flex:0 0 210px;height:293px}
-.bld .sec-top{flex:0 0 14.58%}
-.bld .sec-mid{flex:0 0 43.75%}
-.bld .sec-bot{flex:0 0 29.17%}
-.bld .poder-row{flex:0 0 12.5%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;line-height:1.1;padding:0 4px;color:#333;border-top:1px dashed #0004}
+
+.bld{flex:0 0 150px;width:150px;height:210px;font-size:9px}
+.row{min-height:235px}
+.row:not(.handrow) .bld{margin-right:-38px}
+.bld .sec-top{font-size:9px}
+.bld .sec-mid .sqr{width:40px;height:40px;font-size:22px}
+.bld .tipo-nm{font-size:9px}
+.bld .est-nm{font-size:8px;padding:1px 5px}
+.bld .poder-row{font-size:7px}
+.bld .strip{font-size:8px;padding:2px}
+.bld .strip .give-row{font-size:11px}
+.bld .strip .targ-ico{font-size:14px;padding:2px 4px}
+.bld .strip b{font-size:7px}
+.bld .svg-ico svg{width:14px;height:14px}
 .bld .chk{color:#00b86b;font-weight:900;font-size:12px}
 .bld .si-llena{display:inline-block;background:#2d4a3e;color:#fff;border-radius:6px;padding:1px 6px;font-weight:700;margin-right:4px;font-size:9px}
 .row:not(.handrow){justify-content:flex-start!important;margin-left:0}
@@ -705,13 +717,7 @@ function endRound(){
 
 function nextRound(){
   const kept = new Set();
-  S.players.forEach(p=>{
-    let n=0;
-    for(let i=p.street.length-1;i>=0 && n<2;i--){
-      const b = p.street[i];
-      if(!isComplete(b) && elems(b)>=1){ kept.add(b); n++; }
-    }
-  });
+  S.players.forEach(p=>{ p.street.slice(-2).forEach(b=>kept.add(b)); });
   const back = [];
   S.players.forEach(p=>{
     p.street.forEach(b=>{ if(!kept.has(b)) back.push(b.row); });

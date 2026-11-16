@@ -800,7 +800,7 @@ function pwBanner(){
       else if(pw.stage==='mat') msg = 'Mercado: elegí qué material sacás.';
       else msg = `Mercado: tocá el edificio al que lo llevás (${MAT_ICON[pw.mat]} ${MAT_LBL[pw.mat]}).`;
     }
-    else if(pw.kind==='TT') msg = 'Taller: tocá un edificio tuyo para sumar 1 ⚙️ Metal.';
+    else if(pw.kind==='TT') msg = 'Taller: tocá un edificio tuyo para sumar 1 ⚙️ Metal.'; 
     else if(pw.kind==='TP') msg = 'Puerto: tocá un edificio tuyo para sumar 1 🪵 Madera.';
     else if(pw.kind==='TC'){
       msg = pw.stage==='mat' ? 'Castillo: elegí si sumás Madera o Metal.' : `Castillo: tocá un edificio tuyo para sumar 1 ${MAT_ICON[pw.mat]} ${MAT_LBL[pw.mat]}.`;
@@ -856,8 +856,6 @@ function setupHTML(){
     </div>
     <div class="setup-right">
       ${err ? `<div class="cfg-error">${err}</div>` : ''}
-      <div class="opt-label">Modo de juego</div>
-      <div class="opts">${opt('mode','recursos','🪵⚙️ Dos Recursos')}${opt('mode','sellos',`${SELLO_ICON} Sellos de Influencia`)}</div>
       <div class="opt-label">Jugar contra (bots)</div>
       <div class="opt-desc">Los bots siempre juegan en Difícil.</div>
       <div class="opts">${opt('bots',2,'2 bots (3 jugadores)')}${opt('bots',3,'3 bots (4 jugadores)')}${opt('bots',4,'4 bots (5 jugadores)')}</div>

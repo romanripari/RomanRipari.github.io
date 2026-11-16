@@ -28,7 +28,11 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .tot{font-weight:400;color:#555}
 .row{display:flex;gap:10px;overflow-x:auto;padding:22px 4px 6px}
-.bld{position:relative;flex:0 0 210px;height:230px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:hidden;font-size:11px}
+.bld{position:relative;flex:0 0 210px;height:230px;background:#fff;border:2px solid #444;border-radius:12px;display:flex;overflow:visible;font-size:11px}
+.bld .caption{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#2d4a3e;color:#fff;font-size:12px;border-radius:8px;padding:6px 8px;white-space:normal;max-width:230px;z-index:200;pointer-events:none;box-shadow:0 2px 6px #0005}
+.bld:hover .caption{display:block}
+.bld .caption .c-izq{display:block;font-weight:700;margin-bottom:2px}
+.bld .caption .c-der{display:block;margin-top:2px}
 .bld.full{border-color:#00b86b;box-shadow:0 0 10px #00b86b}
 .bld.act{outline:4px solid #e0007a}
 .bld.sel{outline:4px solid #e0a000}
@@ -57,6 +61,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .strip b{font-size:10px;line-height:1.1;word-break:break-word;color:#222;padding:2px 4px;border-radius:4px}
 .bld .strip .targ-ico{padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:22px}
 .bld .strip .targ-ico svg{width:24px;height:24px}
+.bld .ic{display:inline-block;width:22px;text-align:center;flex:0 0 22px}
 
 /* Sello redondo */
 .seal-ico{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#d97706;color:#fff;border-radius:50%;font-size:10px;box-shadow:0 1px 3px #0004}
@@ -123,6 +128,9 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .bld .tipo-nm{font-weight:700;font-size:12px}
 .bld .sec-bot{flex:2 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-top:2px dashed #0006;padding:4px}
 .bld .est-nm{font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px}
+.bld .need{margin-top:0;border-top:none;padding:0}
+.bld .sec-top{justify-content:center}
+.bld .labs{text-align:center}
 </style>
 </head>
 <body>
@@ -154,7 +162,23 @@ const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
 const EST_LBL = {ZB:'Básico',ZI:'Intermedio',ZR:'Reforzado'};
 const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
-const TIPO_ICON = {TI:'⛪',TM:'🏪',TT:'🔧',TP:'⚓',TC:'🏰'};
+const TIPO_ICON = {TI:'⛪',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🏰'};
+// Poder al llenarse (modo Sellos). "destino" son los tipos que pueden recibir el efecto.
+const PODER = {
+  TI:{accion:'mover',  cantidad:2, destino:'cualquiera'},
+  TM:{accion:'mover',  cantidad:1, destino:'cualquiera'},
+  TT:{accion:'sumar',  cantidad:1, destino:['TP','TC']},
+  TP:{accion:'sumar',  cantidad:1, destino:['TM','TI']},
+  TC:{accion:'sumar',  cantidad:1, destino:['TT','TM']}
+};
+// Texto que se muestra al jugador
+const PODER_TXT = {
+  TI:`Mover 2 sellos entre tus edificios`,
+  TM:`Mover 1 sello entre tus edificios`,
+  TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
+  TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
+  TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
+};
 const MAT_LBL = {MD:'Madera',MT:'Metal'};
 const MAT_ICON = {MD:'🪵',MT:'⚙️'};
 
@@ -342,53 +366,38 @@ function runPowers(then){
 function startHumanPower(o,b){
   const kind = b.tipo;
   if(SETUP.mode==='sellos'){
-    if(kind==='TI'){
-      if(!o.street.some(x=>x.st>0) || (o.street.filter(x=>x.st>0).length<1 && o.street.reduce((s,x)=>s+x.st,0)<2)) return false;
-      S.pw = {owner:o, kind, stage:'src1', b};
-      return true;
-    }
-    if(kind==='TM'){
+    const p = PODER[kind];
+    if(!p) return false;
+    if(p.accion==='mover'){
       if(!o.street.some(x=>x.st>0)) return false;
-      S.pw = {owner:o, kind, stage:'src', b};
+      S.pw = {owner:o, kind, stage: kind==='TI' ? 'src1' : 'src', cantidad:p.cantidad, hechos:0, b};
       return true;
     }
-    if(kind==='TT'){
-      if(!o.street.some(x=>(x.tipo==='TP'||x.tipo==='TC') && hasRoom(x,'ST'))) return false;
-      S.pw = {owner:o, kind, stage:'dest_target', allowed:['TP','TC'], b};
-      return true;
-    }
-    if(kind==='TP'){
-      if(!o.street.some(x=>(x.tipo==='TM'||x.tipo==='TI') && hasRoom(x,'ST'))) return false;
-      S.pw = {owner:o, kind, stage:'dest_target', allowed:['TM','TI'], b};
-      return true;
-    }
-    if(kind==='TC'){
-      if(!o.street.some(x=>(x.tipo==='TT'||x.tipo==='TM') && hasRoom(x,'ST'))) return false;
-      S.pw = {owner:o, kind, stage:'dest_target', allowed:['TT','TM'], b};
-      return true;
-    }
-    return false;
-  } else {
-    if(kind==='TI'){
-      drawCards(o,1);
-      S.pw = {owner:o, kind, stage:'ret', b};
-      return true;
-    }
-    if(kind==='TM'){
-      if(!o.street.some(x=>x.md>0 || x.mt>0)) return false;
-      S.pw = {owner:o, kind, stage:'src', b};
-      return true;
-    }
-    if(kind==='TT' || kind==='TP'){
-      const mat = kind==='TT' ? 'MT' : 'MD';
-      if(!o.street.some(x=>hasRoom(x,mat))) return false;
-      S.pw = {owner:o, kind, stage:'dst', mat, b};
-      return true;
-    }
-    if(!o.street.some(x=>hasRoom(x,'MD') || hasRoom(x,'MT'))) return false;
-    S.pw = {owner:o, kind, stage:'mat', b};
+    // sumar: el destino son los tipos permitidos en PODER
+    if(!o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'))) return false;
+    S.pw = {owner:o, kind, stage:'dest_target', allowed:p.destino, b};
     return true;
   }
+  // Modo Dos Recursos
+  if(kind==='TI'){
+    drawCards(o,1);
+    S.pw = {owner:o, kind, stage:'ret', b};
+    return true;
+  }
+  if(kind==='TM'){
+    if(!o.street.some(x=>x.md>0 || x.mt>0)) return false;
+    S.pw = {owner:o, kind, stage:'src', b};
+    return true;
+  }
+  if(kind==='TT' || kind==='TP'){
+    const mat = kind==='TT' ? 'MT' : 'MD';
+    if(!o.street.some(x=>hasRoom(x,mat))) return false;
+    S.pw = {owner:o, kind, stage:'dst', mat, b};
+    return true;
+  }
+  if(!o.street.some(x=>hasRoom(x,'MD') || hasRoom(x,'MT'))) return false;
+  S.pw = {owner:o, kind, stage:'mat', b};
+  return true;
 }
 
 function pwValid(b){
@@ -437,7 +446,7 @@ function pwClick(b){
         pw.src.st--;
         addMat(b,'ST');
         log(`Iglesia (1/2): moviste 1 sello a ${LBL[b.tipo]}.`);
-        pw.stage = 'src2';
+        if(!S.players[0].street.some(x=>x.st>0)){ finishPw(); return; }
         render();
         return;
       }
@@ -487,34 +496,27 @@ function finishPw(){
 function botPower(o,b){
   const kind = b.tipo;
   if(SETUP.mode==='sellos'){
-    if(kind==='TM'){
-      const srcs = o.street.filter(x=>x.st>0);
-      const dsts = o.street.filter(x=>hasRoom(x,'ST'));
-      if(srcs.length && dsts.length){
-        const s = srcs[0], d = dsts.find(x=>x!==s) || dsts[0];
-        if(s && d && s!==d){ s.st--; addMat(d,'ST'); }
-      }
-      return;
-    }
-    if(kind==='TI'){
-      for(let i=0;i<2;i++){
+    const p = PODER[kind];
+    if(!p) return;
+    if(p.accion==='mover'){
+      for(let i=0;i<p.cantidad;i++){
         const srcs = o.street.filter(x=>x.st>0);
         const dsts = o.street.filter(x=>hasRoom(x,'ST'));
-        if(srcs.length && dsts.length){
-          const s = srcs[0], d = dsts.find(x=>x!==s) || dsts[0];
-          if(s && d && s!==d){ s.st--; addMat(d,'ST'); }
-        }
+        if(!srcs.length || !dsts.length) break;
+        const s = srcs[0];
+        const d = dsts.find(x=>x!==s);
+        if(!d) break;
+        s.st--;
+        addMat(d,'ST');
       }
       return;
     }
-    let targetTypes = [];
-    if(kind==='TT') targetTypes = ['TP','TC'];
-    else if(kind==='TP') targetTypes = ['TM','TI'];
-    else if(kind==='TC') targetTypes = ['TT','TM'];
-    const targets = o.street.filter(x=>targetTypes.includes(x.tipo) && hasRoom(x,'ST'));
+    // sumar: +1 sello a un edificio de los tipos permitidos
+    const targets = o.street.filter(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
     if(targets.length) addMat(targets[0],'ST');
     return;
   }
+  // Modo Dos Recursos (sin cambios)
   if(kind==='TI'){
     drawCards(o,1);
     if(o.hand.length){
@@ -748,18 +750,21 @@ function bldInner(b, hand){
 
 function stripHTML(c){
   const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🏷️</span>` : MAT_ICON[c.mat];
-  // AQUÍ ESTÁ EL CAMBIO: la clase est- se aplica SOLO al ícono y al texto del objetivo (c.tgt)
-  const targetClass = `est-${c.tgt}`;
   return `<div class="strip">
     <div class="give-row"><span>+</span>${giveIcon}</div>
-    <span class="targ-ico ${targetClass}">${iconFor(c.tgt)}</span>
-    <b class="${targetClass}" style="padding:2px 6px; border-radius:4px;">${LBL[c.tgt]}</b>
+    <span class="targ-ico est-${c.tgt}">${iconFor(c.tgt)}</span>
+    <b>${LBL[c.tgt]}</b>
   </div>`;
 }
-
 function bldHTML(b){
   const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
-  return `<div class="${cls}" data-card="${b.uid}">${bldInner(b,false)}${stripHTML(b)}</div>`;
+  const dar = SETUP.mode==='sellos' ? 'un sello' : MAT_LBL[b.mat];
+  const cap = `<div class="caption">
+      <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
+      <span class="c-der">Da ${dar} a ${LBL[b.tgt]}</span>
+      <span class="c-der">Si se llena: ${PODER_TXT[b.tipo]}</span>
+    </div>`;
+  return `<div class="${cls}" data-card="${b.uid}">${cap}${bldInner(b,false)}${stripHTML(b)}</div>`;
 }
 function handCardHTML(c){
   const sel = (S.selCard===c?' sel':'') + (S.discardSel===c?' dsel':'');

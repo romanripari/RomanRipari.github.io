@@ -122,15 +122,18 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
 .start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
 .cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
-.bld .sec-top{flex:1 1 0;display:flex;align-items:center;gap:6px;padding:0 6px;font-weight:700;font-size:12px;border-bottom:1px dashed #0004}
+.bld .sec-top{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px;font-weight:700;font-size:12px}
 .bld .sec-mid{flex:3 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .bld .sec-mid .sqr{width:58px;height:58px;font-size:32px}
 .bld .tipo-nm{font-weight:700;font-size:12px}
-.bld .sec-bot{flex:2 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-top:2px dashed #0006;padding:4px}
+.bld .sec-bot{flex:1.4 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px}
 .bld .est-nm{font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px}
-.bld .need{margin-top:0;border-top:none;padding:0}
+.bld .need{margin-top:0;border-top:none;padding:0;border-bottom:none}
 .bld .sec-top{justify-content:center}
 .bld .labs{text-align:center}
+.row:not(.handrow){gap:0}
+.row:not(.handrow) .bld{margin-right:-52px}
+.row:not(.handrow) .bld:last-child{margin-right:0}
 </style>
 </head>
 <body>

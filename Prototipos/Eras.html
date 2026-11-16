@@ -159,12 +159,15 @@ const SLOTS = [5,3,1];
 const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6KyIMqNLaXGmAMazl8/edit?usp=sharing';
 
 /* ===== ÍCONOS ===== */
-function sizeSVG(s){
-  if(s==='Pe') return `<svg viewBox="0 0 24 24"><rect x="5" y="13" width="14" height="8" fill="#bbb" stroke="#222"/></svg>`;
-  if(s==='Me') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="10" height="12" fill="#888" stroke="#222"/><rect x="12" y="13" width="10" height="8" fill="#ddd" stroke="#222"/></svg>`;
-  return `<svg viewBox="0 0 24 24"><rect x="1" y="14" width="6" height="7" fill="#ddd" stroke="#222"/><rect x="8" y="8" width="7" height="13" fill="#999" stroke="#222"/><rect x="16" y="3" width="7" height="18" fill="#444" stroke="#222"/></svg>`;
+const EST_COLOR = {ZB:'#4e8a3a', ZI:'#8b5a2b', ZR:'#5d6b7a'};
+function sizeSVG(est){
+  const col = EST_COLOR[est];
+  const s = EST_SIZE[est];
+  if(s==='Pe') return `<svg viewBox="0 0 24 24"><rect x="5" y="13" width="14" height="8" fill="${col}" stroke="#222"/></svg>`;
+  if(s==='Me') return `<svg viewBox="0 0 24 24"><rect x="2" y="9" width="10" height="12" fill="${col}" stroke="#222"/><rect x="12" y="13" width="10" height="8" fill="${col}" stroke="#222"/></svg>`;
+  return `<svg viewBox="0 0 24 24"><rect x="1" y="14" width="6" height="7" fill="${col}" stroke="#222"/><rect x="8" y="8" width="7" height="13" fill="${col}" stroke="#222"/><rect x="16" y="3" width="7" height="18" fill="${col}" stroke="#222"/></svg>`;
 }
-function estrSVG(est){ return `<span class="svg-ico">${sizeSVG(EST_SIZE[est])}</span>`; }
+function estrSVG(est){ return `<span class="svg-ico">${sizeSVG(est)}</span>`; }
 function iconFor(k){
   if(ERA_ICON[k]) return `<span class="ico">${ERA_ICON[k]}</span>`;
   if(TIPO_ICON[k]) return `<span class="ico">${TIPO_ICON[k]}</span>`;

@@ -36,7 +36,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
 .bld.hand{cursor:pointer}
 .bld .main{flex:1;display:flex;flex-direction:column;padding:6px;min-width:0}
-.bld .top3{display:flex;justify-content:center;gap:8px;align-items:center;font-size:16px;height:26px;width:100%}
+.bld .top3{display:flex;justify-content:center;gap:6px;align-items:center;font-size:16px;height:26px;width:100%;padding:2px 4px;border-radius:6px}
 .bld .mid{display:flex;align-items:center;gap:6px;flex:1}
 .bld .labs{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700;color:#333;text-align:right;flex:1}
 .bld .sqr{width:64px;height:64px;border:2px solid #444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:38px;background:#f7f3ea}
@@ -50,12 +50,13 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .strip{width:62px;flex:0 0 62px;border-left:2px dashed #0006;background:#fff9;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:3px}
 .bld .strip b{font-size:10px;line-height:1.1}
 .bld .strip .mi{font-size:18px}
+.bld .strip .targ-ico{padding:3px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
 .bld .mid.era-EA{background:#fff4b0;border-radius:8px}
 .bld .mid.era-EC{background:#ffd9a6;border-radius:8px}
 .bld .mid.era-EM{background:#bfdcf5;border-radius:8px}
-.bld .need.est-ZB{background:#b1cda5;border-radius:8px}
-.bld .need.est-ZI{background:#ceae8e;border-radius:8px}
-.bld .need.est-ZR{background:#748393;border-radius:8px}
+.bld .need.est-ZB, .bld .top3.est-ZB, .bld .strip.est-ZB .targ-ico{background:#b1cda5;border-radius:8px}
+.bld .need.est-ZI, .bld .top3.est-ZI, .bld .strip.est-ZI .targ-ico{background:#ceae8e;border-radius:8px}
+.bld .need.est-ZR, .bld .top3.est-ZR, .bld .strip.est-ZR .targ-ico{background:#748393;border-radius:8px}
 .bld .need{padding:6px}
 .bld .svg-ico svg{width:20px;height:20px}
 .plus{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:900;font-size:34px;text-shadow:0 0 4px #fff,0 0 8px #fff,0 2px 4px #0006;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
@@ -116,7 +117,6 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 
 <script>
 /* ===== DATOS (45 cartas) ===== */
-// [id, era, estructura, tipo, qué da, a quién]
 const DATA = [
 [1,'EA','ZB','TI','MT','EC'],[2,'EA','ZB','TM','MD','EM'],[3,'EA','ZB','TT','MD','ZR'],[4,'EA','ZB','TP','MT','ZI'],[5,'EA','ZB','TC','MT','ZR'],
 [6,'EA','ZI','TI','MD','ZB'],[7,'EA','ZI','TM','MT','TI'],[8,'EA','ZI','TT','MT','EM'],[9,'EA','ZI','TP','MD','TC'],[10,'EA','ZI','TC','MT','TT'],
@@ -137,7 +137,6 @@ const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo
 const TIPO_ICON = {TI:'⛪',TM:'🏪',TT:'🔧',TP:'⚓',TC:'🏰'};
 const MAT_LBL = {MD:'Madera',MT:'Metal'};
 const MAT_ICON = {MD:'🪵',MT:'⚙️'};
-/* QUÉ PIDE CADA EDIFICIO */
 const CAP = {ZB:{MD:3,MT:1}, ZI:{MD:2,MT:2}, ZR:{MD:1,MT:3}};
 const LBL = {...ERA_LBL,...EST_LBL,...TIPO_LBL};
 const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
@@ -176,7 +175,6 @@ function mkCard(row,owner){
 }
 function tableCards(){ return S.players.flatMap(p=>p.street); }
 
-// Un edificio: capacidad por material según su estructura
 function isComplete(b){ const c=CAP[b.est]; return b.md===c.MD && b.mt===c.MT; }
 function hasRoom(b,mat){ const c=CAP[b.est]; return mat==='MD' ? b.md<c.MD : b.mt<c.MT; }
 function matches(b,k){ return b.era===k || b.est===k || b.tipo===k; }
@@ -194,7 +192,6 @@ function addMat(b,mat){
 }
 function removeMat(b,mat){ if(mat==='MD') b.md--; else b.mt--; }
 
-// Cada carta que se activa da 1 material a cada edificio de la mesa que cumple su "a quién"
 function giveFrom(src){
   tableCards().forEach(b=>{ if(b!==src && matches(b,src.tgt)) addMat(b,src.mat); });
 }
@@ -238,9 +235,7 @@ function beginRound(){
   S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.discardSel=null;
   S.pendingPick=false; S.pendingDiscard=false; S.animating=false;
   S.simQueue=[]; S.simDone=false; S.pwQ=[]; S.pw=null; S.afterPw=null;
-  // Ronda 1 juega el largo completo; rondas 2 y 3 juegan largo − 2 (ya hay 2 edificios de la ronda anterior)
   S.totalTurns = S.round===1 ? SETUP.village : SETUP.village - 2;
-  // La era de la ronda siempre puntúa; los demás criterios los eligen los jugadores
   S.active = [ERAS[S.round-1]];
   log(`— Ronda ${S.round}: puntúa ${ERA_LBL[S.active[0]]} —`);
   log(`Empieza ${S.players[S.start].name}.`);
@@ -283,7 +278,6 @@ function afterPowers(){
   finishTurn();
 }
 
-/* ===== PODERES (se resuelven en el momento, encadenados) ===== */
 function runPowers(then){
   S.afterPw = then;
   while(S.pwQ.length){
@@ -296,7 +290,6 @@ function runPowers(then){
   if(t) t();
 }
 
-// Devuelve true si el jugador tiene que elegir algo
 function startHumanPower(o,b){
   const kind = b.tipo;
   if(kind==='TI'){
@@ -315,7 +308,6 @@ function startHumanPower(o,b){
     S.pw = {owner:o, kind, stage:'dst', mat, b};
     return true;
   }
-  // Castillo: elige el material
   if(!o.street.some(x=>hasRoom(x,'MD') || hasRoom(x,'MT'))) return false;
   S.pw = {owner:o, kind, stage:'mat', b};
   return true;
@@ -362,7 +354,6 @@ function finishPw(){
   runPowers(then);
 }
 
-// Bots: resuelven solos con criterio simple
 function botPower(o,b){
   const kind = b.tipo;
   if(kind==='TI'){
@@ -391,7 +382,6 @@ function botPower(o,b){
     if(d.length) addMat(d[Math.floor(Math.random()*d.length)], mat);
     return;
   }
-  // Castillo: material con más lugar libre
   const opts = ['MD','MT'].filter(m=>o.street.some(x=>hasRoom(x,m)));
   if(!opts.length) return;
   const mat = opts[Math.floor(Math.random()*opts.length)];
@@ -429,7 +419,6 @@ function botCrit(p){
 }
 
 /* ===== CRITERIOS EN EL TERCER TURNO ===== */
-// Nunca se elige otra era: las eras se puntúan por ronda
 function pickablePool(){
   return [...Object.keys(EST_LBL), ...Object.keys(TIPO_LBL)].filter(k=>!S.active.includes(k));
 }
@@ -527,8 +516,6 @@ function endRound(){
   render();
 }
 
-// Se conservan los 2 edificios más recientes con lugar libre y al menos un material.
-// El resto (edificios, manos y descarte) vuelve al mazo, se mezcla y se reparten manos nuevas.
 function nextRound(){
   const kept = new Set();
   S.players.forEach(p=>{
@@ -564,7 +551,7 @@ function bldInner(b, hand){
   const mt = hand ? 0 : b.mt;
   const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus ${b.plusMat==='MD'?'md':'mt'}">+1</div>` : '';
   return `<div class="main">
-    <div class="top3"><span>${ERA_ICON[b.era]}</span><span>${TIPO_ICON[b.tipo]}</span>${estrSVG(b.est)}</div>
+    <div class="top3 est-${b.est}"><span>${ERA_ICON[b.era]}</span><span>${TIPO_ICON[b.tipo]}</span>${estrSVG(b.est)}</div>
     <div class="mid era-${b.era}">
       <div class="labs"><span>${ERA_LBL[b.era]}</span><span>${LBL[b.tipo]}</span><span>${EST_LBL[b.est]}</span></div>
       <div class="sqr">${TIPO_ICON[b.tipo]}</div>
@@ -577,7 +564,7 @@ function bldInner(b, hand){
   </div>`;
 }
 function stripHTML(c){
-  return `<div class="strip"><span>Da</span><span class="mi">${MAT_ICON[c.mat]}</span><span>a</span>${iconFor(c.tgt)}<b>${LBL[c.tgt]}</b></div>`;
+  return `<div class="strip est-${c.est}"><span>Da</span><span class="mi">${MAT_ICON[c.mat]}</span><span>a</span><span class="targ-ico">${iconFor(c.tgt)}</span><b>${LBL[c.tgt]}</b></div>`;
 }
 function bldHTML(b){
   const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
@@ -762,7 +749,6 @@ function render(){
 
 /* ===== EVENTOS ===== */
 document.addEventListener('click', e=>{
-  // Mientras se bajan las cartas no se puede tocar el tablero
   if(S && S.animating && e.target.closest('[data-card],[data-crit],[data-act="play"],[data-act="confirmDiscard"]')) return;
 
   const crit = e.target.closest('[data-crit]');

@@ -805,7 +805,7 @@ function losetaHTML(){
 
     return `<div class="lg${act}${isPick?' pick':''}${extraCls}" ${isPick?`data-crit="${k}"`:''}>${iconFor(k)}<span>${LBL[k]}</span></div>`;
   };
-  return [...ERAS, ...Object.keys(EST_LBL), ...Object.keys(TIPO_LBL)].map(item).join('');
+  return [...ERAS, ...Object.keys(TIPO_LBL), ...Object.keys(EST_LBL)].map(item).join('');
 }
 
 function pwBanner(){

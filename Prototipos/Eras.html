@@ -137,6 +137,11 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .row .bld.hand{margin-right:10px!important}
 .bld .caption{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%);width:190px;white-space:normal;text-align:center;font-size:11px;padding:8px 10px;z-index:60}
 .bld .poder-nm{font-size:9px;line-height:1.15;text-align:center;color:#333;padding:0 4px}
+.bld{flex:0 0 210px;height:293px}
+.bld .sec-top{flex:0 0 14.58%}
+.bld .sec-mid{flex:0 0 43.75%}
+.bld .sec-bot{flex:0 0 29.17%}
+.bld .poder-row{flex:0 0 12.5%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;line-height:1.1;padding:0 4px;color:#333;border-top:1px dashed #0004}
 </style>
 </head>
 <body>
@@ -753,15 +758,16 @@ function bldInner(b, hand){
     <div class="sec-mid">
       <div class="tipo-nm">${LBL[b.tipo]}</div>
       <div class="sqr">${TIPO_ICON[b.tipo]}</div>
-      <div class="poder-nm">${poderTxt(b.tipo)}</div>
     </div>
     <div class="sec-bot">
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
+    <div class="poder-row">${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
+
 function stripHTML(c){
   const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🏷️</span>` : MAT_ICON[c.mat];
   return `<div class="strip">

@@ -51,14 +51,15 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .slot.mt.on{background:#7d8a96}
 .bld .slot.st.on{background:#d97706}
 
-/* Lado derecho limpio y sin color */
-.bld .strip{width:68px;flex:0 0 68px;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:4px}
+/* Lado derecho con colorcito y sin "Da" */
+.bld .strip{width:68px;flex:0 0 68px;border-left:2px dashed #0006;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10px;gap:4px}
+.bld .strip .give-row{display:flex;align-items:center;gap:3px;font-weight:900;font-size:15px}
 .bld .strip b{font-size:10px;line-height:1.1;word-break:break-word}
 .bld .strip .targ-ico{padding:2px;display:inline-flex;align-items:center;justify-content:center;font-size:22px}
 .bld .strip .targ-ico svg{width:24px;height:24px}
 
 /* Sello redondo */
-.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#d97706;color:#fff;border-radius:50%;font-size:11px;box-shadow:0 1px 3px #0004}
+.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#d97706;color:#fff;border-radius:50%;font-size:10px;box-shadow:0 1px 3px #0004}
 
 /* Colores de Eras y Estructuras */
 .era-EA, .lg.era-EA{background:#fff4b0;border-radius:8px}
@@ -697,7 +698,7 @@ function slotsHTML(b, hand){
   const c = CAP[b.est];
   if(SETUP.mode==='sellos'){
     const n = hand ? 0 : b.st;
-    let total = c.ST; // 4, 5 o 7
+    let total = c.ST; 
     let row1Count = total === 4 ? 2 : (total === 5 ? 3 : 4);
     let row2Count = total - row1Count;
 
@@ -739,7 +740,12 @@ function bldInner(b, hand){
 
 function stripHTML(c){
   const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🏷️</span>` : MAT_ICON[c.mat];
-  return `<div class="strip"><span>Da</span><span class="mi">${giveIcon}</span><span>a</span><span class="targ-ico">${iconFor(c.tgt)}</span><b>${LBL[c.tgt]}</b></div>`;
+  const estClass = `est-${c.est}`;
+  return `<div class="strip ${estClass}">
+    <div class="give-row"><span>+</span>${giveIcon}</div>
+    <span class="targ-ico">${iconFor(c.tgt)}</span>
+    <b>${LBL[c.tgt]}</b>
+  </div>`;
 }
 
 function bldHTML(b){

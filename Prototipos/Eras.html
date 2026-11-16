@@ -64,7 +64,7 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .ic{display:inline-block;width:22px;text-align:center;flex:0 0 22px}
 
 /* Sello redondo */
-.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#d97706;color:#fff;border-radius:50%;font-size:10px;box-shadow:0 1px 3px #0004}
+.seal-ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:none;box-shadow:none;border-radius:0;font-size:18px}
 
 /* Colores de Eras y Estructuras */
 .era-EA, .lg.era-EA{background:#fff4b0;border-radius:8px}
@@ -142,6 +142,7 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .bld .sec-mid{flex:0 0 43.75%}
 .bld .sec-bot{flex:0 0 29.17%}
 .bld .poder-row{flex:0 0 12.5%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;line-height:1.1;padding:0 4px;color:#333;border-top:1px dashed #0004}
+.bld .chk{color:#00b86b;font-weight:900;font-size:12px}
 </style>
 </head>
 <body>
@@ -751,6 +752,25 @@ function slotsHTML(b, hand){
   }
 }
 
+// Un poder está listo cuando el edificio está completo y hay un destino válido para cumplirlo
+function powerReady(b){
+  if(!isComplete(b)) return false;
+  const o = b.owner;
+  if(SETUP.mode==='sellos'){
+    const p = PODER[b.tipo];
+    if(!p) return false;
+    if(p.accion==='mover') return o.street.some(x=>x.st>0);
+    return o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
+  }
+  if(b.tipo==='TI') return true;
+  if(b.tipo==='TM') return o.street.some(x=>x.md>0 || x.mt>0);
+  if(b.tipo==='TT' || b.tipo==='TP'){
+    const m = b.tipo==='TT' ? 'MT' : 'MD';
+    return o.street.some(x=>hasRoom(x,m));
+  }
+  return o.street.some(x=>hasRoom(x,'MD') || hasRoom(x,'MT'));
+}
+
 function bldInner(b, hand){
   const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus ${b.plusMat==='ST'?'st':(b.plusMat==='MD'?'md':'mt')}">+1</div>` : '';
   return `<div class="main">
@@ -763,13 +783,13 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row">${poderTxt(b.tipo)}</div>
+    <div class="poder-row">${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
 
 function stripHTML(c){
-  const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🏷️</span>` : MAT_ICON[c.mat];
+  const giveIcon = SETUP.mode==='sellos' ? `<span class="seal-ico">🧿</span>` : MAT_ICON[c.mat];
   return `<div class="strip">
     <div class="give-row"><span>+</span>${giveIcon}</div>
     <span class="targ-ico est-${c.tgt}">${iconFor(c.tgt)}</span>
@@ -779,7 +799,7 @@ function stripHTML(c){
 function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
-    <span class="c-der">Da ${SETUP.mode==='sellos' ? 'un sello' : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
+    <span class="c-der">+ ${SETUP.mode==='sellos' ? '🧿' : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
     <span class="c-der">Si se llena: ${poderTxt(b.tipo)}</span>
   </div>`;
 }
@@ -886,7 +906,7 @@ function setupHTML(){
     <div class="setup-right">
       ${err ? `<div class="cfg-error">${err}</div>` : ''}
       <div class="opt-label">Modo de juego</div>
-      <div class="opts">${opt('mode','recursos','🪵⚙️ Dos Recursos')}${opt('mode','sellos','🏷️ Sellos de Influencia')}</div>
+      <div class="opts">${opt('mode','recursos','🪵⚙️ Dos Recursos')}${opt('mode','sellos','🧿 Sellos de Influencia')}</div>
       <div class="opt-label">Jugar contra (bots)</div>
       <div class="opt-desc">Los bots siempre juegan en Difícil.</div>
       <div class="opts">${opt('bots',2,'2 bots (3 jugadores)')}${opt('bots',3,'3 bots (4 jugadores)')}${opt('bots',4,'4 bots (5 jugadores)')}</div>

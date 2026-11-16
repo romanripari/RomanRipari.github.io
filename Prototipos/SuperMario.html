@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Super Mario · Prototipo</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:system-ui,sans-serif}
+body{background:#efe9dd;color:#222}
+header{background:#2d4a3e;color:#fff;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+h1{font-size:18px;margin:0}
+h3{margin:6px 0}
+.chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
+main{padding:10px;max-width:1100px;margin:auto}
+.panel{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
+.banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
+button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
+button.ghost{background:#5b7a6c}
+button.danger{background:#e0302a}
+.suits{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-around;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:8px}
+.suit{display:flex;flex-direction:column;align-items:center;min-width:100px;padding:3px;border-radius:6px;font-size:11px;font-weight:700}
+.suit .ico{font-size:24px}
+.suit.free{opacity:.55}
+.row{display:flex;gap:6px;overflow-x:auto;padding:6px 4px 8px}
+.tile{flex:0 0 92px;height:124px;background:#fff;border:2px solid #444;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px;font-size:10px;text-align:center}
+.tile .ico{font-size:22px}
+.tile.here{outline:3px solid #e0007a}
+.tokens{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
+.tok{display:inline-flex;width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;align-items:center;justify-content:center;border:1px solid #111}
+.card{width:72px;height:92px;border-radius:8px;border:2px solid #444;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;text-align:center}
+.card .ico{font-size:24px}
+.infos{display:flex;flex-wrap:wrap;gap:8px}
+.infos>.panel{flex:1 1 280px;min-width:0}
+.log{font-size:12px;max-height:200px;overflow-y:auto;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
+.setup{background:linear-gradient(#bfe9fb,#e9f8ff 60%,#fff6dc);padding:20px;border-radius:12px}
+.setup h2{color:#2d6b4f;font-size:44px;margin:4px 0;text-shadow:3px 3px 0 #ffd66b}
+.opt-label{font-size:12px;letter-spacing:1px;color:#8a5a2b;font-weight:700;margin:12px 0 4px;text-transform:uppercase}
+.opt{background:#fff8ea;color:#5a4a3a;border:2px solid #f2c46b;border-radius:14px;padding:8px 14px;font-size:14px;font-weight:600}
+.opt.on{background:#ff7a59;color:#fff;border-color:#e0553a}
+.start{width:100%;background:#2fb67c;color:#fff;font-size:18px;font-weight:800;padding:14px;border-radius:14px;margin-top:12px}
+input{width:100%;padding:12px;border-radius:12px;border:2px solid #f2c46b;font-size:15px;margin-top:8px}
+</style>
+</head>
+<body>
+<header><h1>Super Mario · Prototipo</h1><div id="hdr"></div></header>
+<main><div id="app"></div></main>
+<script>
+/* ===== DATOS (placeholders: mapas y valores a definir en el testeo) ===== */
+const SUITS={
+  RANA:{n:'Rana',i:'🐸',d:'AGUA'},
+  MAPACHE:{n:'Mapache',i:'🦝',d:'PRECIPICIO'},
+  BOTA:{n:'Bota',i:'🥾',d:'PINCHOS'},
+  HAMMER:{n:'Hammer',i:'🔨',d:'LAVA'},
+  TANOOKI:{n:'Tanooki',i:'🍂',d:'CANON'},
+  FUEGO:{n:'Dispara Fuego',i:'🔥',d:'PLANTAS'}
+};
+const SUIT_IDS=Object.keys(SUITS);
+const DANGER={
+  LAVA:{n:'Lava',i:'🌋',col:'#f08a80',pen:'vida',txt:'-1 vida'},
+  PINCHOS:{n:'Pinchos',i:'📍',col:'#c5ea9a',pen:'vida',txt:'-1 vida'},
+  PLANTAS:{n:'Plantas',i:'🌿',col:'#4f7d3a',pen:'vida',txt:'-1 vida',dark:true},
+  CANON:{n:'Cañonazos',i:'💣',col:'#f5a347',pen:'dado',txt:'dado impar: -1 vida'},
+  AGUA:{n:'Agua',i:'💧',col:'#9fd8f0',pen:'parar',txt:'dado impar: -1 vida y se detiene'},
+  PRECIPICIO:{n:'Precipicio',i:'🕳️',col:'#b0b6bd',pen:'parar',txt:'dado impar: -1 vida y se detiene'}
+};
+const CARDS={
+  E:{n:'Estrella',i:'✨'},
+  H:{n:'Hongo',i:'🍄'},
+  F:{n:'Flor',i:'🌸'},
+  ESC:{n:'Escudo',i:'🛡️'},
+  SUP:{n:'Súper Estrella',i:'🌟'}
+};
+const SETS=[
+  {cards:['E','E','E'],v:5,label:'3 Estrellas (+5 vidas)'},
+  {cards:['H','H','H'],v:3,label:'3 Hongos (+3 vidas)'},
+  {cards:['F','F','F'],v:2,label:'3 Flores (+2 vidas)'},
+  {cards:['E','H','F'],v:1,label:'3 distintas (+1 vida)'}
+];
+/* Mapa placeholder en fila: 0-11 Mundo 1 · 12-23 Mundo 2 · 24-35 Mundo 3 · 36-45 Mundo Koopa
+   n = normal · C1/C2/C3 = castillo · B = Bowser · resto = nombre de peligro */
+const MAP=[
+  'n','LAVA','n','PINCHOS','n','CANON','n','AGUA','n','PRECIPICIO','n','C1',
+  'n','PLANTAS','n','LAVA','n','AGUA','n','CANON','n','PINCHOS','n','C2',
+  'n','PRECIPICIO','n','PLANTAS','n','LAVA','n','AGUA','n','CANON','n','C3',
+  'n','LAVA','n','PINCHOS','n','PLANTAS','n','CANON','n','B'
+];
+const CASTLE_W={11:1,23:2,35:3};
+const WORLD_START=[0,12,24,36];
+const KOOPA_START=36, KOOPA_END=45, KOOPA_KEY=3;
+const START_HAND=2;
+const PLAYER_NAMES=['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
+const COLORS=['#2d6b4f','#c2410c','#2b7bc4','#8a3ffc','#b8860b','#c2185b'];
+const SETUP={bots:2,lives:3,coins:2,name:''};
+let S=null;
+
+/* ===== UTILIDADES ===== */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function roll(){return 1+Math.floor(Math.random()*6)}
+function log(m){S.log.push(m)}
+function buildDeck(){
+  const d=[];
+  for(let i=0;i<12;i++) d.push('E','H','F');
+  for(let i=0;i<8;i++) d.push('ESC');
+  for(let i=0;i<6;i++) d.push('SUP');
+  return shuffle(d);
+}
+function worldOf(pos){return pos<12?1:pos<24?2:pos<36?3:4}
+function worldName(pos){return worldOf(pos)===4?'Mundo Koopa':'Mundo '+worldOf(pos)}
+function startOfWorld(pos){return WORLD_START[worldOf(pos)-1]}
+function bankSuits(){return SUIT_IDS.filter(s=>!S.players.some(p=>p.suit===s))}
+function suitForDanger(t){return SUIT_IDS.find(s=>SUITS[s].d===t)}
+function occupiedBy(idx,me){return S.players.some(q=>q!==me&&q.pos===idx)}
+function freeFrom(i,p){while(i<KOOPA_END&&occupiedBy(i,p)) i++; return i}
+function removeCard(p,c){const i=p.hand.indexOf(c); if(i>=0) S.discard.push(p.hand.splice(i,1)[0])}
+function drawCard(p){
+  if(!S.deck.length){
+    if(!S.discard.length) return;
+    S.deck=shuffle(S.discard); S.discard=[];
+    log('Se mezcló el descarte y se armó un mazo nuevo.');
+  }
+  const c=S.deck.pop(); p.hand.push(c);
+  log(p.human?`${p.name} roba ${CARDS[c].i} ${CARDS[c].n}.`:`${p.name} roba una carta.`);
+}
+
+/* ===== REGLAS BASE ===== */
+function canEnter(p,nxt){
+  if(nxt>KOOPA_END) return false;
+  if(p.pos<KOOPA_START && nxt>=KOOPA_START && p.scepters.length<KOOPA_KEY) return false;
+  return !occupiedBy(nxt,p);
+}
+function maxSteps(p,max){let k=0; while(k<max && canEnter(p,p.pos+k+1)) k++; return k}
+
+function loseLife(p){
+  const e=p.hand.indexOf('ESC');
+  if(e>=0){
+    S.discard.push(p.hand.splice(e,1)[0]);
+    log(`${p.name} usa 🛡️ Escudo y no pierde vida.`);
+    return 'ok';
+  }
+  p.lives--;
+  log(`${p.name} pierde 1 vida (le quedan ${Math.max(p.lives,0)}).`);
+  if(p.lives<=0){ die(p); return 'dead'; }
+  return 'ok';
+}
+function die(p){
+  p.pos=freeFrom(startOfWorld(p.pos),p);
+  p.lives=SETUP.lives;
+  log(`${p.name} muere y reaparece al inicio de su mundo. (Regla pendiente de diseño.)`);
+}
+
+/* Avanza hasta `steps` casillas aplicando peligros. Devuelve true si murió. */
+function walk(p,steps){
+  for(let k=0;k<steps;k++){
+    const nxt=p.pos+1;
+    if(!canEnter(p,nxt)) break;
+    const t=MAP[nxt], d=DANGER[t];
+    if(!d || (p.suit && SUITS[p.suit].d===t)){ p.pos=nxt; continue; }
+    if(d.pen==='vida'){
+      p.pos=nxt;
+      log(`${p.name} atraviesa ${d.n} y pierde 1 vida.`);
+      if(loseLife(p)==='dead') return true;
+    } else if(d.pen==='dado'){
+      p.pos=nxt;
+      const r=roll();
+      if(r%2===1){
+        log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida.`);
+        if(loseLife(p)==='dead') return true;
+      } else log(`${p.name} tira ${r} en ${d.n}: par, no pierde.`);
+    } else {
+      const r=roll();
+      if(r%2===1){
+        log(`${p.name} tira ${r} en ${d.n}: impar, pierde 1 vida y se detiene.`);
+        return loseLife(p)==='dead';
+      }
+      p.pos=nxt;
+    }
+  }
+  return false;
+}
+function doMove(p,steps){
+  const from=p.pos;
+  const died=walk(p,steps);
+  if(died) return;
+  if(p.pos!==from) landing(p);
+  else log(`${p.name} no avanza.`);
+}
+function landing(p){
+  const t=MAP[p.pos];
+  if(t==='n') drawCard(p);
+  else if(CASTLE_W[p.pos]) castle(p,CASTLE_W[p.pos]);
+}
+function castle(p,w){
+  if(S.castleTaken[w]){ log(`Castillo ${w}: su Cetro ya fue tomado.`); return; }
+  const sec=S.castleSuit[w];
+  log(`Castillo ${w}: se revela la debilidad secreta: ${SUITS[sec].i} ${SUITS[sec].n}.`);
+  if(p.suit===sec){
+    S.castleTaken[w]=true; p.scepters.push(w);
+    log(`¡Ataque crítico! ${p.name} obtiene el Cetro del Mundo ${w} gratis y roba una carta extra.`);
+    drawCard(p);
+    return;
+  }
+  S.pend={type:'wear',p,w};
+}
+
+/* ===== TRAJE (Fase 1) ===== */
+function suitOptions(p){
+  const o=[{type:'keep',label:'Mantener traje (0 🪙)'}];
+  if(p.coins>=1){
+    bankSuits().forEach(s=>o.push({type:'buy',suit:s,label:`Comprar ${SUITS[s].i} ${SUITS[s].n} (1 🪙)`}));
+    S.players.forEach((v,i)=>{
+      if(v!==p && v.suit) o.push({type:'steal',target:i,suit:v.suit,label:`Robar ${SUITS[v.suit].i} a ${v.name} (1 🪙)`});
+    });
+  }
+  return o;
+}
+function suitAction(p,act){
+  if(act.type==='buy'){
+    p.coins--; p.suit=act.suit;
+    log(`${p.name} compra ${SUITS[act.suit].i} ${SUITS[act.suit].n}.`);
+  } else if(act.type==='steal'){
+    const v=S.players[act.target];
+    p.coins--; v.coins++; v.suit=null; p.suit=act.suit;
+    log(`${p.name} le roba ${SUITS[act.suit].i} a ${v.name} y le paga 1 moneda.`);
+  } else log(`${p.name} mantiene su traje.`);
+}
+
+/* ===== ACCIÓN (Fase 2) ===== */
+function moveOptions(p){
+  const o=[];
+  const m3=maxSteps(p,3);
+  if(m3>=1) o.push({type:'move',steps:1,label:'Mover 1'});
+  if(m3>=2) o.push({type:'move',steps:2,label:'Mover 2'});
+  if(m3>=1 && p.hand.includes('SUP')) o.push({type:'super',steps:m3,label:`Usar 🌟 Súper Estrella: mover hasta ${m3}`});
+  o.push({type:'rest',label:'Descansar (+2 🪙)'});
+  if(p.pos===KOOPA_END && p.scepters.length) o.push({type:'hit',label:'Golpear a Bowser (gasta 1 Cetro)'});
+  return o;
+}
+function moveAction(p,opt){
+  if(opt.type==='rest'){ p.coins+=2; log(`${p.name} descansa y gana 2 monedas.`); return; }
+  if(opt.type==='hit'){ hitBowser(p); return; }
+  if(opt.type==='super') removeCard(p,'SUP');
+  doMove(p,opt.steps);
+}
+function canjesOf(p){
+  return SETS.filter(s=>{
+    const need={};
+    s.cards.forEach(c=>need[c]=(need[c]||0)+1);
+    return Object.keys(need).every(c=>p.hand.filter(x=>x===c).length>=need[c]);
+  });
+}
+function canjear(p,set){
+  set.cards.forEach(c=>{ S.discard.push(...p.hand.splice(p.hand.indexOf(c),1)); });
+  p.lives+=set.v;
+  log(`${p.name} canjea ${set.label}.`);
+}
+
+/* ===== CASTILLO Y BOWSER ===== */
+function wearOptions(p){
+  const o=[];
+  if(p.suit) o.push({k:'suit',label:'Sacrificar traje'});
+  if(p.coins>=4) o.push({k:'coins',label:'Pagar 4 🪙'});
+  o.push({k:'life',label:'Perder 1 vida'});
+  return o;
+}
+function resolveWear(p,w,k){
+  if(k==='suit'){ log(`${p.name} sacrifica su traje.`); p.suit=null; }
+  else if(k==='coins'){ p.coins-=4; log(`${p.name} paga 4 monedas.`); }
+  else { if(loseLife(p)==='dead') return; }
+  S.castleTaken[w]=true; p.scepters.push(w);
+  log(`${p.name} obtiene el Cetro del Mundo ${w}.`);
+}
+function hitBowser(p){
+  p.scepters.pop(); S.bowserHits++; S.lastHitter=p;
+  log(`${p.name} golpea a Bowser (${S.bowserHits}/3) y gasta 1 Cetro.`);
+  if(S.bowserHits>=3){
+    S.over=true; S.winner=p;
+    log(`¡${p.name} rescata a la princesa!`);
+    return;
+  }
+  S.pend={type:'counter',p};
+}
+function counterOptions(p){
+  const o=[];
+  if(p.hand.includes('ESC')||p.hand.includes('SUP')) o.push({k:'pu',label:'Descartar 1 Power-Up'});
+  if(p.suit) o.push({k:'suit',label:'Sacrificar traje'});
+  o.push({k:'life',label:'Perder 2 vidas'});
+  return o;
+}
+function resolveCounter(p,k){
+  if(k==='pu'){
+    const c=p.hand.find(x=>x==='ESC'||x==='SUP');
+    removeCard(p,c);
+    log(`${p.name} descarta ${CARDS[c].n} para soportar el contraataque.`);
+  } else if(k==='suit'){
+    log(`${p.name} sacrifica su traje ante Bowser.`); p.suit=null;
+  } else {
+    if(loseLife(p)!=='dead') loseLife(p);
+  }
+}
+
+/* ===== PUNTUACIÓN ===== */
+function scoreAll(){
+  const n=S.players.length, pv=S.players.map(()=>0);
+  if(S.winner) pv[S.players.indexOf(S.winner)]+=10;
+  const order=S.players.map((_,i)=>i).sort((a,b)=>S.players[b].lives-S.players[a].lives);
+  const slots=[6,3,1];
+  let pos=0;
+  while(pos<n){
+    let end=pos;
+    while(end<n && S.players[order[end]].lives===S.players[order[pos]].lives) end++;
+    let sum=0;
+    for(let q=pos;q<end&&q<3;q++) sum+=slots[q];
+    const avg=sum/(end-pos);
+    for(let q=pos;q<end;q++) pv[order[q]]+=avg;
+    pos=end;
+  }
+  S.players.forEach((p,i)=>{
+    pv[i]+=p.scepters.length*3;
+    pv[i]+=Math.floor(p.coins/3);
+    pv[i]+=p.hand.filter(c=>c==='E').length;
+    pv[i]+=p.hand.filter(c=>c!=='E').length;
+  });
+  return pv.map(v=>Math.round(v*10)/10);
+}
+
+/* ===== FLUJO DE TURNO ===== */
+function newGame(){
+  const names=shuffle(PLAYER_NAMES.slice()).slice(0,SETUP.bots);
+  S={
+    players:[SETUP.name.trim()||'Vos',...names].map((name,i)=>({
+      name,human:i===0,color:COLORS[i],pos:2*i,lives:SETUP.lives,coins:SETUP.coins,suit:null,hand:[],scepters:[]
+    })),
+    deck:buildDeck(),discard:[],
+    castleSuit:{1:rnd(SUIT_IDS),2:rnd(SUIT_IDS),3:rnd(SUIT_IDS)},
+    castleTaken:{1:false,2:false,3:false},
+    bowserHits:0,winner:null,lastHitter:null,over:false,
+    cur:Math.floor(Math.random()*(SETUP.bots+1)),turnNo:1,step:'suit',pend:null,log:[]
+  };
+  S.players.forEach(p=>{ for(let i=0;i<START_HAND;i++) p.hand.push(S.deck.pop()); });
+  log(`— Empieza ${S.players[S.cur].name} —`);
+  render();
+  scheduleBot();
+}
+function endTurn(){
+  S.pend=null;
+  if(S.over){ render(); return; }
+  S.cur=(S.cur+1)%S.players.length;
+  if(S.cur===0) S.turnNo++;
+  S.step='suit';
+  render();
+  scheduleBot();
+}
+function scheduleBot(){
+  if(S && !S.over && !S.players[S.cur].human) setTimeout(botTurn,450);
+}
+function afterMove(){
+  if(S.over){ endTurn(); return; }
+  if(S.pend){ render(); return; }
+  endTurn();
+}
+
+/* ===== BOTS (dificultad simple) ===== */
+function botTurn(){
+  if(!S||S.over) return;
+  const p=S.players[S.cur];
+  if(p.human) return;
+  while(canjesOf(p).length) canjear(p,canjesOf(p)[0]);
+  const so=suitOptions(p);
+  let pick=so[0];
+  if(!p.suit && so.length>1 && Math.random()<.6) pick=so.find(o=>o.type==='buy')||so[0];
+  suitAction(p,pick);
+  const mo=moveOptions(p);
+  const m=mo.find(o=>o.type==='hit') || mo.find(o=>o.type==='move'&&o.steps===2) ||
+          mo.find(o=>o.type==='move') || mo.find(o=>o.type==='rest');
+  moveAction(p,m);
+  if(S.pend){
+    const pd=S.pend; S.pend=null;
+    if(pd.type==='wear') resolveWear(pd.p,pd.w,wearOptions(p)[0].k);
+    else resolveCounter(pd.p,counterOptions(p)[0].k);
+  }
+  endTurn();
+}
+
+/* ===== UI (acciones del humano) ===== */
+const UI={
+  set(k,v){SETUP[k]=v; render()},
+  start(){newGame()},
+  newGame(){S=null; render()},
+  suit(i){const me=S.players[0]; suitAction(me,suitOptions(me)[i]); S.step='move'; render()},
+  move(i){const me=S.players[0]; moveAction(me,moveOptions(me)[i]); afterMove()},
+  canje(i){const me=S.players[0]; canjear(me,canjesOf(me)[i]); render()},
+  wear(k){resolveWear(S.pend.p,S.pend.w,k); endTurn()},
+  counter(k){resolveCounter(S.pend.p,k); endTurn()}
+};
+
+/* ===== RENDER ===== */
+function setupHTML(){
+  const opt=(k,v,l)=>`<button class="opt ${SETUP[k]===v?'on':''}" onclick="UI.set('${k}',${v})">${l}</button>`;
+  return `<div class="setup">
+    <h2>Super Mario</h2>
+    <p>Prototipo de juego de mesa. Mapas y final son placeholder: se diseñan en el testeo.</p>
+    <div class="opt-label">Jugar contra (bots)</div>
+    ${[1,2,3,4].map(v=>opt('bots',v,`${v} bot${v>1?'s':''}`)).join('')}
+    <div class="opt-label">Vidas iniciales (a definir)</div>
+    ${[2,3,4,5].map(v=>opt('lives',v,v)).join('')}
+    <div class="opt-label">Monedas iniciales (a definir)</div>
+    ${[1,2,3].map(v=>opt('coins',v,v)).join('')}
+    <input placeholder="Tu nombre" value="${SETUP.name}" maxlength="16" oninput="SETUP.name=this.value">
+    <button class="start" onclick="UI.start()">▷ Empezar partida</button>
+  </div>`;
+}
+function banner(){
+  if(S.over) return '';
+  const cur=S.players[S.cur];
+  if(!cur.human) return `<div class="banner">Turno de ${cur.name}…</div>`;
+  let txt;
+  if(S.pend) txt = S.pend.type==='wear' ? `Castillo ${S.pend.w}: elegí cómo pagar el desgaste` : 'Bowser contraataca: elegí cómo sobrevivir';
+  else txt = S.step==='suit' ? 'Fase 1: gestión de traje' : 'Fase 2: elegí tu acción principal';
+  return `<div class="banner">${txt}</div>`;
+}
+function actionsHTML(){
+  if(S.over) return endHTML();
+  const me=S.players[0];
+  if(S.players[S.cur]!==me) return '';
+  let b='';
+  if(S.pend){
+    if(S.pend.type==='wear') b=wearOptions(me).map(o=>`<button onclick="UI.wear('${o.k}')">${o.label}</button>`).join('');
+    else b=counterOptions(me).map(o=>`<button class="danger" onclick="UI.counter('${o.k}')">${o.label}</button>`).join('');
+  } else {
+    if(S.step==='suit') b=suitOptions(me).map((o,i)=>`<button onclick="UI.suit(${i})">${o.label}</button>`).join('');
+    else b=moveOptions(me).map((o,i)=>`<button onclick="UI.move(${i})">${o.label}</button>`).join('');
+    b+=canjesOf(me).map((c,i)=>`<button class="ghost" onclick="UI.canje(${i})">Canjear ${c.label}</button>`).join('');
+  }
+  return `<div class="panel">${b}</div>`;
+}
+function endHTML(){
+  const pv=scoreAll();
+  const rows=S.players.map((p,i)=>`<tr><td>${p.name}${p.human?' (vos)':''}</td><td>${p.lives}</td><td>${p.scepters.length}</td><td>${p.coins}</td><td><b>${pv[i]}</b></td></tr>`).join('');
+  return `<div class="panel"><h3>Fin de la partida</h3>
+    <p>${S.winner.name} dio el golpe final a Bowser y rescató a la princesa (+10 PV).</p>
+    <table><tr><th>Jugador</th><th>Vidas</th><th>Cetros</th><th>Monedas</th><th>PV</th></tr>${rows}</table>
+    <button onclick="UI.newGame()">Nueva partida</button></div>`;
+}
+function mapHTML(){
+  const tiles=MAP.map((t,idx)=>{
+    const here=S.players.filter(p=>p.pos===idx);
+    let ico='', lbl='', style='background:#fff', extra='';
+    if(t==='n'){ ico='⬜'; lbl='Normal'; }
+    else if(DANGER[t]){
+      const d=DANGER[t], sid=suitForDanger(t);
+      ico=d.i; lbl=`${d.n}<br>${d.txt}<br>Protege: ${SUITS[sid].i}`;
+      style=`background:${d.col};${d.dark?'color:#fff':''}`;
+    }
+    else if(CASTLE_W[idx]){
+      const w=CASTLE_W[idx];
+      ico='🏰'; lbl=`Castillo ${w}<br>${S.castleTaken[w]?'✔ tomado':'❓ debilidad oculta'}`;
+      style='background:#7a5636;color:#fff';
+    }
+    else if(t==='B'){ ico='👑'; lbl='Bowser'; style='background:#3f7a2e;color:#fff'; }
+    if(WORLD_START.includes(idx)) lbl=`<b>Inicio ${worldName(idx)}</b><br>`+lbl;
+    return `<div class="tile ${here.length?'here':''}" style="${style}">
+      <span>${idx}</span><span class="ico">${ico}</span><span>${lbl}</span>
+      <div class="tokens">${here.map(p=>`<span class="tok" style="background:${p.color}" title="${p.name}">${p.name[0]}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  return `<div class="panel"><b>Mapa (placeholder)</b><div class="row">${tiles}</div></div>`;
+}
+function playersHTML(){
+  const rows=S.players.map((p,i)=>`<tr>
+    <td><span class="tok" style="background:${p.color}">${p.name[0]}</span> ${p.name}${p.human?' (vos)':''}${i===S.cur&&!S.over?' ◀':''}</td>
+    <td>${p.lives} ❤️</td><td>${p.coins} 🪙</td>
+    <td>${p.suit?SUITS[p.suit].i+' '+SUITS[p.suit].n:'—'}</td>
+    <td>${p.scepters.map(w=>'M'+w).join(', ')||'—'}</td>
+    <td>${worldName(p.pos)} (${p.pos})</td>
+    <td>${p.hand.length} cartas</td></tr>`).join('');
+  const handHTML=S.players[0].hand.map(c=>`<div class="card"><span class="ico">${CARDS[c].i}</span>${CARDS[c].n}</div>`).join('')||'<span>Sin cartas</span>';
+  return `<div class="panel"><table>
+      <tr><th>Jugador</th><th>Vidas</th><th>Monedas</th><th>Traje</th><th>Cetros</th><th>Posición</th><th>Mano</th></tr>${rows}
+    </table></div>
+    <div class="panel"><b>Tu mano</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${handHTML}</div></div>`;
+}
+function render(){
+  const app=document.getElementById('app'), hdr=document.getElementById('hdr');
+  if(!S){ hdr.innerHTML=''; app.innerHTML=setupHTML(); return; }
+  const cur=S.players[S.cur];
+  hdr.innerHTML=`<span class="chip">Turno ${S.turnNo}</span>
+    <span class="chip">Juega: ${cur.name}${cur.human?' (vos)':''}</span>
+    <span class="chip">Mazo: ${S.deck.length}</span>
+    <span class="chip">Bowser: ${S.bowserHits}/3</span>`;
+  const suits=`<div class="suits">${SUIT_IDS.map(s=>{
+      const o=S.players.find(p=>p.suit===s);
+      return `<div class="suit ${o?'':'free'}"><span class="ico">${SUITS[s].i}</span>${SUITS[s].n}<span>${o?o.name:'Banca'}</span></div>`;
+    }).join('')}</div>`;
+  const log=`<div class="infos"><div class="panel"><b>Registro</b><div class="log" id="lg">${S.log.slice(-80).map(l=>`<div>${l}</div>`).join('')}</div></div></div>`;
+  app.innerHTML=banner()+actionsHTML()+suits+mapHTML()+playersHTML()+log;
+  const lg=document.getElementById('lg'); if(lg) lg.scrollTop=lg.scrollHeight;
+}
+render();
+</script>
+</body>
+</html>

@@ -143,6 +143,7 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .bld .sec-bot{flex:0 0 29.17%}
 .bld .poder-row{flex:0 0 12.5%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;line-height:1.1;padding:0 4px;color:#333;border-top:1px dashed #0004}
 .bld .chk{color:#00b86b;font-weight:900;font-size:12px}
+.bld .si-llena{display:inline-block;background:#2d4a3e;color:#fff;border-radius:6px;padding:1px 6px;font-weight:700;margin-right:4px;font-size:9px}
 </style>
 </head>
 <body>
@@ -389,7 +390,7 @@ function startHumanPower(o,b){
     const p = PODER[kind];
     if(!p) return false;
     if(p.accion==='mover'){
-      if(!o.street.some(x=>x.st>0)) return false;
+      if(!o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y,'ST')))) return false;
       S.pw = {owner:o, kind, stage: kind==='TI' ? 'src1' : 'src', cantidad:p.cantidad, hechos:0, b};
       return true;
     }
@@ -467,6 +468,7 @@ function pwClick(b){
         addMat(b,'ST');
         log(`Iglesia (1/2): moviste 1 sello a ${LBL[b.tipo]}.`);
         if(!S.players[0].street.some(x=>x.st>0)){ finishPw(); return; }
+        pw.stage = 'src2';
         render();
         return;
       }
@@ -759,7 +761,7 @@ function powerReady(b){
   if(SETUP.mode==='sellos'){
     const p = PODER[b.tipo];
     if(!p) return false;
-    if(p.accion==='mover') return o.street.some(x=>x.st>0);
+    if(p.accion==='mover') return o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y,'ST')));
     return o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
   }
   if(b.tipo==='TI') return true;
@@ -783,7 +785,7 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row">${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
+    <div class="poder-row"><span class="si-llena">Si se llena ➜</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
     ${pl}
   </div>`;
 }
@@ -956,7 +958,7 @@ function render(){
   else if(!S.over) html += `<div class="banner">Bajá la carta elegida</div>`;
 
   S.players.forEach((p,i)=>{
-    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts</span><span class="tot">${p.street.length} edificios · ${p.street.reduce((s,b)=>s+elems(b),0)} ${SETUP.mode==='sellos'?'sellos':'materiales'}</span></h3>
+    html += `<div class="street"><h3><span>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda · ${S.totals[i]} total</span>
       <div class="row">${p.street.length ? p.street.map(bldHTML).join('') : '<span class="empty">Sin edificios aún</span>'}</div></div>`;
   });
 

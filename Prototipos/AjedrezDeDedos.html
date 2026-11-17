@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ajedrez De Dedos - One Card de Julian Tunni</title>
+<title>Ajedrez de dedos, un juego de Julián Tunni</title>
 <style>
 :root{--paper:#f3efe6;--ink:#1d1d1f;--light:#f2efe6;--dark:#5d5c58;--h:#0b7d8a;--b:#b23a3a;--gold:#e0a526}
 *{box-sizing:border-box}
@@ -32,6 +32,8 @@ h1{margin:0 0 2px;font-family:Georgia,serif;font-size:26px}
 .sq.pick{box-shadow:inset 0 0 0 6px var(--h)}
 .side{width:330px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.btns{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:8px}
+.btns button{width:100%}
 #turno{font-size:17px}
 button{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px}
 .status{min-height:48px;font-size:15px;line-height:1.4}
@@ -53,7 +55,7 @@ h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04e
 <div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
 </div>
 <aside class="side">
-<div class="top"><b id="turno"></b><button id="new">Nueva partida</button></div>
+<div class="top"><b id="turno"></b><div class="btns"><button id="newOrig">Nueva Partida tablero original</button><button id="newRand">Nueva Partida tablero central random</button></div></div>
 <p id="status" class="status"></p>
 <p id="patron" class="patron"></p>
 <h3>Patrones</h3>
@@ -172,6 +174,20 @@ function searchBest(s,side,maxD,ms){
   }
   return{move:best,score:bestV};
 }
+function botPre(){
+  // El bot fija sus dos dedos antes de ver la colocación del humano: minimiza la peor respuesta.
+  const PR=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+  let bq=null,bv=Infinity;
+  for(const q of PR){
+    let worst=-Infinity;
+    for(const p of PR){
+      const t={f:{H:p.map(c=>({r:HOME.H,c})),B:q.map(c=>({r:HOME.B,c}))},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
+      worst=Math.max(worst,searchBest(t,"H",3,40).score);
+    }
+    if(worst<bv){bv=worst;bq=q}
+  }
+  return bq;
+}
 function botPlace(s){
   let bp=null,bv=Infinity;
   for(const p of[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]]){
@@ -186,9 +202,9 @@ const $=id=>document.getElementById(id);
 const SQ=(r,c)=>"ABCD"[c]+(r+1);
 function note(t){logs.unshift(t);logs=logs.slice(0,40);$("log").innerHTML=logs.map(x=>"<li>"+x+"</li>").join("")}
 function say(t){$("status").textContent=t}
-function reset(){
+function reset(orig){
   S={f:{H:null,B:null},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
-  anim++;clearArrow();BOARD=randomBoard();
+  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();preB=botPre();
   phase="placeH";sel=null;pick=[];pend=null;busy=false;logs=[];
   note("Nueva partida.");
   say("Elegí 2 de las 4 piezas de tu fila (la de abajo): ahí van tus dedos.");
@@ -211,7 +227,7 @@ function doMove(m){
   S=applyMove(S,m);
   return{from:{r:a.r,c:a.c},to:{r:b.r,c:b.c},color:m.side==="H"?"#0b7d8a":"#b23a3a"};
 }
-let anim=0;
+let anim=0,preB=null;
 function clearArrow(){$("arr").innerHTML=""}
 function arrow(from,to,color){
   const x1=from.c*80+40,y1=from.r*80+40,x2=to.c*80+40,y2=to.r*80+40;
@@ -250,7 +266,7 @@ function onSq(r,c){
     if(i>=0)pick.splice(i,1);else if(pick.length<2)pick.push(c);
     if(pick.length===2){
       S.f.H=pick.map(k=>({r:HOME.H,c:k}));
-      const bc=botPlace(S);
+      const bc=preB;
       S.f.B=bc.map(k=>({r:HOME.B,c:k}));
       note(`Vos marcaste ${pick.map(k=>SQ(HOME.H,k)).join(" y ")}. El bot marcó ${bc.map(k=>SQ(HOME.B,k)).join(" y ")}.`);
       pick=[];phase="playH";startTurn();
@@ -298,8 +314,9 @@ function render(){
   if(phase==="playH"&&sel!==null){const ot=S.f.H[1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
   $("patron").textContent=pat;
 }
-$("new").onclick=reset;
-reset();
+$("newOrig").onclick=()=>reset(true);
+$("newRand").onclick=()=>reset(false);
+reset(false);
 </script>
 </body>
 </html>

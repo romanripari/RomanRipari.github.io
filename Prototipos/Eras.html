@@ -169,39 +169,40 @@ const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
 
-// Poder según el tamaño del edificio que se llena (modo Sellos)
-// ZB = Tamaño I, ZI = Tamaño II, ZR = Tamaño III
+// ZB = Madera (Tamaño I): duplica el efecto
+// ZI = Ladrillo (Tamaño II): efecto base de un sello
+// ZR = Acero (Tamaño III): sin poder
 const PODER_POR_TAM = {
   ZB:{
-    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
-    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
-    TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
-    TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
-    TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
-  },
-  ZI:{
     TI:{accion:'sumar', cantidad:2, destino:['TI','TM','TT','TP','TC']},
     TM:{accion:'mover', cantidad:2, destino:'cualquiera'},
     TT:{accion:'sumar', cantidad:1, destino:['TP','TC','TT']},
     TP:{accion:'sumar', cantidad:1, destino:['TM','TI','TP']},
     TC:{accion:'sumar', cantidad:1, destino:['TT','TM','TC']}
   },
+  ZI:{
+    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
+    TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
+    TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
+  },
   ZR:{}
 };
 const PODER_TXT_POR_TAM = {
   ZB:{
-    TI:`+1 sello a cualquier edificio tuyo con lugar`,
-    TM:`Mover 1 sello entre tus edificios`,
-    TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
-    TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
-    TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
-  },
-  ZI:{
     TI:`+2 sellos a cualquier edificio tuyo con lugar`,
     TM:`Mover 2 sellos entre tus edificios`,
     TT:`+1 sello a ${TIPO_ICON.TP} Puerto, ${TIPO_ICON.TC} Castillo o ${TIPO_ICON.TT} Taller`,
     TP:`+1 sello a ${TIPO_ICON.TM} Mercado, ${TIPO_ICON.TI} Iglesia o ${TIPO_ICON.TP} Puerto`,
     TC:`+1 sello a ${TIPO_ICON.TT} Taller, ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TC} Castillo`
+  },
+  ZI:{
+    TI:`+1 sello a cualquier edificio tuyo con lugar`,
+    TM:`Mover 1 sello entre tus edificios`,
+    TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
+    TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
+    TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
   },
   ZR:{ TI:'Sin poder', TM:'Sin poder', TT:'Sin poder', TP:'Sin poder', TC:'Sin poder' }
 };
@@ -376,7 +377,9 @@ function activateStep(i){
   setTimeout(()=>activateStep(i+1), 1000);
 }
 
+// Orden: poderes → reposición → criterios (turno 3) → descarte/rotación
 function afterPowers(){
+  if(S.turn < S.totalTurns && !SETUP.discard) S.players.forEach(p=>drawCards(p,1));
   if(!S.simDone && S.players.some(p=>p.street.length>=3)){
     S.simDone = true;
     startSimPick();
@@ -630,10 +633,10 @@ function pickCriterion(k){
 }
 
 /* ===== FIN DE TURNO ===== */
+// Rotación del inicial y descarte (si está activado). La reposición ya se hizo en afterPowers.
 function finishTurn(){
   S.start = (S.start+1) % S.n;
   if(!SETUP.discard){
-    if(S.turn<S.totalTurns) S.players.forEach(p=>drawCards(p,1));
     completeTurn();
     return;
   }

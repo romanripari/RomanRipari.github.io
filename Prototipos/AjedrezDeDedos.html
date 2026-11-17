@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ajedrez De Dedos - One Card de Julian Tunni</title>
+<style>
+:root{--paper:#f3efe6;--ink:#1d1d1f;--light:#f2efe6;--dark:#5d5c58;--h:#0b7d8a;--b:#b23a3a;--gold:#e0a526}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink);padding:20px}
+.wrap{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+h1{margin:0 0 2px;font-family:Georgia,serif;font-size:26px}
+.sub{margin:0 0 14px;color:#666;font-size:14px}
+#board{display:grid;grid-template-columns:repeat(4,80px);grid-template-rows:repeat(6,80px);border:6px solid var(--ink);border-radius:4px;overflow:hidden}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sq.l{background:var(--light)}
+.sq.d{background:var(--dark)}
+.pc{font-size:50px;line-height:1;position:relative;z-index:0;pointer-events:none}
+.sq.l .pc{color:var(--ink)}
+.sq.d .pc{color:var(--light)}
+.mk{position:absolute;left:14px;top:14px;right:14px;bottom:14px;border:4px solid;z-index:2;pointer-events:none}
+.mk.circle{border-radius:50%}
+.mk.square{border-radius:8px}
+.mk.H{border-color:var(--h)}
+.mk.B{border-color:var(--b)}
+.mk.sel{box-shadow:0 0 0 4px var(--gold)}
+.sq.dest::after,.sq.capt::after,.sq.reloc::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;z-index:3;pointer-events:none}
+.sq.dest::after{background:var(--gold)}
+.sq.capt::after{background:#c0392b}
+.sq.reloc::after{background:var(--gold);border-radius:4px;width:30px;height:30px;box-shadow:0 0 0 3px #fff}
+.sq.cand{box-shadow:inset 0 0 0 4px rgba(11,125,138,.55)}
+.sq.pick{box-shadow:inset 0 0 0 6px var(--h)}
+.side{width:330px;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#turno{font-size:17px}
+button{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px}
+.status{min-height:48px;font-size:15px;line-height:1.4}
+.patron{min-height:22px;font-size:14px;color:#244}
+h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04em;color:#555}
+.pats{list-style:none;padding:0;margin:0;font-size:13px;line-height:1.5}
+.pats span{display:inline-block;width:24px;font-size:20px;vertical-align:middle}
+.legend{font-size:12px;color:#666}
+#log{list-style:none;padding:0;margin:0;max-height:200px;overflow:auto;font-size:13px;line-height:1.5}
+#bw{position:relative;display:inline-block}
+#arr{position:absolute;left:6px;top:6px;pointer-events:none;z-index:9}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div>
+<h1>Ajedrez de dedos</h1>
+<p class="sub">1 vs 1 · vs. bot · prototipo de Julián Tunni</p>
+<div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
+</div>
+<aside class="side">
+<div class="top"><b id="turno"></b><button id="new">Nueva partida</button></div>
+<p id="status" class="status"></p>
+<p id="patron" class="patron"></p>
+<h3>Patrones</h3>
+<ul class="pats">
+<li><span>♟</span>Peón: avanza 1 casilla; captura en diagonal hacia adelante</li>
+<li><span>♞</span>Caballo: salto en L, en cualquier dirección</li>
+<li><span>♜</span>Torre: 1 casilla ortogonal, en cualquier dirección</li>
+<li><span>♝</span>Alfil: 1 casilla diagonal, en cualquier dirección</li>
+</ul>
+<p class="legend">○ círculo y □ cuadrado = dedos. Azul = vos, rojo = bot.</p><h3>Registro</h3>
+<ul id="log"></ul>
+</aside>
+</div>
+<script>
+const BASE=["PBPN","NNRP","PRBP","PPBR","NRPN","NPBP"];
+let BOARD=BASE;
+function randomBoard(){
+  const cells=[];
+  for(let r=1;r<5;r++)for(let c=0;c<4;c++)cells.push(BASE[r][c]);
+  for(let i=cells.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]]}
+  const rows=BASE.map(s=>s.split(""));
+  let k=0;
+  for(let r=1;r<5;r++)for(let c=0;c<4;c++)rows[r][c]=cells[k++];
+  return rows.map(a=>a.join(""));
+}
+const GLYPH={P:"♟",N:"♞",R:"♜",B:"♝"};
+const PNAME={P:"Peón",N:"Caballo",R:"Torre",B:"Alfil"};
+const PDESC={P:"avanza 1 casilla; captura en diagonal hacia adelante",N:"salto en L, en cualquier dirección",R:"1 casilla ortogonal, en cualquier dirección",B:"1 casilla diagonal, en cualquier dirección"};
+const FWD={H:-1,B:1},HOME={H:5,B:0},FAR={H:0,B:5},OTHER={H:"B",B:"H"};
+const KN=[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]];
+const ORTH=[[1,0],[-1,0],[0,1],[0,-1]],DIAG=[[1,1],[1,-1],[-1,1],[-1,-1]];
+const PLY_MAX=160;
+const inb=(r,c)=>r>=0&&r<6&&c>=0&&c<4;
+function occ(s,r,c){for(const sd of["H","B"])for(let i=0;i<2;i++){const p=s.f[sd][i];if(p.r===r&&p.c===c)return{side:sd,i}}return null}
+function movesFor(s,side,idx){
+  const me=s.f[side][idx],ot=s.f[side][1-idx],t=BOARD[ot.r][ot.c],out=[];
+  const add=(r,c,cap)=>out.push({side,idx,to:{r,c},cap});
+  if(t==="P"){
+    const r=me.r+FWD[side];
+    if(inb(r,me.c)&&!occ(s,r,me.c))add(r,me.c,false);
+    for(const dc of[-1,1]){const c=me.c+dc;if(inb(r,c)){const o=occ(s,r,c);if(o&&o.side!==side)add(r,c,true)}}
+  }else if(t==="N"){
+    for(const[dr,dc]of KN){const r=me.r+dr,c=me.c+dc;if(!inb(r,c))continue;const o=occ(s,r,c);if(!o)add(r,c,false);else if(o.side!==side)add(r,c,true)}
+  }else{
+    for(const[dr,dc]of t==="R"?ORTH:DIAG){
+      let r=me.r+dr,c=me.c+dc;
+      while(inb(r,c)){const o=occ(s,r,c);if(!o)add(r,c,false);else{if(o.side!==side)add(r,c,true);break}r+=dr;c+=dc}
+    }
+  }
+  return out;
+}
+function relocOpts(s,side){const r=HOME[side],res=[];for(let c=0;c<4;c++)if(!occ(s,r,c))res.push({r,c});return res}
+function legalMoves(s,side){
+  const last=s.last[side];let idxs;
+  if(last===-1)idxs=[0,1];
+  else{const req=1-last;idxs=movesFor(s,side,req).length?[req]:[last]}
+  const out=[];
+  for(const i of idxs)for(const m of movesFor(s,side,i)){
+    out.push({...m,relocTo:null});
+    if(!m.cap&&m.to.r===FAR[side])for(const p of relocOpts(s,side))out.push({...m,relocTo:p});
+  }
+  return out;
+}
+function applyMove(s,m){
+  const side=m.side;
+  const n={f:{H:s.f.H.map(p=>({...p})),B:s.f.B.map(p=>({...p}))},last:{...s.last},turn:OTHER[side],ply:s.ply+1,over:null};
+  if(m.cap){n.over={winner:side,reason:"captura"};return n}
+  n.f[side][m.idx]={...(m.relocTo||m.to)};
+  n.last[side]=m.idx;
+  if(n.ply>=PLY_MAX){n.over={winner:null,reason:"limite"};return n}
+  if(!legalMoves(n,n.turn).length)n.over={winner:side,reason:"bloqueo"};
+  return n;
+}
+function evalFor(s,side){
+  let v=0;
+  for(const sd of["H","B"]){
+    const sg=sd===side?1:-1;
+    for(let i=0;i<2;i++){
+      const ms=movesFor(s,sd,i),p=s.f[sd][i];
+      v+=sg*(4*ms.length+80*ms.filter(m=>m.cap).length+12*(sd==="B"?p.r:5-p.r));
+    }
+  }
+  return v;
+}
+let deadline=0,nodes=0;
+class Timeout{}
+function order(ms){return ms.map(m=>[m,(m.cap?1000:0)+Math.random()*3]).sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
+function negamax(s,depth,alpha,beta,side){
+  if(s.over)return s.over.winner===null?0:(s.over.winner===side?100000+depth:-100000-depth);
+  if(depth===0)return evalFor(s,side);
+  if((++nodes&1023)===0&&Date.now()>deadline)throw new Timeout();
+  let best=-Infinity;
+  for(const m of order(legalMoves(s,side))){
+    const v=-negamax(applyMove(s,m),depth-1,-beta,-alpha,OTHER[side]);
+    if(v>best)best=v;
+    if(v>alpha)alpha=v;
+    if(alpha>=beta)break;
+  }
+  return best;
+}
+function searchBest(s,side,maxD,ms){
+  deadline=Date.now()+ms;nodes=0;
+  const root=order(legalMoves(s,side));
+  let best=root[0],bestV=-Infinity;
+  for(let d=1;d<=maxD;d++){
+    let cur=null,curV=-Infinity,alpha=-Infinity;
+    try{
+      for(const m of root){
+        const v=-negamax(applyMove(s,m),d-1,-Infinity,-alpha,OTHER[side]);
+        if(v>curV){curV=v;cur=m}
+        if(v>alpha)alpha=v;
+      }
+    }catch(e){if(e instanceof Timeout)break;throw e}
+    best=cur;bestV=curV;
+    if(bestV>90000)break;
+  }
+  return{move:best,score:bestV};
+}
+function botPlace(s){
+  let bp=null,bv=Infinity;
+  for(const p of[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]]){
+    const t={...s,f:{H:s.f.H,B:[{r:0,c:p[0]},{r:0,c:p[1]}]},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
+    const v=searchBest(t,"H",4,220).score;
+    if(v<bv){bv=v;bp=p}
+  }
+  return bp;
+}
+let S,phase,sel=null,pick=[],pend=null,busy=false,logs=[];
+const $=id=>document.getElementById(id);
+const SQ=(r,c)=>"ABCD"[c]+(r+1);
+function note(t){logs.unshift(t);logs=logs.slice(0,40);$("log").innerHTML=logs.map(x=>"<li>"+x+"</li>").join("")}
+function say(t){$("status").textContent=t}
+function reset(){
+  S={f:{H:null,B:null},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
+  anim++;clearArrow();BOARD=randomBoard();
+  phase="placeH";sel=null;pick=[];pend=null;busy=false;logs=[];
+  note("Nueva partida.");
+  say("Elegí 2 de las 4 piezas de tu fila (la de abajo): ahí van tus dedos.");
+  render();
+}
+function startTurn(){
+  const idx=[...new Set(legalMoves(S,"H").map(m=>m.idx))];
+  const L=S.last.H;
+  sel=idx.length===1?idx[0]:null;
+  if(L===-1)say("Primer turno: elegí el dedo que movés.");
+  else{
+    const req=1-L,nm=req===0?"círculo":"cuadrado";
+    say(idx.includes(req)?`Te toca el dedo ${nm}. Tocalo y después elegí el destino.`:`Tu dedo ${nm} está bloqueado: movés el otro.`);
+  }
+}
+function doMove(m){
+  const who=m.side==="H"?"Vos":"El bot";
+  const a=S.f[m.side][m.idx],b=m.relocTo||m.to;
+  note(`${who}: ${SQ(a.r,a.c)} → ${SQ(b.r,b.c)}${m.cap?" ¡captura!":""}${m.relocTo?" (reubicado en la fila inicial)":""}`);
+  S=applyMove(S,m);
+  return{from:{r:a.r,c:a.c},to:{r:b.r,c:b.c},color:m.side==="H"?"#0b7d8a":"#b23a3a"};
+}
+let anim=0;
+function clearArrow(){$("arr").innerHTML=""}
+function arrow(from,to,color){
+  const x1=from.c*80+40,y1=from.r*80+40,x2=to.c*80+40,y2=to.r*80+40;
+  $("arr").innerHTML=`<defs><marker id="ah" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" refX="22" refY="11" orient="auto"><path d="M0,0 L22,11 L0,22 z" fill="${color}"/></marker></defs><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="8" stroke-linecap="round" opacity=".85" marker-end="url(#ah)"/>`;
+}
+function animate(from,to,color,cb){
+  const id=++anim;busy=true;
+  arrow(from,to,color);
+  setTimeout(()=>{if(id!==anim)return;clearArrow();cb()},1000);
+}
+function showResult(){
+  const w=S.over.winner,why=S.over.reason;let t;
+  if(w===null)t="Empate: se llegó al límite de jugadas.";
+  else if(why==="captura")t=w==="H"?"¡Capturaste un dedo del bot! Ganaste.":"El bot capturó tu dedo. Perdiste.";
+  else t=S.turn==="H"?"No te queda ningún movimiento legal. Gana el bot.":"El bot no tiene movimientos. ¡Ganaste!";
+  say(t+" Tocá «Nueva partida» para la revancha.");
+}
+function after(){
+  sel=null;pend=null;
+  if(S.over){phase="over";busy=false;showResult();render();return}
+  if(S.turn==="H"){phase="playH";busy=false;startTurn();render()}
+  else{phase="playB";busy=true;say("El bot está pensando…");render();setTimeout(botMove,300)}
+}
+function botMove(){
+  if(phase!=="playB")return;
+  const res=searchBest(S,"B",8,1400);
+  const mv=doMove(res.move);
+  render();
+  animate(mv.from,mv.to,mv.color,after);
+}
+function onSq(r,c){
+  if(busy||phase==="over")return;
+  if(phase==="placeH"){
+    if(r!==HOME.H)return;
+    const i=pick.indexOf(c);
+    if(i>=0)pick.splice(i,1);else if(pick.length<2)pick.push(c);
+    if(pick.length===2){
+      S.f.H=pick.map(k=>({r:HOME.H,c:k}));
+      const bc=botPlace(S);
+      S.f.B=bc.map(k=>({r:HOME.B,c:k}));
+      note(`Vos marcaste ${pick.map(k=>SQ(HOME.H,k)).join(" y ")}. El bot marcó ${bc.map(k=>SQ(HOME.B,k)).join(" y ")}.`);
+      pick=[];phase="playH";startTurn();
+    }
+    render();return;
+  }
+  if(phase!=="playH")return;
+  if(pend){
+    const o=pend.find(x=>x.dest.r===r&&x.dest.c===c);
+    if(o){const mv=doMove(o.m);render();animate(mv.from,mv.to,mv.color,after);return}
+    pend=null;render();return;
+  }
+  const LM=legalMoves(S,"H");
+  const o=occ(S,r,c);
+  if(o&&o.side==="H"&&LM.some(m=>m.idx===o.i)){sel=o.i;render();return}
+  if(sel===null)return;
+  const opts=LM.filter(m=>m.idx===sel&&m.to.r===r&&m.to.c===c);
+  if(!opts.length)return;
+  if(opts.length===1){const mv=doMove(opts[0]);render();animate(mv.from,mv.to,mv.color,after);return}
+  pend=opts.map(m=>({m,dest:m.relocTo||m.to}));
+  say("Llegaste a la fila del rival: tocá dónde dejás el dedo (la misma casilla o una libre de tu fila inicial).");
+  render();
+}
+function render(){
+  const bd=$("board");bd.innerHTML="";
+  const LM=phase==="playH"?legalMoves(S,"H"):[];
+  for(let r=0;r<6;r++)for(let c=0;c<4;c++){
+    const d=document.createElement("div");
+    d.className="sq "+((r+c)%2===0?"l":"d");
+    d.onclick=()=>onSq(r,c);
+    const pc=document.createElement("span");pc.className="pc";pc.textContent=GLYPH[BOARD[r][c]];d.appendChild(pc);
+    if(phase==="placeH"&&r===HOME.H){d.classList.add("cand");if(pick.includes(c))d.classList.add("pick")}
+    if(phase==="playH"){
+      if(pend){const o=pend.find(x=>x.dest.r===r&&x.dest.c===c);if(o)d.classList.add(o.m.cap?"capt":o.m.relocTo?"reloc":"dest")}
+      else if(sel!==null){const ms=LM.filter(m=>m.idx===sel&&m.to.r===r&&m.to.c===c);if(ms.length)d.classList.add(ms.some(m=>m.cap)?"capt":"dest")}
+    }
+    for(const sd of["H","B"]){
+      const F=S.f[sd];if(!F)continue;
+      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"square"}`+(sd==="H"&&sel===i?" sel":"");d.appendChild(mk)}});
+    }
+    bd.appendChild(d);
+  }
+  $("turno").textContent={placeH:"Colocación",playH:"Tu turno",playB:"Turno del bot",over:"Fin de la partida"}[phase];
+  let pat="";
+  if(phase==="playH"&&sel!==null){const ot=S.f.H[1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
+  $("patron").textContent=pat;
+}
+$("new").onclick=reset;
+reset();
+</script>
+</body>
+</html>

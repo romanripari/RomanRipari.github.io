@@ -174,8 +174,8 @@ const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
 // ZR = Acero (Tamaño III): sin poder
 const PODER_POR_TAM = {
   ZB:{
-    TI:{accion:'sumar', cantidad:2, destino:['TI','TM','TT','TP','TC']},
-    TM:{accion:'mover', cantidad:2, destino:'cualquiera'},
+    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
     TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
     TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
     TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
@@ -194,8 +194,8 @@ const SELLO_ICON = '🧿';
 
 const PODER_TXT_POR_TAM = {
   ZB:{
-    TI:`+2 ${SELLO_ICON} a cualquier edificio`,
-    TM:`Mover 2 ${SELLO_ICON} entre tus edificios`,
+    TI:`+1 ${SELLO_ICON} a cualquier edificio`,
+    TM:`Mover 1 ${SELLO_ICON} entre tus edificios`,
     TT:`+1 ${SELLO_ICON} a ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
     TP:`+1 ${SELLO_ICON} a ${TIPO_ICON.TM} o ${TIPO_ICON.TI}`,
     TC:`+1 ${SELLO_ICON} a ${TIPO_ICON.TT} o ${TIPO_ICON.TM}`

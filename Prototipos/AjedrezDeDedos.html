@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ajedrez de dedos, un juego de Julián Tunni</title>
+<title>Ajedrez de dedos — prototipo</title>
 <style>
 :root{--paper:#f3efe6;--ink:#1d1d1f;--light:#f2efe6;--dark:#5d5c58;--h:#0b7d8a;--b:#b23a3a;--gold:#e0a526}
 *{box-sizing:border-box}
@@ -51,7 +51,7 @@ h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04e
 <div class="wrap">
 <div>
 <h1>Ajedrez de dedos</h1>
-<p class="sub">1 vs. bot · un Juego de Julián Tunni</p>
+<p class="sub">1 vs 1 · vs. bot · prototipo de Julián Tunni</p>
 <div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
 </div>
 <aside class="side">
@@ -316,7 +316,7 @@ function render(){
 }
 $("newOrig").onclick=()=>reset(true);
 $("newRand").onclick=()=>reset(false);
-reset(false);
+reset(true);
 </script>
 </body>
 </html>

@@ -51,7 +51,7 @@ h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04e
 <div class="wrap">
 <div>
 <h1>Ajedrez de dedos</h1>
-<p class="sub">1 vs bot · un Juego de Julián Tunni</p>
+<p class="sub" id="rival"></p>
 <div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
 </div>
 <aside class="side">
@@ -205,9 +205,9 @@ function note(t){logs.unshift(t);logs=logs.slice(0,40);$("log").innerHTML=logs.m
 function say(t){$("status").textContent=t}
 function reset(orig){
   S={f:{H:null,B:null},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
-  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();preB=botPre();
+  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();preB=botPre();BOTNAME=NAMES[Math.floor(Math.random()*NAMES.length)];
   phase="placeH";sel=null;pick=[];pend=null;busy=false;logs=[];
-  note("Nueva partida.");
+  note(`Rival de esta partida: ${BOTNAME}.`);
   say("Elegí 2 de las 4 piezas de tu fila (la de abajo): ahí van tus dedos.");
   render();
 }
@@ -223,13 +223,14 @@ function startTurn(){
   }
 }
 function doMove(m){
-  const who=m.side==="H"?"Vos":"El bot";
+  const who=m.side==="H"?"Vos":BOTNAME;
   const a=S.f[m.side][m.idx],b=m.relocTo||m.to;
   note(`${who}: ${SQ(a.r,a.c)} → ${SQ(b.r,b.c)}${m.cap?" ¡captura!":""}${m.relocTo?" (reubicado en la fila inicial)":""}`);
   S=applyMove(S,m);
   return{from:{r:a.r,c:a.c},to:{r:b.r,c:b.c},color:m.side==="H"?"#0b7d8a":"#b23a3a"};
 }
-let anim=0,preB=null;
+let anim=0,preB=null,BOTNAME="El bot";
+const NAMES=["Magnus Carlsen","Garri Kaspárov","Bobby Fischer","Anatoli Kárpov","José Raúl Capablanca","Alberto Samid","Faustino Oro"];
 function clearArrow(){$("arr").innerHTML=""}
 function arrow(from,to,color){
   const x1=from.c*80+40,y1=from.r*80+40,x2=to.c*80+40,y2=to.r*80+40;
@@ -243,15 +244,15 @@ function animate(from,to,color,cb){
 function showResult(){
   const w=S.over.winner,why=S.over.reason;let t;
   if(w===null)t="Empate: se llegó al límite de jugadas.";
-  else if(why==="captura")t=w==="H"?"¡Capturaste un dedo del bot! Ganaste.":"El bot capturó tu dedo. Perdiste.";
-  else t=S.turn==="H"?"No te queda ningún movimiento legal. Gana el bot.":"El bot no tiene movimientos. ¡Ganaste!";
+  else if(why==="captura")t=w==="H"?"¡Capturaste un dedo de "+BOTNAME+"! Ganaste.":BOTNAME+" capturó tu dedo. Perdiste.";
+  else t=S.turn==="H"?"No te queda ningún movimiento legal. Gana "+BOTNAME+".":BOTNAME+" no tiene movimientos. ¡Ganaste!";
   say(t+" Tocá «Nueva partida» para la revancha.");
 }
 function after(){
   sel=null;pend=null;
   if(S.over){phase="over";busy=false;showResult();render();return}
   if(S.turn==="H"){phase="playH";busy=false;startTurn();render()}
-  else{phase="playB";busy=true;say("El bot está pensando…");render();setTimeout(botMove,300)}
+  else{phase="playB";busy=true;say(BOTNAME+" está pensando…");render();setTimeout(botMove,300)}
 }
 function botMove(){
   if(phase!=="playB")return;
@@ -270,7 +271,7 @@ function onSq(r,c){
       S.f.H=pick.map(k=>({r:HOME.H,c:k}));
       const bc=preB;
       S.f.B=bc.map(k=>({r:HOME.B,c:k}));
-      note(`Vos marcaste ${pick.map(k=>SQ(HOME.H,k)).join(" y ")}. El bot marcó ${bc.map(k=>SQ(HOME.B,k)).join(" y ")}.`);
+      note(`Vos marcaste ${pick.map(k=>SQ(HOME.H,k)).join(" y ")}. ${BOTNAME} marcó ${bc.map(k=>SQ(HOME.B,k)).join(" y ")}.`);
       pick=[];phase="playH";startTurn();
     }
     render();return;
@@ -311,7 +312,8 @@ function render(){
     }
     bd.appendChild(d);
   }
-  $("turno").textContent={placeH:"Colocación",playH:"Tu turno",playB:"Turno del bot",over:"Fin de la partida"}[phase];
+  $("rival").textContent="Rival de esta partida: "+BOTNAME;
+  $("turno").textContent={placeH:"Colocación",playH:"Tu turno",playB:"Turno de "+BOTNAME,over:"Fin de la partida"}[phase];
   let pat="";
   if(phase==="playH"&&sel!==null){const ot=S.f.H[1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
   $("patron").textContent=pat;

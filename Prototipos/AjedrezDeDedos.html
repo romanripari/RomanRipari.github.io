@@ -55,7 +55,7 @@ h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04e
 <div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
 </div>
 <aside class="side">
-<div class="top"><b id="turno"></b><div class="btns"><button id="newOrig">Nueva Partida tablero original</button><button id="newRand">Nueva Partida tablero central random</button></div></div>
+<div class="top"><b id="turno"></b><div class="btns"><button id="modo">Modo: dedo alternado</button><button id="newOrig">Nueva Partida tablero original</button><button id="newRand">Nueva Partida tablero central random</button></div></div>
 <p id="status" class="status"></p>
 <p id="patron" class="patron"></p>
 <h3>Patrones</h3>
@@ -88,6 +88,7 @@ const FWD={H:-1,B:1},HOME={H:5,B:0},FAR={H:0,B:5},OTHER={H:"B",B:"H"};
 const KN=[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]];
 const ORTH=[[1,0],[-1,0],[0,1],[0,-1]],DIAG=[[1,1],[1,-1],[-1,1],[-1,-1]];
 const PLY_MAX=160;
+let MODE="alternado";
 const inb=(r,c)=>r>=0&&r<6&&c>=0&&c<4;
 function occ(s,r,c){for(const sd of["H","B"])for(let i=0;i<2;i++){const p=s.f[sd][i];if(p.r===r&&p.c===c)return{side:sd,i}}return null}
 function movesFor(s,side,idx){
@@ -110,7 +111,7 @@ function movesFor(s,side,idx){
 function relocOpts(s,side){const r=HOME[side],res=[];for(let c=0;c<4;c++)if(!occ(s,r,c))res.push({r,c});return res}
 function legalMoves(s,side){
   const last=s.last[side];let idxs;
-  if(last===-1)idxs=[0,1];
+  if(last===-1||MODE==="libre")idxs=[0,1];
   else{const req=1-last;idxs=movesFor(s,side,req).length?[req]:[last]}
   const out=[];
   for(const i of idxs)for(const m of movesFor(s,side,i)){
@@ -214,6 +215,7 @@ function startTurn(){
   const idx=[...new Set(legalMoves(S,"H").map(m=>m.idx))];
   const L=S.last.H;
   sel=idx.length===1?idx[0]:null;
+  if(MODE==="libre"){say("Elegí qué dedo mover y después el destino.");return}
   if(L===-1)say("Primer turno: elegí el dedo que movés.");
   else{
     const req=1-L,nm=req===0?"círculo":"cuadrado";
@@ -314,6 +316,12 @@ function render(){
   if(phase==="playH"&&sel!==null){const ot=S.f.H[1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
   $("patron").textContent=pat;
 }
+$("modo").onclick=()=>{
+  MODE=MODE==="alternado"?"libre":"alternado";
+  $("modo").textContent="Modo: dedo "+MODE;
+  if(phase==="playH"&&!busy)startTurn();
+  render();
+};
 $("newOrig").onclick=()=>reset(true);
 $("newRand").onclick=()=>reset(false);
 reset(true);

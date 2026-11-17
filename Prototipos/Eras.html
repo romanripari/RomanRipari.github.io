@@ -164,23 +164,46 @@ const DATA = [
 const ERAS = ['EA','EC','EM'];
 const ERA_LBL = {EA:'Era Antigua',EC:'Era Colonial',EM:'Era Moderna'};
 const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
-const EST_LBL = {ZB:'I',ZI:'II',ZR:'III'};
+const EST_LBL = {ZB:'Madera',ZI:'Ladrillo',ZR:'Acero'};
 const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
-const PODER = {
-  TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
-  TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
-  TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
-  TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
-  TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
+
+// Poder según el tamaño del edificio que se llena (modo Sellos)
+// ZB = Tamaño I, ZI = Tamaño II, ZR = Tamaño III
+const PODER_POR_TAM = {
+  ZB:{
+    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
+    TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
+    TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
+  },
+  ZI:{
+    TI:{accion:'sumar', cantidad:2, destino:['TI','TM','TT','TP','TC']},
+    TM:{accion:'mover', cantidad:2, destino:'cualquiera'},
+    TT:{accion:'sumar', cantidad:1, destino:['TP','TC','TT']},
+    TP:{accion:'sumar', cantidad:1, destino:['TM','TI','TP']},
+    TC:{accion:'sumar', cantidad:1, destino:['TT','TM','TC']}
+  },
+  ZR:{}
 };
-const PODER_TXT = {
-  TI:`+1 sello a cualquier edificio tuyo con lugar`,
-  TM:`Mover 1 sello entre tus edificios`,
-  TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
-  TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
-  TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
+const PODER_TXT_POR_TAM = {
+  ZB:{
+    TI:`+1 sello a cualquier edificio tuyo con lugar`,
+    TM:`Mover 1 sello entre tus edificios`,
+    TT:`+1 sello a ${TIPO_ICON.TP} Puerto o ${TIPO_ICON.TC} Castillo`,
+    TP:`+1 sello a ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TI} Iglesia`,
+    TC:`+1 sello a ${TIPO_ICON.TT} Taller o ${TIPO_ICON.TM} Mercado`
+  },
+  ZI:{
+    TI:`+2 sellos a cualquier edificio tuyo con lugar`,
+    TM:`Mover 2 sellos entre tus edificios`,
+    TT:`+1 sello a ${TIPO_ICON.TP} Puerto, ${TIPO_ICON.TC} Castillo o ${TIPO_ICON.TT} Taller`,
+    TP:`+1 sello a ${TIPO_ICON.TM} Mercado, ${TIPO_ICON.TI} Iglesia o ${TIPO_ICON.TP} Puerto`,
+    TC:`+1 sello a ${TIPO_ICON.TT} Taller, ${TIPO_ICON.TM} Mercado o ${TIPO_ICON.TC} Castillo`
+  },
+  ZR:{ TI:'Sin poder', TM:'Sin poder', TT:'Sin poder', TP:'Sin poder', TC:'Sin poder' }
 };
 const PODER_RECURSOS = {
   TI:'Roba 1 y devuelve 1',
@@ -189,7 +212,11 @@ const PODER_RECURSOS = {
   TP:'+1 Madera',
   TC:'+1 Metal o Madera'
 };
-function poderTxt(t){ return SETUP.mode==='sellos' ? PODER_TXT[t] : PODER_RECURSOS[t]; }
+function poderDe(b){ return PODER_POR_TAM[b.est][b.tipo] || null; }
+function poderTxt(b){
+  if(SETUP.mode!=='sellos') return PODER_RECURSOS[b.tipo];
+  return PODER_TXT_POR_TAM[b.est][b.tipo];
+}
 const MAT_LBL = {MD:'Madera',MT:'Metal'};
 const MAT_ICON = {MD:'🪵',MT:'⚙️'};
 const SELLO_ICON = '🧿';
@@ -373,7 +400,7 @@ function runPowers(then){
 function startHumanPower(o,b){
   const kind = b.tipo;
   if(SETUP.mode==='sellos'){
-    const p = PODER[kind];
+    const p = poderDe(b);
     if(!p) return false;
     if(p.accion==='mover'){
       if(!o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y,'ST')))) return false;
@@ -487,7 +514,7 @@ function finishPw(){
 function botPower(o,b){
   const kind = b.tipo;
   if(SETUP.mode==='sellos'){
-    const p = PODER[kind];
+    const p = poderDe(b);
     if(!p) return;
     if(p.accion==='mover'){
       for(let i=0;i<p.cantidad;i++){
@@ -501,8 +528,11 @@ function botPower(o,b){
       }
       return;
     }
-    const targets = o.street.filter(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
-    if(targets.length) addMat(targets[0],'ST');
+    for(let i=0;i<p.cantidad;i++){
+      const targets = o.street.filter(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
+      if(!targets.length) break;
+      addMat(targets[0],'ST');
+    }
     return;
   }
   if(kind==='TI'){
@@ -707,7 +737,7 @@ function powerReady(b){
   if(!isComplete(b)) return false;
   const o = b.owner;
   if(SETUP.mode==='sellos'){
-    const p = PODER[b.tipo];
+    const p = poderDe(b);
     if(!p) return false;
     if(p.accion==='mover') return o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y,'ST')));
     return o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x,'ST'));
@@ -734,7 +764,7 @@ function bldInner(b, hand){
       <div class="est-nm est-${b.est}">${EST_LBL[b.est]}</div>
       <div class="need">${slotsHTML(b,hand)}</div>
     </div>
-    <div class="poder-row"><span class="si-llena">Lleno →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b.tipo)}</div>
+    <div class="poder-row"><span class="si-llena">Lleno →</span> ${powerReady(b)?'<span class="chk">✔</span> ':''}${poderTxt(b)}</div>
     ${pl}
   </div>`;
 }
@@ -751,7 +781,7 @@ function captionHTML(b){
   return `<div class="caption">
     <span class="c-izq">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
     <span class="c-der">+${SETUP.mode==='sellos' ? SELLO_ICON : MAT_LBL[b.mat]} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
-    <span class="c-der">Lleno → ${poderTxt(b.tipo)}</span>
+    <span class="c-der">Lleno → ${poderTxt(b)}</span>
   </div>`;
 }
 function bldHTML(b){
@@ -780,7 +810,6 @@ function losetaHTML(){
 
 function pwBanner(){
   const pw = S.pw;
-  console.log('pwBanner', pw.kind, pw.stage, SETUP.mode);
   let msg = '';
   if(SETUP.mode==='sellos'){
     if(pw.kind==='TI'){
@@ -800,7 +829,7 @@ function pwBanner(){
       else if(pw.stage==='mat') msg = 'Mercado: elegí qué material sacás.';
       else msg = `Mercado: tocá el edificio al que lo llevás (${MAT_ICON[pw.mat]} ${MAT_LBL[pw.mat]}).`;
     }
-    else if(pw.kind==='TT') msg = 'Taller: tocá un edificio tuyo para sumar 1 ⚙️ Metal.'; 
+    else if(pw.kind==='TT') msg = 'Taller: tocá un edificio tuyo para sumar 1 ⚙️ Metal.';
     else if(pw.kind==='TP') msg = 'Puerto: tocá un edificio tuyo para sumar 1 🪵 Madera.';
     else if(pw.kind==='TC'){
       msg = pw.stage==='mat' ? 'Castillo: elegí si sumás Madera o Metal.' : `Castillo: tocá un edificio tuyo para sumar 1 ${MAT_ICON[pw.mat]} ${MAT_LBL[pw.mat]}.`;

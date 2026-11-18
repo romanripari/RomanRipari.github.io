@@ -164,7 +164,7 @@ const DATA = [
 const ERAS = ['EA','EC','EM'];
 const ERA_LBL = {EA:'Era Antigua',EC:'Era Colonial',EM:'Era Moderna'};
 const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
-const EST_LBL = {ZB:'Chico',ZI:'Medio',ZR:'Grande'};
+const EST_LBL = {ZB:'Básico',ZI:'Medio',ZR:'Reforzado'};
 const EST_SIZE = {ZB:'Pe',ZI:'Me',ZR:'Gr'};
 const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
@@ -174,16 +174,16 @@ const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
 // ZR = Acero (Tamaño III): sin poder
 const PODER_POR_TAM = {
   ZB:{
-    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+    TI:{accion:'sumar', cantidad:1, destino:['TP','TC']},
     TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
-    TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TT:{accion:'sumar', cantidad:1, destino:['TI','TM','TP','TC']},
     TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
     TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
   },
   ZI:{
-    TI:{accion:'sumar', cantidad:1, destino:['TI','TM','TT','TP','TC']},
+    TI:{accion:'sumar', cantidad:1, destino:['TP','TC']},
     TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
-    TT:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TT:{accion:'sumar', cantidad:1, destino:['TI','TM','TP','TC']},
     TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
     TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
   },

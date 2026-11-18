@@ -235,6 +235,7 @@ function startTurn(){
   }
 }
 function doMove(m){
+  sel=null;pend=null;
   const who=GAME==="hot"?(m.side==="H"?"Abajo":"Arriba"):(m.side==="H"?"Vos":BOTNAME);
   const a=S.f[m.side][m.idx],b=m.relocTo||m.to;
   note(`${who}: ${SQ(a.r,a.c)} → ${SQ(b.r,b.c)}${m.cap?" ¡captura!":""}${m.relocTo?" (reubicado en la fila inicial)":""}`);

@@ -34,6 +34,7 @@ h1{margin:0 0 2px;font-family:Georgia,serif;font-size:26px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .btns{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:8px}
 .btns button{width:100%}
+.cruz{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#e0202a;font-weight:700;font-size:22px;z-index:4;pointer-events:none}
 .seg{display:flex;gap:0}
 .seg button{flex:1;background:#fff;color:#b23a3a;border:2px solid #b23a3a;width:auto}
 .seg button.on{background:#b23a3a;color:#fff}
@@ -209,7 +210,7 @@ function note(t){logs.unshift(t);logs=logs.slice(0,40);$("log").innerHTML=logs.m
 function say(t){$("status").textContent=t}
 function reset(orig){
   S={f:{H:null,B:null},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
-  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();LASTORIG=orig===true;preB=GAME==="bot"?botPre():null;BOTNAME=GAME==="bot"?NAMES[Math.floor(Math.random()*NAMES.length)]:"Jugador de arriba";
+  anim++;clearArrow();deadSq=null;BOARD=orig===true?BASE:randomBoard();LASTORIG=orig===true;preB=GAME==="bot"?botPre():null;BOTNAME=GAME==="bot"?NAMES[Math.floor(Math.random()*NAMES.length)]:"Jugador de arriba";
   phase="placeH";sel=null;pick=[];pend=null;busy=false;logs=[];
   note(GAME==="bot"?`Rival de esta partida: ${BOTNAME}.`:"Partida Hot Seat 1 vs. 1.");
   say("Elegí 2 de las 4 piezas de tu fila (la de abajo): ahí van tus dedos.");
@@ -236,13 +237,14 @@ function startTurn(){
 }
 function doMove(m){
   sel=null;pend=null;
+  deadSq=m.cap?{r:m.to.r,c:m.to.c}:null;
   const who=GAME==="hot"?(m.side==="H"?"Abajo":"Arriba"):(m.side==="H"?"Vos":BOTNAME);
   const a=S.f[m.side][m.idx],b=m.relocTo||m.to;
   note(`${who}: ${SQ(a.r,a.c)} → ${SQ(b.r,b.c)}${m.cap?" ¡captura!":""}${m.relocTo?" (reubicado en la fila inicial)":""}`);
   S=applyMove(S,m);
   return{from:{r:a.r,c:a.c},to:{r:b.r,c:b.c},color:m.side==="H"?"#0b7d8a":"#b23a3a"};
 }
-let anim=0,preB=null,BOTNAME="El bot";
+let anim=0,preB=null,BOTNAME="El bot",deadSq=null;
 const NAMES=["Magnus Carlsen","Garri Kaspárov","Bobby Fischer","Anatoli Kárpov","José Raúl Capablanca","Alberto Samid","Faustino Oro"];
 function clearArrow(){$("arr").innerHTML=""}
 function arrow(from,to,color){
@@ -319,7 +321,12 @@ function render(){
     const d=document.createElement("div");
     d.className="sq "+((r+c)%2===0?"l":"d");
     d.onclick=()=>onSq(r,c);
-    const pc=document.createElement("span");pc.className="pc";pc.textContent=GLYPH[BOARD[r][c]];pc.style.display="inline-block";if(GAME==="hot"&&r<3)pc.style.transform="rotate(180deg)";d.appendChild(pc);
+    const pc=document.createElement("span");pc.className="pc";pc.textContent=GLYPH[BOARD[r][c]];pc.style.display="inline-block";
+    const occd=!!deadSq&&deadSq.r===r&&deadSq.c===c;
+    const base=GAME==="hot"&&r<3?180:0;
+    pc.style.transform=`rotate(${base+(occd?15:0)}deg)`;
+    d.appendChild(pc);
+    if(occd){const x=document.createElement("span");x.className="cruz";x.textContent="✕";d.appendChild(x)}
     if(phase==="placeH"&&r===HOME.H){d.classList.add("cand");if(pick.includes(c))d.classList.add("pick")}
     if(phase==="playH"){
       if(pend){const o=pend.find(x=>x.dest.r===r&&x.dest.c===c);if(o)d.classList.add(o.m.cap?"capt":o.m.relocTo?"reloc":"dest")}
@@ -327,7 +334,7 @@ function render(){
     }
     for(const sd of["H","B"]){
       const F=S.f[sd];if(!F)continue;
-      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"circle"}`+(sd===S.turn&&sel===i?" sel":"");d.appendChild(mk)}});
+      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} circle`+(sd===S.turn&&sel===i?" sel":"");d.appendChild(mk)}});
     }
     bd.appendChild(d);
   }

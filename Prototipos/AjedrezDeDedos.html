@@ -327,7 +327,7 @@ function render(){
     }
     for(const sd of["H","B"]){
       const F=S.f[sd];if(!F)continue;
-      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"square"}`+(sd===S.turn&&sel===i?" sel":"");d.appendChild(mk)}});
+      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"circle"}`+(sd===S.turn&&sel===i?" sel":"");d.appendChild(mk)}});
     }
     bd.appendChild(d);
   }

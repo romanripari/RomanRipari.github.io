@@ -34,6 +34,9 @@ h1{margin:0 0 2px;font-family:Georgia,serif;font-size:26px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .btns{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:8px}
 .btns button{width:100%}
+.seg{display:flex;gap:0}
+.seg button{flex:1;background:#fff;color:#b23a3a;border:2px solid #b23a3a;width:auto}
+.seg button.on{background:#b23a3a;color:#fff}
 #turno{font-size:17px}
 button{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px}
 .status{min-height:48px;font-size:15px;line-height:1.4}
@@ -55,7 +58,7 @@ h3{font-size:14px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.04e
 <div id="bw"><div id="board"></div><svg id="arr" width="320" height="480" viewBox="0 0 320 480"></svg></div>
 </div>
 <aside class="side">
-<div class="top"><b id="turno"></b><div class="btns"><button id="modo">Modo: dedo alternado</button><button id="newOrig">Nueva Partida tablero original</button><button id="newRand">Nueva Partida tablero central random</button></div></div>
+<div class="top"><b id="turno"></b><div class="btns"><div class="seg"><button id="gBot" class="on">Modo vs. bot</button><button id="gHot">Modo Hot Seat 1 vs. 1</button></div><button id="modo">Modo: dedo alternado</button><button id="newOrig">Nueva Partida tablero original</button><button id="newRand">Nueva Partida tablero central random</button></div></div>
 <p id="status" class="status"></p>
 <p id="patron" class="patron"></p>
 <h3>Patrones</h3>
@@ -89,6 +92,7 @@ const KN=[[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]];
 const ORTH=[[1,0],[-1,0],[0,1],[0,-1]],DIAG=[[1,1],[1,-1],[-1,1],[-1,-1]];
 const PLY_MAX=160;
 let MODE="alternado";
+let GAME="bot",LASTORIG=true;
 const inb=(r,c)=>r>=0&&r<6&&c>=0&&c<4;
 function occ(s,r,c){for(const sd of["H","B"])for(let i=0;i<2;i++){const p=s.f[sd][i];if(p.r===r&&p.c===c)return{side:sd,i}}return null}
 function movesFor(s,side,idx){
@@ -205,16 +209,24 @@ function note(t){logs.unshift(t);logs=logs.slice(0,40);$("log").innerHTML=logs.m
 function say(t){$("status").textContent=t}
 function reset(orig){
   S={f:{H:null,B:null},last:{H:-1,B:-1},turn:"H",ply:0,over:null};
-  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();preB=botPre();BOTNAME=NAMES[Math.floor(Math.random()*NAMES.length)];
+  anim++;clearArrow();BOARD=orig===true?BASE:randomBoard();LASTORIG=orig===true;preB=GAME==="bot"?botPre():null;BOTNAME=GAME==="bot"?NAMES[Math.floor(Math.random()*NAMES.length)]:"Jugador de arriba";
   phase="placeH";sel=null;pick=[];pend=null;busy=false;logs=[];
-  note(`Rival de esta partida: ${BOTNAME}.`);
+  note(GAME==="bot"?`Rival de esta partida: ${BOTNAME}.`:"Partida Hot Seat 1 vs. 1.");
   say("Elegí 2 de las 4 piezas de tu fila (la de abajo): ahí van tus dedos.");
+  if(GAME==="hot"){
+    const pick2=()=>{const a=[0,1,2,3].sort(()=>Math.random()-0.5);return[a[0],a[1]]};
+    const hp=pick2(),bp=pick2();
+    S.f.H=hp.map(c=>({r:HOME.H,c}));
+    S.f.B=bp.map(c=>({r:HOME.B,c}));
+    phase="playH";
+    startTurn();
+  }
   render();
 }
 function startTurn(){
-  const idx=[...new Set(legalMoves(S,"H").map(m=>m.idx))];
-  const L=S.last.H;
-  sel=idx.length===1?idx[0]:null;
+  const idx=[...new Set(legalMoves(S,S.turn).map(m=>m.idx))];
+  const L=S.last[S.turn];
+  sel=null;
   if(MODE==="libre"){say("Elegí qué dedo mover y después el destino.");return}
   if(L===-1)say("Primer turno: elegí el dedo que movés.");
   else{
@@ -223,14 +235,14 @@ function startTurn(){
   }
 }
 function doMove(m){
-  const who=m.side==="H"?"Vos":BOTNAME;
+  const who=GAME==="hot"?(m.side==="H"?"Abajo":"Arriba"):(m.side==="H"?"Vos":BOTNAME);
   const a=S.f[m.side][m.idx],b=m.relocTo||m.to;
   note(`${who}: ${SQ(a.r,a.c)} → ${SQ(b.r,b.c)}${m.cap?" ¡captura!":""}${m.relocTo?" (reubicado en la fila inicial)":""}`);
   S=applyMove(S,m);
   return{from:{r:a.r,c:a.c},to:{r:b.r,c:b.c},color:m.side==="H"?"#0b7d8a":"#b23a3a"};
 }
 let anim=0,preB=null,BOTNAME="El bot";
-const NAMES=["Magnus Carlsen","Garri Kaspárov","Bobby Fischer","Anatoli Kárpov","José Raúl Capablanca","Alberto Samid","Faustino Oro","Julián Tunni"];
+const NAMES=["Magnus Carlsen","Garri Kaspárov","Bobby Fischer","Anatoli Kárpov","José Raúl Capablanca","Alberto Samid","Faustino Oro"];
 function clearArrow(){$("arr").innerHTML=""}
 function arrow(from,to,color){
   const x1=from.c*80+40,y1=from.r*80+40,x2=to.c*80+40,y2=to.r*80+40;
@@ -243,6 +255,12 @@ function animate(from,to,color,cb){
 }
 function showResult(){
   const w=S.over.winner,why=S.over.reason;let t;
+  if(GAME==="hot"){
+    const nm=s=>s==="H"?"jugador de abajo":"jugador de arriba";
+    const t2=w===null?"Empate: se llegó al límite de jugadas.":why==="captura"?"¡Captura! Gana el "+nm(w)+".":"El "+nm(S.turn)+" no tiene movimientos. Gana el "+nm(w)+".";
+    say(t2+" Tocá «Nueva partida» para la revancha.");
+    return;
+  }
   if(w===null)t="Empate: se llegó al límite de jugadas.";
   else if(why==="captura")t=w==="H"?"¡Capturaste un dedo de "+BOTNAME+"! Ganaste.":BOTNAME+" capturó tu dedo. Perdiste.";
   else t=S.turn==="H"?"No te queda ningún movimiento legal. Gana "+BOTNAME+".":BOTNAME+" no tiene movimientos. ¡Ganaste!";
@@ -251,7 +269,7 @@ function showResult(){
 function after(){
   sel=null;pend=null;
   if(S.over){phase="over";busy=false;showResult();render();return}
-  if(S.turn==="H"){phase="playH";busy=false;startTurn();render()}
+  if(S.turn==="H"||GAME==="hot"){phase="playH";busy=false;startTurn();render()}
   else{phase="playB";busy=true;say(BOTNAME+" está pensando…");render();setTimeout(botMove,300)}
 }
 function botMove(){
@@ -282,9 +300,9 @@ function onSq(r,c){
     if(o){const mv=doMove(o.m);render();animate(mv.from,mv.to,mv.color,after);return}
     pend=null;render();return;
   }
-  const LM=legalMoves(S,"H");
+  const LM=legalMoves(S,S.turn);
   const o=occ(S,r,c);
-  if(o&&o.side==="H"&&LM.some(m=>m.idx===o.i)){sel=o.i;render();return}
+  if(o&&o.side===S.turn&&LM.some(m=>m.idx===o.i)){sel=o.i;render();return}
   if(sel===null)return;
   const opts=LM.filter(m=>m.idx===sel&&m.to.r===r&&m.to.c===c);
   if(!opts.length)return;
@@ -295,12 +313,12 @@ function onSq(r,c){
 }
 function render(){
   const bd=$("board");bd.innerHTML="";
-  const LM=phase==="playH"?legalMoves(S,"H"):[];
+  const LM=phase==="playH"?legalMoves(S,S.turn):[];
   for(let r=0;r<6;r++)for(let c=0;c<4;c++){
     const d=document.createElement("div");
     d.className="sq "+((r+c)%2===0?"l":"d");
     d.onclick=()=>onSq(r,c);
-    const pc=document.createElement("span");pc.className="pc";pc.textContent=GLYPH[BOARD[r][c]];d.appendChild(pc);
+    const pc=document.createElement("span");pc.className="pc";pc.textContent=GLYPH[BOARD[r][c]];pc.style.display="inline-block";if(GAME==="hot"&&r<3)pc.style.transform="rotate(180deg)";d.appendChild(pc);
     if(phase==="placeH"&&r===HOME.H){d.classList.add("cand");if(pick.includes(c))d.classList.add("pick")}
     if(phase==="playH"){
       if(pend){const o=pend.find(x=>x.dest.r===r&&x.dest.c===c);if(o)d.classList.add(o.m.cap?"capt":o.m.relocTo?"reloc":"dest")}
@@ -308,16 +326,25 @@ function render(){
     }
     for(const sd of["H","B"]){
       const F=S.f[sd];if(!F)continue;
-      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"square"}`+(sd==="H"&&sel===i?" sel":"");d.appendChild(mk)}});
+      F.forEach((p,i)=>{if(p.r===r&&p.c===c){const mk=document.createElement("div");mk.className=`mk ${sd} ${i===0?"circle":"square"}`+(sd===S.turn&&sel===i?" sel":"");d.appendChild(mk)}});
     }
     bd.appendChild(d);
   }
-  $("rival").textContent="Rival de esta partida: "+BOTNAME;
+  $("rival").textContent=GAME==="hot"?"Hot seat 1 vs. 1":"Rival de esta partida: "+BOTNAME;
+  if(GAME==="hot"&&phase==="playH")$("turno").textContent="Turno: "+(S.turn==="H"?"jugador de abajo":"jugador de arriba");
   $("turno").textContent={placeH:"Colocación",playH:"Tu turno",playB:"Turno de "+BOTNAME,over:"Fin de la partida"}[phase];
   let pat="";
-  if(phase==="playH"&&sel!==null){const ot=S.f.H[1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
+  if(phase==="playH"&&sel!==null){const ot=S.f[S.turn][1-sel],t=BOARD[ot.r][ot.c];pat=`Patrón de tu otro dedo: ${GLYPH[t]} ${PNAME[t]}: ${PDESC[t]}`}
   $("patron").textContent=pat;
 }
+function setGame(g){
+  GAME=g;
+  $("gBot").classList.toggle("on",g==="bot");
+  $("gHot").classList.toggle("on",g==="hot");
+  reset(LASTORIG);
+}
+$("gBot").onclick=()=>setGame("bot");
+$("gHot").onclick=()=>setGame("hot");
 $("modo").onclick=()=>{
   MODE=MODE==="alternado"?"libre":"alternado";
   $("modo").textContent="Modo: dedo "+MODE;

@@ -18,9 +18,14 @@ button:disabled{opacity:.4;cursor:default}
 .card.mini{width:44px;height:68px;border-radius:4px}
 .card.mini.stack{margin-top:-50px}
 .card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
-.spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
+.spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center}
 .spot.cen{width:240px}
-.spot.hl{outline:3px solid #22c55e;box-shadow:0 0 16px 4px #22c55e}
+.spot.hl .card{outline:3px solid #22c55e;outline-offset:2px;box-shadow:0 0 16px 4px #22c55e}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:#23252b;border-radius:10px;padding:10px}
+.fcol{display:flex;flex-direction:column;align-items:center;gap:6px}
+.fcol .fl{font-weight:700}
+.fcol .fsub{font-size:12px;color:#c4c8d2;margin-bottom:4px}
+.trow{display:flex;gap:6px}
 .spot .row{display:flex;gap:8px;justify-content:center}
 .prow{height:140px;display:flex;align-items:center;justify-content:center}
 .pair{width:140px;height:102px;display:flex;gap:8px;align-items:center;justify-content:center;flex-shrink:0}
@@ -37,6 +42,8 @@ button:disabled{opacity:.4;cursor:default}
 .cbid.mine{outline:3px solid #c2410c;outline-offset:1px}
 .bchip{display:inline-flex;align-items:center;vertical-align:middle}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
+#action{width:min(1200px,96vw);margin:8px auto 0;padding:0 12px}
+#action:empty{display:none}
 #logbox{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
 #logbox:empty{display:none}
 .zones{display:flex;flex-direction:column;gap:8px}
@@ -65,6 +72,7 @@ td,th{padding:4px 12px;border-bottom:1px solid #444;text-align:left}
 <div id="ronda"></div>
 
 <div id="holder"><div id="stage"></div></div>
+<div id="action"></div>
 <div id="controls">Elegí la cantidad de jugadores y empezá.</div>
 <div id="logbox"></div>
 
@@ -343,6 +351,7 @@ function doLateral(i){
   const A=P[i], B=P[j];
   const a=A.bid.R, b=B.bid.L, rv=S.rev.lat[i];
   const cw=duel2(a,b,rv.hier);
+  rv.done=true; // la carta sale del duelo
   // Las fichas de intensidad se cambian siempre entre los dos jugadores del duelo
   A.hand.push(b.v); B.hand.push(a.v);
   let res;
@@ -356,6 +365,7 @@ function doLateral(i){
 function doCenter(){
   const P=S.players;
   const cards=S.rev.cen.cards, hier=S.rev.cen.hier;
+  S.rev.cen.done=true; // las cartas salen del centro
   const key=i=>[hier.indexOf(P[i].bid.C.t),-P[i].bid.C.v];
   const cmp=(x,y)=>x[0]!==y[0]?x[0]-y[0]:x[1]-y[1];
   let rem=P.map((_,i)=>i), win=-1;
@@ -452,7 +462,7 @@ function render(){
     spot.style.transform=`translate(-50%,-50%) rotate(${latRot(i,n)}deg)`;
     const prow=el('div','prow');
     const pair=el('div','pair');
-    if(rv) pair.appendChild(cardEl(rv.card,false,''));
+    if(rv&&!rv.done) pair.appendChild(cardEl(rv.card,false,''));
     if(d.length) pair.appendChild(cardEl(d[d.length-1],true,''));
     prow.appendChild(pair);
     spot.appendChild(prow);
@@ -482,7 +492,7 @@ function render(){
     const spot=el('div','spot cen'+(hl?' hl':''));
     spot.style.left='700px';spot.style.top='450px';
     const row=el('div','row');
-    if(S.rev&&S.rev.cen) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
+    if(S.rev&&S.rev.cen&&!S.rev.cen.done) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
     if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,''));
     spot.appendChild(row);
     st.appendChild(spot);
@@ -523,6 +533,7 @@ function render(){
 function renderControls(){
   const c=$('#controls');
   c.innerHTML='';
+  $('#action').innerHTML='';
   if(!S){c.textContent='Elegí la cantidad de jugadores y empezá.';return;}
   const n=S.n;
   const label=S.phase==='bid'?'tu subasta':S.phase==='resolve'?'resolución':S.ended?'fin de partida':'resultado de la ronda';
@@ -531,14 +542,15 @@ function renderControls(){
   if(S.phase==='bid'){
     const h=S.players[0];
     const sideName={L:`vs ${S.players[n-1].name}`,C:'todos',R:`vs ${S.players[1%n].name}`};
-    const zones=el('div','zones');
+    // Tres columnas (izquierda, centro, derecha): arriba los tipos, abajo las intensidades
+    const grid=el('div','fgrid');
+    const order=h.hand.map((v,idx)=>({v,idx})).sort((a,b)=>a.v-b.v);
     for(const [f,lab] of FRONTS){
       const pk=S.pick[f];
-      const zr=el('div','zrow');
-      zr.appendChild(el('div','fl',`${lab} (${sideName[f]})`));
-      const right=el('div','');
-      const tRow=el('div','chips');
-      tRow.appendChild(el('span','lbl','Tipo: '));
+      const col=el('div','fcol');
+      col.appendChild(el('div','fl',lab));
+      col.appendChild(el('div','fsub',sideName[f]));
+      const tRow=el('div','trow');
       for(const t of TYPES){
         const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].t===t);
         const ch=el('span',`chip type t${t}${pk.t===t?' sel':''}${other?' used':''}`,TNAME[t]);
@@ -546,22 +558,17 @@ function renderControls(){
         ch.onclick=()=>pickType(f,t);
         tRow.appendChild(ch);
       }
-      right.appendChild(tRow);
-      const iRow=el('div','chips');
-      iRow.style.marginTop='6px';
-      iRow.appendChild(el('span','lbl','Intensidad: '));
-      h.hand.forEach((v,idx)=>{
+      col.appendChild(tRow);
+      for(const {v,idx} of order){
         const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].i===idx);
         const ch=el('span',`chip ichip${pk.i===idx?' sel':''}${other?' used':''}`);
         ch.appendChild(intSprite(v,46));
         ch.onclick=()=>pickInt(f,idx);
-        iRow.appendChild(ch);
-      });
-      right.appendChild(iRow);
-      zr.appendChild(right);
-      zones.appendChild(zr);
+        col.appendChild(ch);
+      }
+      grid.appendChild(col);
     }
-    c.appendChild(zones);
+    c.appendChild(grid);
     const ready=FRONTS.every(([f])=>S.pick[f].t&&S.pick[f].i!==null);
     const row=el('div','');
     row.style.marginTop='10px';
@@ -570,7 +577,7 @@ function renderControls(){
     btn.disabled=!ready;
     btn.onclick=()=>humanSubmit();
     row.appendChild(btn);
-    c.appendChild(row);
+    $('#action').appendChild(row);
     c.appendChild(el('div','msg',S.msg||''));
   }else{
     if(S.phase==='resolve'){
@@ -580,7 +587,7 @@ function renderControls(){
       const b=el('button','',lab);
       b.onclick=()=>doStep();
       const row=el('div','');row.style.marginTop='10px';row.appendChild(b);
-      c.appendChild(row);
+      $('#action').appendChild(row);
     }else if(S.ended){
       const rows=S.players.map(p=>({name:p.name,z:zoneStars(p),h:handStars(p),t:zoneStars(p)+handStars(p)})).sort((a,b)=>b.t-a.t);
       const tb=document.createElement('table');
@@ -591,7 +598,7 @@ function renderControls(){
       const b=el('button','','Siguiente ronda');
       b.onclick=()=>startRound();
       const row=el('div','');row.style.marginTop='10px';row.appendChild(b);
-      c.appendChild(row);
+      $('#action').appendChild(row);
     }
   }
   const lb=$('#logbox');

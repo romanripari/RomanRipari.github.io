@@ -9,28 +9,33 @@
 body{margin:0;background:#23252b;color:#f3f3f3;font-family:system-ui,"Segoe UI",Arial,sans-serif;font-size:14px}
 header{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px;flex-wrap:wrap}
 h1{font-size:18px;margin:0 10px 0 0}
-button,select{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#3b3f49;color:#f3f3f3}
-button:disabled{opacity:.4}
+button,select{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#3b3f49;color:#f3f3f3;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
 #holder{position:relative;margin:0 auto}
 #stage{position:absolute;left:0;top:0;width:1200px;height:760px;transform-origin:0 0}
 .card{width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
-.card.big{width:66px;height:102px}
 .card.mini{width:26px;height:40px;border-radius:3px;margin:1px}
 .spot{position:absolute;transform:translate(-50%,-50%);width:240px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
-.spot.cen{width:170px}
+.spot.cen{width:230px}
 .spot .row{display:flex;gap:8px;justify-content:center}
 .seat{position:absolute;transform:translate(-50%,-50%);width:230px;background:#2f323a;border-radius:12px;padding:8px}
 .seat .nm{font-weight:700;margin-bottom:4px}
 .seat .zone{max-height:84px;overflow:hidden;min-height:20px}
 .seat .hand{margin-top:4px;min-height:24px}
 .lbl{font-size:12px;color:#c4c8d2;margin-top:4px}
-.hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center}
+.hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
 .tok.int{background:#e6e6e6;width:auto;min-width:30px;padding:0 7px;border-radius:14px}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
-.bidform{display:flex;gap:10px;flex-wrap:wrap}
-.front{flex:1;min-width:240px;background:#23252b;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.front .fl{font-weight:700}
+.zones{display:flex;flex-direction:column;gap:8px}
+.zrow{background:#23252b;border-radius:10px;padding:10px;display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center}
+.zrow .fl{font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{border:2px solid transparent;border-radius:999px;padding:4px 10px;background:#e6e6e6;color:#111;cursor:pointer;font-size:13px}
+.chip.sel{border-color:#fff;box-shadow:0 0 0 2px #0a0}
+.chip.used{opacity:.35}
+.chip.type{color:#111}
+.chip.type.magenta,.chip.type.celeste{color:#fff}
 .log{margin-top:10px;font-size:13px;line-height:1.5;max-height:200px;overflow:auto}
 .msg{color:#ffb4a2;min-height:18px;margin-top:6px}
 table{border-collapse:collapse;margin-top:6px}
@@ -53,20 +58,24 @@ footer{width:min(1200px,96vw);margin:10px auto 30px;font-size:12px;color:#aab;li
 <footer>
 <strong>Supuestos del prototipo (revisar):</strong>
 <ul>
-<li>Las estrellas de cada ficha de Intensidad valen % / 20 (20% = 1 … 100% = 5); la vacía vale 0. El manual no lo especifica.</li>
-<li>Las combinaciones de reverso se leyeron de la imagen de Reversos a ojo y se asume que cada reverso corresponde a la misma posición de la carta en Anversos. Están en la constante BACKS.</li>
-<li>Con 3 o 4 jugadores, las fichas de los jugadores que no están no entran en juego y se usa el mazo de cartas según la tabla de configuración.</li>
-<li>La carta negativa de una incompatibilidad va a un pozo central que se disputa primero en la ronda siguiente.</li>
-<li>La segunda parte de la Fase 4 (incompatibilidad "en un sector") no está implementada: el manual no es claro sobre qué es un sector.</li>
+<li>Nombres de los jugadores: placeholder en la constante NOMBRES. Hay que reemplazarlos por los del prototipo de Eras.</li>
+<li>Las estrellas de cada ficha de Intensidad valen % / 20 (20% = 1 … 100% = 5); la vacía vale 0.</li>
+<li>Los reversos se leyeron de la imagen a ojo y se asume que cada reverso corresponde a la misma posición que su anverso. Están en la constante BACKS.</li>
+<li>En el centro se revelan dos cartas. Cada una se disputa en un duelo aparte: el que gana la primera carta no compite por la segunda, y la ficha que deja queda en el centro para el siguiente ganador.</li>
+<li>Con 3 o 4 jugadores, las fichas de los que no están quedan fuera del juego.</li>
 <li>Las fichas de Tipo vuelven a su dueño al final de cada ronda.</li>
+<li>Incompatibilidad en el centro: si entre las dos cartas reveladas hay un (+) y un (−) del mismo color, ambas se mezclan en el mazo central y salen dos cartas nuevas.</li>
+<li>La incompatibilidad en un sector lateral no está implementada: en un lateral no se acumulan cartas en el medio.</li>
 </ul>
 </footer>
 
 <script>
 const COLS=9, ROWS=5;
+// Placeholder: reemplazar por los nombres del prototipo de Eras.
+const NOMBRES=['Tú','Bot 1','Bot 2','Bot 3','Bot 4'];
 const COLOR_NAMES=['Naranja','Verde','Amarillo','Violeta','Gris'];
 const PATTERN=[[4,'+'],[4,'-'],[5,'-'],[3,'+'],[2,null],[1,null],[3,'-'],[2,'-'],[1,null]];
-// Orden de prioridad de los tipos (Y=Amarillo, C=Celeste, M=Magenta) leído del reverso de cada carta.
+// Prioridad de tipos (Y=Amarillo, C=Celeste, M=Magenta) leída del reverso de cada carta (de izquierda a derecha, arriba a abajo).
 const BACKS=[
  'YMC CYM MCY YCM CYM CMY MYC MCY YMC',
  'MCY CYM YCM CMY MCY CMY YCM MYC YMC',
@@ -79,6 +88,7 @@ const TNAME={Y:'Amarillo',C:'Celeste',M:'Magenta'};
 const TCOL={Y:'#FFE800',C:'#00A0E3',M:'#E6007E'};
 const PERMS=[['Y','C','M'],['Y','M','C'],['C','Y','M'],['C','M','Y'],['M','Y','C'],['M','C','Y']];
 const CFG={3:{L:8,C:15},4:{L:7,C:13},5:{L:6,C:11}};
+const FRONTS=[['L','Izquierda'],['C','Centro'],['R','Derecha']];
 
 let S=null;
 const $=s=>document.querySelector(s);
@@ -115,7 +125,7 @@ function tokenEl(kind,v){
   return d;
 }
 function hierEl(h){
-  const d=el('div','hier',null);
+  const d=el('div','hier');
   d.appendChild(document.createTextNode('Prioridad:'));
   for(const ch of h) d.appendChild(tokenEl('T',ch));
   return d;
@@ -124,29 +134,55 @@ function hierEl(h){
 function newGame(n){
   const deck=shuffle(makeDeck());
   const L=CFG[n].L, C=CFG[n].C;
-  S={n,players:[],laterals:[],center:[],pool:[],cInt:0,round:0,box:[],log:[],rev:null,bidding:false,ended:false};
-  for(let i=0;i<n;i++) S.players.push({name:i===0?'Tú':'Bot '+i,human:i===0,zone:[],hand:[20,40,60,80,100],bid:null});
+  S={n,players:[],laterals:[],center:[],pool:[],cInt:0,round:0,box:[],log:[],rev:null,phase:'bid',steps:[],stepIdx:0,ended:false,pick:null,msg:'',centerUsed:[]};
+  for(let i=0;i<n;i++) S.players.push({name:NOMBRES[i],human:i===0,zone:[],hand:[20,40,60,80,100],bid:null});
   for(let i=0;i<n;i++) S.laterals.push(deck.splice(0,L));
   S.center=deck.splice(0,C);
   startRound();
 }
 
+// Revela dos cartas en el centro (primero las que quedaron en el medio, después del mazo).
+// Si entre ellas hay (+) y (−) del mismo color, ambas se mezclan en el mazo central y salen dos nuevas.
+function findPair(mid){
+  if(mid.length<2) return null;
+  const [a,b]=mid;
+  if(a.color===b.color&&a.pol&&b.pol&&a.pol!==b.pol) return [a,b];
+  return null;
+}
+function centerReveal(){
+  let mid=[];
+  const take=()=>{ if(S.pool.length) return S.pool.shift(); if(S.center.length) return S.center.pop(); return null; };
+  while(mid.length<2){ const c=take(); if(!c) break; mid.push(c); }
+  for(;;){
+    const pr=findPair(mid);
+    if(!pr) break;
+    S.center.push(pr[0],pr[1]);
+    shuffle(S.center);
+    S.log.push(`Incompatibilidad en el centro (${cardName(pr[0])} / ${cardName(pr[1])}): se mezclan y salen dos cartas nuevas`);
+    mid=[];
+    while(mid.length<2&&S.center.length) mid.push(S.center.pop());
+  }
+  return mid;
+}
+
 function startRound(){
   S.round++;
+  S.log=[];
+  S.phase='bid';
+  S.steps=[];
+  S.centerUsed=[];
+  S.msg='';
+  S.pick={L:{t:null,i:null},C:{t:null,i:null},R:{t:null,i:null}};
   S.rev={lat:[],cen:null};
   for(let i=0;i<S.n;i++){
     const d=S.laterals[i];
     const card=d.pop();
     S.rev.lat.push({card,hier:d[d.length-1].back});
   }
-  let card=null;
-  if(S.pool.length) card=S.pool.shift();
-  else if(S.center.length) card=S.center.pop();
+  const cards=centerReveal();
   const hier=S.center.length?S.center[S.center.length-1].back:shuffle([...TYPES]).join('');
-  S.rev.cen=card?{card,hier}:null;
+  S.rev.cen=cards.length?{cards,hier}:null;
   S.players.forEach(p=>p.bid=null);
-  S.bidding=true;
-  S.log=[];
   S.players.forEach((p,i)=>{ if(!p.human) placeBid(i,botChoose(i)); });
   render();
 }
@@ -177,7 +213,7 @@ function botChoose(i){
   return {L:{t:best[0],v:lv},R:{t:best[1],v:rv},C:{t:best[2],v:cv}};
 }
 
-// Duelo lateral: devuelve 1 si gana a, -1 si gana b, 0 si empate total.
+// Duelo lateral: 1 si gana a, -1 si gana b, 0 si empate total.
 function duel2(a,b,hier){
   const ra=hier.indexOf(a.t), rb=hier.indexOf(b.t);
   if(ra!==rb) return ra<rb?1:-1;
@@ -185,59 +221,82 @@ function duel2(a,b,hier){
   return 0;
 }
 
-function resolve(){
-  S.bidding=false;
-  const P=S.players, n=S.n, log=[];
-  const nm=i=>P[i].name;
-  const tn=t=>TNAME[t];
-
-  // Duelos laterales (cada lateral i enfrenta a i y a i+1)
-  for(let i=0;i<n;i++){
-    const j=(i+1)%n;
-    const A=P[i], B=P[j];
-    const a=A.bid.R, b=B.bid.L, rv=S.rev.lat[i];
-    const cw=duel2(a,b,rv.hier);
-    // Intercambio de fichas de intensidad
-    A.hand.push(b.v); B.hand.push(a.v);
-    let res;
-    if(cw===1){A.zone.push(rv.card);res=`gana ${nm(i)}`;}
-    else if(cw===-1){B.zone.push(rv.card);res=`gana ${nm(j)}`;}
-    else {S.box.push(rv.card);res='empate total, carta a la caja';}
-    log.push(`Lateral ${i+1}: ${nm(i)} (${tn(a.t)} ${fmt(a.v)}) vs ${nm(j)} (${tn(b.t)} ${fmt(b.v)}) → ${res}`);
+function resolveRound(){
+  S.phase='resolve';
+  S.steps=[];
+  for(let i=0;i<S.n;i++){
+    const j=(i+1)%S.n;
+    S.steps.push({t:'lat',i,label:`Resolver lateral ${i+1} (${S.players[i].name} vs ${S.players[j].name})`});
   }
+  if(S.rev.cen) S.rev.cen.cards.forEach((c,k)=>S.steps.push({t:'cen',k,label:`Resolver centro · carta ${k+1} (${cardName(c)})`}));
+  S.steps.push({t:'inc',label:'Revisar incompatibilidades'});
+  S.stepIdx=0;
+  render();
+}
 
-  // Duelo central (todos)
-  if(S.rev.cen){
-    const hier=S.rev.cen.hier;
-    const key=i=>[hier.indexOf(P[i].bid.C.t),-P[i].bid.C.v];
-    const cmp=(x,y)=>x[0]!==y[0]?x[0]-y[0]:x[1]-y[1];
-    let rem=P.map((_,i)=>i), win=-1;
-    while(rem.length){
-      let best=key(rem[0]);
-      rem.forEach(i=>{const k=key(i);if(cmp(k,best)<0)best=k;});
-      const tied=rem.filter(i=>cmp(key(i),best)===0);
-      if(tied.length===1){win=tied[0];break;}
-      rem=rem.filter(i=>!tied.includes(i));
-    }
-    const cc=S.rev.cen.card;
-    if(win>=0){
-      const W=P[win], used=W.bid.C.v;
-      W.zone.push(cc);
-      W.hand.push(S.cInt);
-      P.forEach((p,i)=>{if(i!==win)p.hand.push(p.bid.C.v);});
-      S.cInt=used;
-      log.push(`Centro: ${cardName(cc)} → gana ${W.name} (${tn(W.bid.C.t)} ${fmt(W.bid.C.v)})`);
-    }else{
-      S.box.push(cc);
-      P.forEach(p=>p.hand.push(p.bid.C.v));
-      log.push('Centro: empate sin ganador, carta a la caja');
-    }
+function doStep(){
+  const st=S.steps[S.stepIdx++];
+  if(st.t==='lat') doLateral(st.i);
+  else if(st.t==='cen') doCenterCard(st.k);
+  else doIncompat();
+  if(S.stepIdx>=S.steps.length){
+    S.phase='done';
+    S.ended=S.laterals.some(d=>d.length<2);
+  }
+  render();
+}
+
+function doLateral(i){
+  const P=S.players, j=(i+1)%S.n;
+  const A=P[i], B=P[j];
+  const a=A.bid.R, b=B.bid.L, rv=S.rev.lat[i];
+  const cw=duel2(a,b,rv.hier);
+  // Intercambio de fichas de intensidad entre los dos jugadores del duelo
+  A.hand.push(b.v); B.hand.push(a.v);
+  let res;
+  if(cw===1){A.zone.push(rv.card);res=`gana ${A.name}`;}
+  else if(cw===-1){B.zone.push(rv.card);res=`gana ${B.name}`;}
+  else{S.box.push(rv.card);res='empate total: la carta se descarta';}
+  S.log.push(`Lateral ${i+1}: ${A.name} (${TNAME[a.t]} ${fmt(a.v)}) vs ${B.name} (${TNAME[b.t]} ${fmt(b.v)}) → ${res}`);
+}
+
+// Cada carta del centro es un duelo aparte entre quienes todavía no ganaron una carta del centro.
+function doCenterCard(k){
+  const P=S.players;
+  const card=S.rev.cen.cards[k];
+  const hier=S.rev.cen.hier;
+  const key=i=>[hier.indexOf(P[i].bid.C.t),-P[i].bid.C.v];
+  const cmp=(x,y)=>x[0]!==y[0]?x[0]-y[0]:x[1]-y[1];
+  let rem=P.map((_,i)=>i).filter(i=>!S.centerUsed.includes(i)), win=-1;
+  while(rem.length){
+    let best=key(rem[0]);
+    rem.forEach(i=>{const kk=key(i);if(cmp(kk,best)<0)best=kk;});
+    const tied=rem.filter(i=>cmp(key(i),best)===0);
+    if(tied.length===1){win=tied[0];break;}
+    S.log.push(`Centro ${k+1}: empate entre ${tied.map(i=>P[i].name).join(', ')}, quedan fuera`);
+    rem=rem.filter(i=>!tied.includes(i));
+  }
+  if(win>=0){
+    const W=P[win], used=W.bid.C.v;
+    W.zone.push(card);
+    W.hand.push(S.cInt);          // se lleva la ficha que estaba en el centro
+    S.cInt=used;                  // deja la ficha usada en el centro
+    S.centerUsed.push(win);
+    S.log.push(`Centro ${k+1} (${cardName(card)}): gana ${W.name} con ${TNAME[W.bid.C.t]} ${fmt(W.bid.C.v)}`);
   }else{
-    P.forEach(p=>p.hand.push(p.bid.C.v));
+    S.box.push(card);
+    S.log.push(`Centro ${k+1}: sin ganador, la carta se descarta`);
   }
+  // Al final del centro, las fichas de quienes no ganaron vuelven a su mano
+  if(k===S.rev.cen.cards.length-1){
+    P.forEach((p,i)=>{ if(!S.centerUsed.includes(i)) p.hand.push(p.bid.C.v); });
+  }
+}
 
-  // Fase 4: incompatibilidades (+ y −) del mismo color en la zona personal
-  P.forEach(p=>{
+// Fase 4: incompatibilidades en la zona personal de cada jugador.
+function doIncompat(){
+  let any=false;
+  S.players.forEach(p=>{
     COLOR_NAMES.forEach(col=>{
       for(;;){
         const pl=p.zone.find(c=>c.color===col&&c.pol==='+');
@@ -247,30 +306,40 @@ function resolve(){
         p.zone.splice(p.zone.indexOf(mi),1);
         S.box.push(pl);
         S.pool.push(mi);
-        log.push(`Incompatibilidad de ${p.name} en ${col}: se retira el (+) y el (−) va al pozo central`);
+        any=true;
+        S.log.push(`${p.name} tiene incompatibles en ${col}: se retira el (+) y el (−) va al medio`);
       }
     });
   });
-
-  S.log=log;
-  S.ended=S.laterals.some(d=>d.length<2);
-  render();
+  if(!any) S.log.push('Sin incompatibilidades en las zonas personales.');
 }
 
-function humanSubmit(refs){
+// Selección de la subasta: cada tipo y cada ficha de intensidad solo puede usarse en un frente.
+function pickType(f,t){
+  const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].t===t);
+  if(other){ S.msg=`${TNAME[t]} ya está en ${FRONTS.find(x=>x[0]===other)[1]}.`; return renderControls(); }
+  S.pick[f].t=S.pick[f].t===t?null:t;
+  S.msg='';
+  renderControls();
+}
+function pickInt(f,idx){
+  const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].i===idx);
+  if(other){ S.msg=`Esa ficha de ${fmt(S.players[0].hand[idx])} ya está en ${FRONTS.find(x=>x[0]===other)[1]}.`; return renderControls(); }
+  S.pick[f].i=S.pick[f].i===idx?null:idx;
+  S.msg='';
+  renderControls();
+}
+function humanSubmit(){
   const h=S.players[0];
-  const fr=['L','C','R'];
-  const ts=fr.map(f=>refs[f].t.value);
-  const ix=fr.map(f=>+refs[f].v.value);
-  if(new Set(ts).size<3) return msg('Cada tipo tiene que ir en un solo frente.');
-  if(new Set(ix).size<3) return msg('Usá tres fichas de intensidad distintas.');
   const bid={};
-  fr.forEach((f,k)=>bid[f]={t:ts[k],v:h.hand[ix[k]]});
+  for(const [f] of FRONTS){
+    const pk=S.pick[f];
+    bid[f]={t:pk.t,v:h.hand[pk.i]};
+  }
   placeBid(0,bid);
-  resolve();
+  resolveRound();
 }
 
-function msg(t){const m=document.getElementById('msg'); if(m) m.textContent=t;}
 function zoneStars(p){return p.zone.reduce((s,c)=>s+c.stars,0);}
 function handStars(p){return p.hand.reduce((s,v)=>s+starsOfInt(v),0);}
 
@@ -279,39 +348,39 @@ function render(){
   st.innerHTML='';
   if(!S){renderControls();return;}
   const n=S.n;
-  // Mazos laterales
+  // Laterales: entre cada jugador i y el de su derecha en pantalla
   for(let i=0;i<n;i++){
-    const a=(90+(i+0.5)*360/n)*Math.PI/180;
+    const a=(90-(i+0.5)*360/n)*Math.PI/180;
     const x=600+260*Math.cos(a), y=330+150*Math.sin(a);
     const d=S.laterals[i];
     const rv=S.rev?S.rev.lat[i]:null;
     const spot=el('div','spot');
     spot.style.left=x+'px';spot.style.top=y+'px';
     const row=el('div','row');
-    if(rv) row.appendChild(cardEl(rv.card,false,'big'));
-    if(d.length) row.appendChild(cardEl(d[d.length-1],true,'big'));
+    if(rv) row.appendChild(cardEl(rv.card,false,''));
+    if(d.length) row.appendChild(cardEl(d[d.length-1],true,''));
     spot.appendChild(row);
     if(rv) spot.appendChild(hierEl(rv.hier));
     spot.appendChild(el('div','lbl',`${S.players[i].name} ↔ ${S.players[(i+1)%n].name} · mazo ${d.length}`));
     st.appendChild(spot);
   }
-  // Centro
+  // Centro: dos cartas reveladas
   {
     const spot=el('div','spot cen');
     spot.style.left='600px';spot.style.top='330px';
     const row=el('div','row');
-    if(S.rev&&S.rev.cen) row.appendChild(cardEl(S.rev.cen.card,false,'big'));
-    if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,'big'));
+    if(S.rev&&S.rev.cen) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
+    if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,''));
     spot.appendChild(row);
     if(S.rev&&S.rev.cen) spot.appendChild(hierEl(S.rev.cen.hier));
-    spot.appendChild(el('div','lbl',`Centro · mazo ${S.center.length} · pozo ${S.pool.length}`));
-    const ct=el('div','hier',null); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
+    spot.appendChild(el('div','lbl',`Centro · mazo ${S.center.length} · medio ${S.pool.length}`));
+    const ct=el('div','hier'); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
     spot.appendChild(ct);
     st.appendChild(spot);
   }
-  // Asientos
+  // Asientos: el jugador 0 abajo; los siguientes van en sentido antihorario hacia la derecha de pantalla
   S.players.forEach((p,i)=>{
-    const a=(90+i*360/n)*Math.PI/180;
+    const a=(90-i*360/n)*Math.PI/180;
     const x=600+420*Math.cos(a), y=330+240*Math.sin(a);
     const seat=el('div','seat');
     seat.style.left=x+'px';seat.style.top=y+'px';
@@ -334,53 +403,85 @@ function renderControls(){
   c.innerHTML='';
   if(!S){c.textContent='Elegí la cantidad de jugadores y empezá.';return;}
   const n=S.n;
-  c.appendChild(el('div','',`Ronda ${S.round} · ${S.ended?'fin de partida':S.bidding?'tu subasta':'resultado'}`));
+  const label=S.phase==='bid'?'tu subasta':S.phase==='resolve'?'resolución':S.ended?'fin de partida':'resultado de la ronda';
+  c.appendChild(el('div','',`Ronda ${S.round} · ${label}`));
 
-  if(S.bidding){
+  if(S.phase==='bid'){
     const h=S.players[0];
-    const fronts=[
-      ['L',`Izquierda (vs ${S.players[n-1].name})`,S.rev.lat[n-1].hier,0],
-      ['C','Centro (todos)',S.rev.cen?S.rev.cen.hier:'YCM',1],
-      ['R',`Derecha (vs ${S.players[1%n].name})`,S.rev.lat[0].hier,2]
-    ];
-    const form=el('div','bidform');
-    const refs={};
-    fronts.forEach(([f,label,hr,k])=>{
-      const b=el('div','front');
-      b.appendChild(el('div','fl',label));
-      b.appendChild(hierEl(hr));
-      const ts=document.createElement('select');
-      TYPES.forEach(t=>{const o=el('option','',TNAME[t]);o.value=t;ts.appendChild(o);});
-      ts.value=TYPES[k];
-      const vs=document.createElement('select');
-      h.hand.forEach((v,idx)=>{const o=el('option','',fmt(v));o.value=idx;vs.appendChild(o);});
-      vs.value=String(Math.min(k,h.hand.length-1));
-      b.appendChild(el('div','lbl','Tipo'));
-      b.appendChild(ts);
-      b.appendChild(el('div','lbl','Intensidad'));
-      b.appendChild(vs);
-      form.appendChild(b);
-      refs[f]={t:ts,v:vs};
-    });
-    c.appendChild(form);
+    const hierOf={L:S.rev.lat[n-1].hier,C:S.rev.cen?S.rev.cen.hier:'YCM',R:S.rev.lat[0].hier};
+    const sideName={L:`vs ${S.players[n-1].name}`,C:'todos',R:`vs ${S.players[1%n].name}`};
+    const zones=el('div','zones');
+    for(const [f,lab] of FRONTS){
+      const pk=S.pick[f];
+      const zr=el('div','zrow');
+      const left=el('div','');
+      left.appendChild(el('div','fl',`${lab} (${sideName[f]})`));
+      left.appendChild(hierEl(hierOf[f]));
+      zr.appendChild(left);
+      const right=el('div','');
+      const tRow=el('div','chips');
+      tRow.appendChild(el('span','lbl','Tipo: '));
+      for(const t of TYPES){
+        const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].t===t);
+        const ch=el('span',`chip type ${TNAME[t].toLowerCase()}${pk.t===t?' sel':''}${other?' used':''}`,TNAME[t]);
+        ch.style.background=TCOL[t];
+        ch.onclick=()=>pickType(f,t);
+        tRow.appendChild(ch);
+      }
+      right.appendChild(tRow);
+      const iRow=el('div','chips');
+      iRow.style.marginTop='6px';
+      iRow.appendChild(el('span','lbl','Intensidad: '));
+      h.hand.forEach((v,idx)=>{
+        const other=FRONTS.map(x=>x[0]).find(g=>g!==f&&S.pick[g].i===idx);
+        const ch=el('span',`chip${pk.i===idx?' sel':''}${other?' used':''}`,fmt(v));
+        ch.onclick=()=>pickInt(f,idx);
+        iRow.appendChild(ch);
+      });
+      right.appendChild(iRow);
+      zr.appendChild(right);
+      zones.appendChild(zr);
+    }
+    c.appendChild(zones);
+    const ready=FRONTS.every(([f])=>S.pick[f].t&&S.pick[f].i!==null);
     const row=el('div','');
     row.style.marginTop='10px';
-    const btn=el('button','','Subastar (revelar)');
-    btn.onclick=()=>humanSubmit(refs);
+    row.style.display='flex';row.style.gap='10px';row.style.alignItems='center';
+    const btn=el('button','',ready?'Subastar':'Falta elegir tipo e intensidad en los 3 frentes');
+    btn.disabled=!ready;
+    btn.onclick=()=>humanSubmit();
     row.appendChild(btn);
     c.appendChild(row);
-    c.appendChild(el('div','msg',''));
-    c.lastChild.id='msg';
-  }else if(S.ended){
-    const rows=S.players.map((p,i)=>({name:p.name,z:zoneStars(p),h:handStars(p),t:zoneStars(p)+handStars(p)})).sort((a,b)=>b.t-a.t);
-    const t=document.createElement('table');
-    t.innerHTML='<tr><th>Jugador</th><th>Cartas ★</th><th>Fichas ★</th><th>Total</th></tr>';
-    rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.name}</td><td>${r.z}</td><td>${r.h}</td><td><b>${r.t}</b></td>`;t.appendChild(tr);});
-    c.appendChild(t);
+    c.appendChild(el('div','msg',S.msg||''));
   }else{
-    const b=el('button','','Siguiente ronda');
-    b.onclick=()=>startRound();
-    c.appendChild(b);
+    const t=document.createElement('table');
+    t.innerHTML='<tr><th>Jugador</th><th>Izquierda</th><th>Centro</th><th>Derecha</th></tr>';
+    S.players.forEach(p=>{
+      const tr=document.createElement('tr');
+      const cell=b=>b?`${TNAME[b.t]} ${fmt(b.v)}`:'';
+      tr.innerHTML=`<td>${p.name}</td><td>${cell(p.bid.L)}</td><td>${cell(p.bid.C)}</td><td>${cell(p.bid.R)}</td>`;
+      t.appendChild(tr);
+    });
+    c.appendChild(t);
+
+    if(S.phase==='resolve'){
+      const st=S.steps[S.stepIdx];
+      const b=el('button','',st.label);
+      b.onclick=()=>doStep();
+      const row=el('div','');row.style.marginTop='10px';row.appendChild(b);
+      c.appendChild(row);
+    }else if(S.ended){
+      const rows=S.players.map(p=>({name:p.name,z:zoneStars(p),h:handStars(p),t:zoneStars(p)+handStars(p)})).sort((a,b)=>b.t-a.t);
+      const tb=document.createElement('table');
+      tb.innerHTML='<tr><th>Jugador</th><th>Cartas ★</th><th>Fichas ★</th><th>Total</th></tr>';
+      rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${r.name}</td><td>${r.z}</td><td>${r.h}</td><td><b>${r.t}</b></td>`;tb.appendChild(tr);});
+      c.appendChild(tb);
+    }else{
+      const b=el('button','','Siguiente ronda');
+      b.onclick=()=>startRound();
+      const row=el('div','');row.style.marginTop='10px';row.appendChild(b);
+      c.appendChild(row);
+    }
   }
   const log=el('div','log');
   (S.log||[]).forEach(l=>log.appendChild(el('div','',l)));

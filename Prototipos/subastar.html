@@ -24,7 +24,8 @@ button:disabled{opacity:.4;cursor:default}
 .spot .row{display:flex;gap:8px;justify-content:center}
 .prow{height:140px;display:flex;align-items:center;justify-content:center}
 .pair{width:140px;height:102px;display:flex;gap:8px;align-items:center;justify-content:center;flex-shrink:0}
-.seat{position:absolute;transform:translate(-50%,-50%);width:220px;background:#2f323a;border-radius:12px;padding:8px}
+.seat{position:absolute;transform:translate(-50%,-50%);width:200px;background:#2f323a;border-radius:12px;padding:8px}
+.seat.mine{outline:3px solid #c2410c;outline-offset:2px}
 .seat .nm{font-weight:700;margin-bottom:4px}
 .seat .zone{display:flex;gap:6px;align-items:flex-start;min-height:20px}
 .zcol{display:flex;flex-direction:column}
@@ -33,8 +34,11 @@ button:disabled{opacity:.4;cursor:default}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
 .isp{display:inline-block;background-repeat:no-repeat;background-size:100% 600%;border-radius:8px;vertical-align:middle;margin:1px;overflow:hidden}
 .cbid{position:absolute;transform:translate(-50%,-50%);background:#2f323a;border-radius:10px;padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;box-shadow:0 2px 6px #0008}
+.cbid.mine{outline:3px solid #c2410c;outline-offset:1px}
 .bchip{display:inline-flex;align-items:center;vertical-align:middle}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
+#logbox{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
+#logbox:empty{display:none}
 .zones{display:flex;flex-direction:column;gap:8px}
 .zrow{background:#23252b;border-radius:10px;padding:10px;display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center}
 .zrow .fl{font-weight:700}
@@ -62,6 +66,7 @@ td,th{padding:4px 12px;border-bottom:1px solid #444;text-align:left}
 
 <div id="holder"><div id="stage"></div></div>
 <div id="controls">Elegí la cantidad de jugadores y empezá.</div>
+<div id="logbox"></div>
 
 <script>
 const COLS=9, ROWS=5;
@@ -110,8 +115,24 @@ function makeDeck(){
 }
 
 // Posiciones en el tablero (la mesa es un óvalo; el jugador 0 está siempre abajo)
-function seatPos(i,n){const a=(90-i*360/n)*Math.PI/180;return {x:700+560*Math.cos(a),y:450+330*Math.sin(a)};}
-function latPos(i,n){const a=(90-(i+0.5)*360/n)*Math.PI/180;return {x:700+420*Math.cos(a),y:450+230*Math.sin(a)};}
+function seatPos(i,n){const a=(90-i*360/n)*Math.PI/180;return {x:700+600*Math.cos(a),y:450+360*Math.sin(a)};}
+function latPos(i,n){const a=(90-(i+0.5)*360/n)*Math.PI/180;return {x:700+460*Math.cos(a),y:450+250*Math.sin(a)};}
+// Lugares de las subastas de un lateral: en cada extremo del contenedor, del lado de su jugador
+function latEnds(i,n){
+  const thm=(90-(i+0.5)*360/n)*Math.PI/180;
+  const t={x:-Math.sin(thm),y:Math.cos(thm)};
+  const lp=latPos(i,n), sA=seatPos(i,n);
+  const s=((sA.x-lp.x)*t.x+(sA.y-lp.y)*t.y)>=0?1:-1;
+  return {
+    A:{x:lp.x+s*t.x*105,y:lp.y+s*t.y*105},
+    B:{x:lp.x-s*t.x*105,y:lp.y-s*t.y*105}
+  };
+}
+// Lugar de las subastas del centro: alrededor del centro, del lado de cada jugador
+function circlePos(i,n){
+  const a=(90-i*360/n)*Math.PI/180;
+  return {x:700+170*Math.cos(a),y:450+130*Math.sin(a)};
+}
 // Inclinación del contenedor de cada duelo lateral (también la usan sus pares de fichas)
 function latRot(i,n){
   const thm=90-(i+0.5)*360/n;
@@ -163,8 +184,8 @@ function previewChip(f){
   return wrap;
 }
 // Un par de fichas con el nombre de su jugador, en una posición del tablero
-function cbidAt(pos,name,chip,rot=0){
-  const d=el('div','cbid');
+function cbidAt(pos,name,chip,rot=0,mine=false){
+  const d=el('div','cbid'+(mine?' mine':''));
   d.style.left=pos.x+'px';
   d.style.top=pos.y+'px';
   d.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
@@ -442,16 +463,16 @@ function render(){
   if(S.phase==='bid'){
     for(const f of ['L','R']){
       const i=f==='L'?n-1:0;
-      st.appendChild(cbidAt(sidePos(latPos(i,n),seatPos(0,n),0.6),'Tú',previewChip(f),latRot(i,n)));
+      st.appendChild(cbidAt(latEnds(i,n)[f==='L'?'B':'A'],'Tú',previewChip(f),latRot(i,n),true));
     }
   }else{
     for(let i=0;i<n;i++){
       const j=(i+1)%n;
       const A=S.players[i], B=S.players[j];
       if(!A.bid||!B.bid) continue;
-      const lp=latPos(i,n);
-      st.appendChild(cbidAt(sidePos(lp,seatPos(i,n),0.6),A.name,bidChip(A.bid.R),latRot(i,n)));
-      st.appendChild(cbidAt(sidePos(lp,seatPos(j,n),0.6),B.name,bidChip(B.bid.L),latRot(i,n)));
+      const ends=latEnds(i,n);
+      st.appendChild(cbidAt(ends.A,A.name,bidChip(A.bid.R),latRot(i,n),A.human));
+      st.appendChild(cbidAt(ends.B,B.name,bidChip(B.bid.L),latRot(i,n),B.human));
     }
   }
 
@@ -464,23 +485,21 @@ function render(){
     if(S.rev&&S.rev.cen) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
     if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,''));
     spot.appendChild(row);
-    const ct=el('div','hier'); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
-    spot.appendChild(ct);
-    if(S.phase==='bid') spot.appendChild(previewChip('C'));
     st.appendChild(spot);
   }
   // Subastas del centro: cada una del lado de su jugador, formando un círculo alrededor del centro
+  if(S.phase==='bid') st.appendChild(cbidAt(circlePos(0,n),'Tú',previewChip('C'),0,true));
   if(S.phase!=='bid'&&S.players.every(p=>p.bid)){
     S.players.forEach((p,i)=>{
       const a=(90-i*360/n)*Math.PI/180;
-      st.appendChild(cbidAt({x:700+200*Math.cos(a),y:450+140*Math.sin(a)},p.name,bidChip(p.bid.C),a*180/Math.PI-90));
+      st.appendChild(cbidAt(circlePos(i,n),p.name,bidChip(p.bid.C),a*180/Math.PI-90,p.human));
     });
   }
 
   // Asientos: el jugador 0 abajo; los siguientes van hacia la derecha de pantalla
   S.players.forEach((p,i)=>{
     const sp=seatPos(i,n);
-    const seat=el('div','seat');
+    const seat=el('div','seat'+(p.human?' mine':''));
     seat.style.left=sp.x+'px';seat.style.top=sp.y+'px';
     seat.appendChild(el('div','nm',`${p.name} · ★ ${zoneStars(p)}`));
     // Cartas ganadas: una columna por color, cada una debajo de la otra
@@ -554,16 +573,6 @@ function renderControls(){
     c.appendChild(row);
     c.appendChild(el('div','msg',S.msg||''));
   }else{
-    const t=document.createElement('table');
-    t.innerHTML='<tr><th>Jugador</th><th>Izquierda</th><th>Centro</th><th>Derecha</th></tr>';
-    S.players.forEach(p=>{
-      const tr=document.createElement('tr');
-      const cell=b=>b?`${TNAME[b.t]} ${fmt(b.v)}`:'';
-      tr.innerHTML=`<td>${p.name}</td><td>${cell(p.bid.L)}</td><td>${cell(p.bid.C)}</td><td>${cell(p.bid.R)}</td>`;
-      t.appendChild(tr);
-    });
-    c.appendChild(t);
-
     if(S.phase==='resolve'){
       const st=S.steps[S.stepIdx];
       let lab=st.label;
@@ -585,9 +594,13 @@ function renderControls(){
       c.appendChild(row);
     }
   }
-  const log=el('div','log');
-  (S.log||[]).forEach(l=>log.appendChild(el('div','',l)));
-  c.appendChild(log);
+  const lb=$('#logbox');
+  lb.innerHTML='';
+  if(S&&S.log&&S.log.length){
+    const log=el('div','log');
+    S.log.forEach(l=>log.appendChild(el('div','',l)));
+    lb.appendChild(log);
+  }
 }
 
 function fit(){

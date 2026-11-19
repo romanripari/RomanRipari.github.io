@@ -23,7 +23,7 @@ button:disabled{opacity:.4;cursor:default}
 .spot.hl{outline:3px solid #22c55e;box-shadow:0 0 16px 4px #22c55e}
 .spot .row{display:flex;gap:8px;justify-content:center}
 .prow{height:140px;display:flex;align-items:center;justify-content:center}
-.pair{width:140px;height:102px;display:flex;gap:8px;align-items:center;justify-content:center;transform:rotate(90deg);flex-shrink:0}
+.pair{width:140px;height:102px;display:flex;gap:8px;align-items:center;justify-content:center;flex-shrink:0}
 .seat{position:absolute;transform:translate(-50%,-50%);width:220px;background:#2f323a;border-radius:12px;padding:8px}
 .seat .nm{font-weight:700;margin-bottom:4px}
 .seat .zone{display:flex;gap:6px;align-items:flex-start;min-height:20px}
@@ -112,6 +112,13 @@ function makeDeck(){
 // Posiciones en el tablero (la mesa es un óvalo; el jugador 0 está siempre abajo)
 function seatPos(i,n){const a=(90-i*360/n)*Math.PI/180;return {x:700+560*Math.cos(a),y:450+330*Math.sin(a)};}
 function latPos(i,n){const a=(90-(i+0.5)*360/n)*Math.PI/180;return {x:700+420*Math.cos(a),y:450+230*Math.sin(a)};}
+// Inclinación del contenedor de cada duelo lateral (también la usan sus pares de fichas)
+function latRot(i,n){
+  const thm=90-(i+0.5)*360/n;
+  let r=(thm+90)%180; if(r>90) r-=180;
+  if(i===n-1) r+=180; // duelo a la izquierda del jugador
+  return r+90;
+}
 function sidePos(from,to,k){return {x:from.x+k*(to.x-from.x),y:from.y+k*(to.y-from.y)};}
 
 // Sprite: la hoja de 9x5 se muestra recortando la celda correspondiente.
@@ -151,15 +158,16 @@ function bidChip(b){
 function previewChip(f){
   const pk=S.pick[f];
   const wrap=el('span','bchip');
-  wrap.appendChild(pk.t?tokenEl('T',pk.t):el('span','','?'));
-  wrap.appendChild(pk.i!==null?intSprite(S.players[0].hand[pk.i],26):el('span','','?'));
+  wrap.appendChild(pk.t?tokenEl('T',pk.t):el('span','','x'));
+  wrap.appendChild(pk.i!==null?intSprite(S.players[0].hand[pk.i],26):el('span','','x'));
   return wrap;
 }
 // Un par de fichas con el nombre de su jugador, en una posición del tablero
-function cbidAt(pos,name,chip){
+function cbidAt(pos,name,chip,rot=0){
   const d=el('div','cbid');
   d.style.left=pos.x+'px';
   d.style.top=pos.y+'px';
+  d.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
   d.appendChild(el('div','',name));
   d.appendChild(chip);
   return d;
@@ -420,10 +428,7 @@ function render(){
     const hl=cur&&cur.t==='lat'&&cur.i===i;
     const spot=el('div','spot'+(hl?' hl':''));
     spot.style.left=lp.x+'px';spot.style.top=lp.y+'px';
-    const thm=90-(i+0.5)*360/n;
-    let rot=(thm+90)%180; if(rot>90) rot-=180;
-    if(i===n-1) rot+=180; // duelo a la izquierda del jugador: girado 180°
-    spot.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
+    spot.style.transform=`translate(-50%,-50%) rotate(${latRot(i,n)}deg)`;
     const prow=el('div','prow');
     const pair=el('div','pair');
     if(rv) pair.appendChild(cardEl(rv.card,false,''));
@@ -437,7 +442,7 @@ function render(){
   if(S.phase==='bid'){
     for(const f of ['L','R']){
       const i=f==='L'?n-1:0;
-      st.appendChild(cbidAt(sidePos(latPos(i,n),seatPos(0,n),0.6),'Tú',previewChip(f)));
+      st.appendChild(cbidAt(sidePos(latPos(i,n),seatPos(0,n),0.6),'Tú',previewChip(f),latRot(i,n)));
     }
   }else{
     for(let i=0;i<n;i++){
@@ -445,8 +450,8 @@ function render(){
       const A=S.players[i], B=S.players[j];
       if(!A.bid||!B.bid) continue;
       const lp=latPos(i,n);
-      st.appendChild(cbidAt(sidePos(lp,seatPos(i,n),0.6),A.name,bidChip(A.bid.R)));
-      st.appendChild(cbidAt(sidePos(lp,seatPos(j,n),0.6),B.name,bidChip(B.bid.L)));
+      st.appendChild(cbidAt(sidePos(lp,seatPos(i,n),0.6),A.name,bidChip(A.bid.R),latRot(i,n)));
+      st.appendChild(cbidAt(sidePos(lp,seatPos(j,n),0.6),B.name,bidChip(B.bid.L),latRot(i,n)));
     }
   }
 
@@ -459,7 +464,6 @@ function render(){
     if(S.rev&&S.rev.cen) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
     if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,''));
     spot.appendChild(row);
-    spot.appendChild(el('div','lbl',`Centro · mazo ${S.center.length} · medio ${S.pool.length}`));
     const ct=el('div','hier'); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
     spot.appendChild(ct);
     if(S.phase==='bid') spot.appendChild(previewChip('C'));
@@ -469,7 +473,7 @@ function render(){
   if(S.phase!=='bid'&&S.players.every(p=>p.bid)){
     S.players.forEach((p,i)=>{
       const a=(90-i*360/n)*Math.PI/180;
-      st.appendChild(cbidAt({x:700+200*Math.cos(a),y:450+140*Math.sin(a)},p.name,bidChip(p.bid.C)));
+      st.appendChild(cbidAt({x:700+200*Math.cos(a),y:450+140*Math.sin(a)},p.name,bidChip(p.bid.C),a*180/Math.PI-90));
     });
   }
 

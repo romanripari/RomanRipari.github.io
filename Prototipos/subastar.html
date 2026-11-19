@@ -28,14 +28,14 @@ button:disabled{opacity:.4;cursor:default}
 .lbl{font-size:12px;color:#c4c8d2;margin-top:4px}
 .hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
-.isp{display:inline-block;background-color:#fff;background-repeat:no-repeat;background-size:82% 492%;background-position:50% 0;border-radius:50%;vertical-align:middle;margin:1px;overflow:hidden;box-shadow:0 1px 3px #0008}
+.isp{display:inline-block;background-repeat:no-repeat;background-size:100% 600%;border-radius:8px;vertical-align:middle;margin:1px;overflow:hidden}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
 .zones{display:flex;flex-direction:column;gap:8px}
 .zrow{background:#23252b;border-radius:10px;padding:10px;display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center}
 .zrow .fl{font-weight:700}
 .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .chip{border:2px solid transparent;border-radius:999px;padding:4px 10px;background:#e6e6e6;color:#111;cursor:pointer;font-size:13px}
-.chip.ichip{padding:0;border-radius:50%;background:transparent;border:3px solid transparent}
+.chip.ichip{padding:0;border-radius:8px;background:transparent;border:3px solid transparent}
 .chip.sel{border-color:#22c55e}
 .chip.used{opacity:.35}
 .chip.type.tM,.chip.type.tC{color:#fff}
@@ -118,9 +118,9 @@ function cardEl(card,back,cls){
 function intSprite(v,w){
   const d=el('div','isp');
   d.style.width=w+'px';
-  d.style.height=w+'px';
+  d.style.height=(w*0.98)+'px';
   d.style.backgroundImage='url("Cartas/Intensidades.png")';
-  d.style.backgroundPosition=`50% ${INT_ROW[v]*20.92}%`;
+  d.style.backgroundPosition=`0% ${INT_ROW[v]*20}%`;
   d.title=fmt(v);
   return d;
 }

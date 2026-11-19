@@ -12,13 +12,13 @@ h1{font-size:18px;margin:0 10px 0 0}
 button,select{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#3b3f49;color:#f3f3f3;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
 #holder{position:relative;margin:0 auto}
-#stage{position:absolute;left:0;top:0;width:1200px;height:760px;transform-origin:0 0}
+#stage{position:absolute;left:0;top:0;width:1400px;height:900px;transform-origin:0 0}
 .card{width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
 .card.mini{width:26px;height:40px;border-radius:3px;margin:1px}
-.spot{position:absolute;transform:translate(-50%,-50%);width:240px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
+.spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
 .spot.cen{width:230px}
 .spot .row{display:flex;gap:8px;justify-content:center}
-.seat{position:absolute;transform:translate(-50%,-50%);width:230px;background:#2f323a;border-radius:12px;padding:8px}
+.seat{position:absolute;transform:translate(-50%,-50%);width:220px;background:#2f323a;border-radius:12px;padding:8px}
 .seat .nm{font-weight:700;margin-bottom:4px}
 .seat .zone{max-height:84px;overflow:hidden;min-height:20px}
 .seat .hand{margin-top:4px;min-height:24px}
@@ -69,7 +69,7 @@ const BACKS=[
  'YCM MYC MYC YCM CMY CMY MYC YCM CMY'
 ];
 const TYPES=['Y','C','M'];
-const TNAME={Y:'Amarillo',C:'Celeste',M:'Magenta'};
+const TNAME={Y:'A',C:'C',M:'M'};
 const TCOL={Y:'#FFE800',C:'#00A0E3',M:'#E6007E'};
 const PERMS=[['Y','C','M'],['Y','M','C'],['C','Y','M'],['C','M','Y'],['M','Y','C'],['M','C','Y']];
 const CFG={3:{L:8,C:15},4:{L:7,C:13},5:{L:6,C:11}};
@@ -374,7 +374,7 @@ function render(){
   // Laterales: entre cada jugador i y el de su derecha en pantalla
   for(let i=0;i<n;i++){
     const a=(90-(i+0.5)*360/n)*Math.PI/180;
-    const x=600+260*Math.cos(a), y=330+150*Math.sin(a);
+    const x=700+420*Math.cos(a), y=450+200*Math.sin(a);
     const d=S.laterals[i];
     const rv=S.rev?S.rev.lat[i]:null;
     const spot=el('div','spot');
@@ -390,7 +390,7 @@ function render(){
   // Centro: dos cartas reveladas
   {
     const spot=el('div','spot cen');
-    spot.style.left='600px';spot.style.top='330px';
+    spot.style.left='700px';spot.style.top='450px';
     const row=el('div','row');
     if(S.rev&&S.rev.cen) S.rev.cen.cards.forEach(c=>row.appendChild(cardEl(c,false,'')));
     if(S.center.length) row.appendChild(cardEl(S.center[S.center.length-1],true,''));
@@ -404,17 +404,13 @@ function render(){
   // Asientos: el jugador 0 abajo; los siguientes van hacia la derecha de pantalla
   S.players.forEach((p,i)=>{
     const a=(90-i*360/n)*Math.PI/180;
-    const x=600+420*Math.cos(a), y=330+240*Math.sin(a);
+    const x=700+560*Math.cos(a), y=450+330*Math.sin(a);
     const seat=el('div','seat');
     seat.style.left=x+'px';seat.style.top=y+'px';
     seat.appendChild(el('div','nm',`${p.name} · ★ ${zoneStars(p)}`));
     const zone=el('div','zone');
     p.zone.forEach(c=>zone.appendChild(cardEl(c,false,'mini'+(badSet.has(c)?' bad':''))));
     seat.appendChild(zone);
-    const hand=el('div','hand');
-    if(p.human) p.hand.forEach(v=>hand.appendChild(tokenEl('I',v)));
-    else hand.textContent='';
-    seat.appendChild(hand);
     st.appendChild(seat);
   });
   fit();
@@ -515,10 +511,10 @@ function renderControls(){
 }
 
 function fit(){
-  const s=Math.min(1,(innerWidth-24)/1200);
+  const s=Math.min(1,(innerWidth-24)/1400);
   const h=$('#holder');
-  h.style.width=(1200*s)+'px';
-  h.style.height=(760*s)+'px';
+  h.style.width=(1400*s)+'px';
+  h.style.height=(900*s)+'px';
   $('#stage').style.transform=`scale(${s})`;
 }
 addEventListener('resize',fit);

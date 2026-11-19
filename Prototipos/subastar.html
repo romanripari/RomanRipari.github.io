@@ -16,7 +16,9 @@ button:disabled{opacity:.4;cursor:default}
 #stage{position:absolute;left:0;top:0;width:1400px;height:900px;transform-origin:0 0}
 .card{flex-shrink:0;width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
 .card.mini{width:44px;height:68px;border-radius:4px}
-.card.mini.stack{margin-top:-50px}
+.card.mini.stack{margin-top:-40px}
+.tip{position:fixed;transform:translate(-50%,-100%);background:#111;color:#fff;padding:4px 8px;border-radius:6px;font-size:13px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
+.tip.on{opacity:1}
 .card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
 .spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center}
 .spot.cen{width:240px}
@@ -151,11 +153,30 @@ function latRot(i,n){
 }
 function sidePos(from,to,k){return {x:from.x+k*(to.x-from.x),y:from.y+k*(to.y-from.y)};}
 
+// Tooltip de carta: aparece al cabo de un segundo de tener el mouse encima
+const tip=el('div','tip');
+document.body.appendChild(tip);
+let tipTimer=null;
+function tipFor(d,text){
+  d.addEventListener('mouseenter',()=>{
+    clearTimeout(tipTimer);
+    tipTimer=setTimeout(()=>{
+      tip.innerHTML=text;
+      const r=d.getBoundingClientRect();
+      tip.style.left=(r.left+r.width/2)+'px';
+      tip.style.top=(r.top-8)+'px';
+      tip.classList.add('on');
+    },1000);
+  });
+  d.addEventListener('mouseleave',()=>{clearTimeout(tipTimer);tip.classList.remove('on');});
+}
 // Sprite: la hoja de 9x5 se muestra recortando la celda correspondiente.
 function cardEl(card,back,cls){
   const d=el('div','card'+(cls?' '+cls:''));
   d.style.backgroundImage=`url("Cartas/${back?'Reversos':'Anversos'}.png")`;
   d.style.backgroundPosition=`${card.c*12.5}% ${card.r*25}%`;
+  if(!back) tipFor(d,`${card.stars} ★${card.pol?' ('+card.pol+')':''}`);
+  else tipFor(d,card.back.split('').map(t=>`<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${TCOL[t]};margin:0 2px;vertical-align:middle"></span>`).join(''));
   return d;
 }
 // Ficha de intensidad, recortada de Cartas/Intensidades.png

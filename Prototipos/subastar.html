@@ -385,7 +385,7 @@ function render(){
     seat.appendChild(zone);
     const hand=el('div','hand');
     if(p.human) p.hand.forEach(v=>hand.appendChild(tokenEl('I',v)));
-    else hand.textContent=`${p.hand.length} fichas de intensidad`;
+    else hand.textContent=``;
     seat.appendChild(hand);
     st.appendChild(seat);
   });

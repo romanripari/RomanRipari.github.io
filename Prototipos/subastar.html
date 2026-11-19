@@ -26,6 +26,7 @@ button:disabled{opacity:.4;cursor:default}
 .hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
 .isp{display:inline-block;background-repeat:no-repeat;background-size:100% 600%;vertical-align:middle;margin:1px}
+.card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
 .zones{display:flex;flex-direction:column;gap:8px}
 .zrow{background:#23252b;border-radius:10px;padding:10px;display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center}
@@ -68,7 +69,7 @@ const BACKS=[
  'YCM MYC MYC YCM CMY CMY MYC YCM CMY'
 ];
 const TYPES=['Y','C','M'];
-const TNAME={Y:'A',C:'C',M:'M'};
+const TNAME={Y:'Amarillo',C:'Celeste',M:'Magenta'};
 const TCOL={Y:'#FFE800',C:'#00A0E3',M:'#E6007E'};
 const PERMS=[['Y','C','M'],['Y','M','C'],['C','Y','M'],['C','M','Y'],['M','Y','C'],['M','C','Y']];
 const CFG={3:{L:8,C:15},4:{L:7,C:13},5:{L:6,C:11}};
@@ -222,6 +223,7 @@ function duel2(a,b,hier){
 function resolveRound(){
   S.phase='resolve';
   S.steps=[];
+  S.incCount=0;
   for(let i=0;i<S.n;i++){
     const j=(i+1)%S.n;
     S.steps.push({t:'lat',i,label:`Resolver lateral ${i+1} (${S.players[i].name} vs ${S.players[j].name})`});
@@ -233,10 +235,15 @@ function resolveRound(){
 }
 
 function doStep(){
-  const st=S.steps[S.stepIdx++];
-  if(st.t==='lat') doLateral(st.i);
-  else if(st.t==='cen') doCenter();
-  else doIncompat();
+  const st=S.steps[S.stepIdx];
+  if(st.t==='inc'){
+    const pr=findIncPairs();
+    if(pr.length){ resolveOneInc(pr[0]); render(); return; }
+    S.log.push(S.incCount?'Incompatibilidades resueltas.':'Sin incompatibilidades en las zonas personales.');
+  }
+  else if(st.t==='lat') doLateral(st.i);
+  else doCenter();
+  S.stepIdx++;
   if(S.stepIdx>=S.steps.length){
     S.phase='done';
     S.ended=S.laterals.some(d=>d.length<2);
@@ -288,7 +295,26 @@ function doCenter(){
   }
 }
 
-// Fase 4: incompatibilidades en la zona personal de cada jugador.
+// Incompatibilidades pendientes: un (+) y un (−) del mismo color en la misma zona personal.
+function findIncPairs(){
+  const out=[];
+  S.players.forEach(p=>COLOR_NAMES.forEach(col=>{
+    const pl=p.zone.find(c=>c.color===col&&c.pol==='+');
+    const mi=p.zone.find(c=>c.color===col&&c.pol==='-');
+    if(pl&&mi) out.push({p,pl,mi});
+  }));
+  return out;
+}
+// Resuelve una sola incompatibilidad: el (+) se retira y el (−) va al medio.
+function resolveOneInc({p,pl,mi}){
+  p.zone.splice(p.zone.indexOf(pl),1);
+  p.zone.splice(p.zone.indexOf(mi),1);
+  S.box.push(pl);
+  S.pool.push(mi);
+  S.incCount=(S.incCount||0)+1;
+  S.log.push(`${p.name}: incompatibilidad en ${pl.color} (+ ${pl.stars}★ / − ${mi.stars}★): se retira el (+) y el (−) va al medio`);
+}
+// Fase 4 (versión anterior, sin uso): incompatibilidades en la zona personal de cada jugador.
 function doIncompat(){
   let any=false;
   S.players.forEach(p=>{
@@ -343,6 +369,8 @@ function render(){
   st.innerHTML='';
   if(!S){renderControls();return;}
   const n=S.n;
+  // Cartas en incompatibilidad (se marcan en rojo hasta resolverlas)
+  const badSet=new Set(S.phase==='resolve'?findIncPairs().flatMap(x=>[x.pl,x.mi]):[]);
   // Laterales: entre cada jugador i y el de su derecha en pantalla
   for(let i=0;i<n;i++){
     const a=(90-(i+0.5)*360/n)*Math.PI/180;
@@ -381,11 +409,11 @@ function render(){
     seat.style.left=x+'px';seat.style.top=y+'px';
     seat.appendChild(el('div','nm',`${p.name} · ★ ${zoneStars(p)}`));
     const zone=el('div','zone');
-    p.zone.forEach(c=>zone.appendChild(cardEl(c,false,'mini')));
+    p.zone.forEach(c=>zone.appendChild(cardEl(c,false,'mini'+(badSet.has(c)?' bad':''))));
     seat.appendChild(zone);
     const hand=el('div','hand');
     if(p.human) p.hand.forEach(v=>hand.appendChild(tokenEl('I',v)));
-    else hand.textContent=``;
+    else hand.textContent='';
     seat.appendChild(hand);
     st.appendChild(seat);
   });
@@ -462,7 +490,9 @@ function renderControls(){
 
     if(S.phase==='resolve'){
       const st=S.steps[S.stepIdx];
-      const b=el('button','',st.label);
+      let lab=st.label;
+      if(st.t==='inc'){const k=findIncPairs().length; lab=k?`Resolver incompatibilidades (${k} pendientes)`:'Continuar';}
+      const b=el('button','',lab);
       b.onclick=()=>doStep();
       const row=el('div','');row.style.marginTop='10px';row.appendChild(b);
       c.appendChild(row);

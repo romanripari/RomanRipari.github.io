@@ -9,19 +9,21 @@
 body{margin:0;background:#23252b;color:#f3f3f3;font-family:system-ui,"Segoe UI",Arial,sans-serif;font-size:14px}
 header{display:flex;gap:10px;align-items:center;justify-content:center;padding:10px;flex-wrap:wrap}
 h1{font-size:18px;margin:0 10px 0 0}
+#ronda{text-align:center;font-size:26px;font-weight:700;margin:0;padding-bottom:4px}
 button,select{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#3b3f49;color:#f3f3f3;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
 #holder{position:relative;margin:0 auto}
 #stage{position:absolute;left:0;top:0;width:1400px;height:900px;transform-origin:0 0}
-.card{width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
-.card.mini{width:44px;height:68px;border-radius:3px}
-.card.mini.stack{margin-top:-33px}
+.card{flex-shrink:0;width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
+.card.mini{width:44px;height:68px;border-radius:4px}
+.card.mini.stack{margin-top:-50px}
 .card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
 .spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
-.spot.cen{width:170px}
-.cbid{position:absolute;transform:translate(-50%,-50%);background:#2f323a;border-radius:10px;padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;box-shadow:0 2px 6px #0008}
+.spot.cen{width:240px}
 .spot.hl{outline:3px solid #22c55e;box-shadow:0 0 16px 4px #22c55e}
 .spot .row{display:flex;gap:8px;justify-content:center}
+.prow{height:140px;display:flex;align-items:center;justify-content:center}
+.pair{width:140px;height:102px;display:flex;gap:8px;align-items:center;justify-content:center;transform:rotate(90deg);flex-shrink:0}
 .seat{position:absolute;transform:translate(-50%,-50%);width:220px;background:#2f323a;border-radius:12px;padding:8px}
 .seat .nm{font-weight:700;margin-bottom:4px}
 .seat .zone{display:flex;gap:6px;align-items:flex-start;min-height:20px}
@@ -30,6 +32,8 @@ button:disabled{opacity:.4;cursor:default}
 .hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
 .isp{display:inline-block;background-repeat:no-repeat;background-size:100% 600%;border-radius:8px;vertical-align:middle;margin:1px;overflow:hidden}
+.cbid{position:absolute;transform:translate(-50%,-50%);background:#2f323a;border-radius:10px;padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;box-shadow:0 2px 6px #0008}
+.bchip{display:inline-flex;align-items:center;vertical-align:middle}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
 .zones{display:flex;flex-direction:column;gap:8px}
 .zrow{background:#23252b;border-radius:10px;padding:10px;display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center}
@@ -40,10 +44,6 @@ button:disabled{opacity:.4;cursor:default}
 .chip.sel{border-color:#22c55e}
 .chip.used{opacity:.35}
 .chip.type.tM,.chip.type.tC{color:#fff}
-.bids{font-size:12px;margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center}
-.cbids{font-size:11px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;align-items:center}
-.bchip{display:inline-flex;align-items:center;vertical-align:middle}
-.cb{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
 .log{margin-top:10px;font-size:13px;line-height:1.5;max-height:200px;overflow:auto}
 .msg{color:#ffb4a2;min-height:18px;margin-top:6px}
 table{border-collapse:collapse;margin-top:6px}
@@ -58,6 +58,7 @@ td,th{padding:4px 12px;border-bottom:1px solid #444;text-align:left}
   </label>
   <button onclick="start()">Nueva partida</button>
 </header>
+<div id="ronda"></div>
 
 <div id="holder"><div id="stage"></div></div>
 <div id="controls">Elegí la cantidad de jugadores y empezá.</div>
@@ -108,6 +109,11 @@ function makeDeck(){
   return out;
 }
 
+// Posiciones en el tablero (la mesa es un óvalo; el jugador 0 está siempre abajo)
+function seatPos(i,n){const a=(90-i*360/n)*Math.PI/180;return {x:700+560*Math.cos(a),y:450+330*Math.sin(a)};}
+function latPos(i,n){const a=(90-(i+0.5)*360/n)*Math.PI/180;return {x:700+420*Math.cos(a),y:450+230*Math.sin(a)};}
+function sidePos(from,to,k){return {x:from.x+k*(to.x-from.x),y:from.y+k*(to.y-from.y)};}
+
 // Sprite: la hoja de 9x5 se muestra recortando la celda correspondiente.
 function cardEl(card,back,cls){
   const d=el('div','card'+(cls?' '+cls:''));
@@ -115,7 +121,7 @@ function cardEl(card,back,cls){
   d.style.backgroundPosition=`${card.c*12.5}% ${card.r*25}%`;
   return d;
 }
-// Ficha de intensidad redonda, con la fila correspondiente de Cartas/Intensidades.png
+// Ficha de intensidad, recortada de Cartas/Intensidades.png
 function intSprite(v,w){
   const d=el('div','isp');
   d.style.width=w+'px';
@@ -134,7 +140,7 @@ function tokenEl(kind,v){
   d.title=v==='Y'?'Amarillo':v==='C'?'Celeste':'Magenta';
   return d;
 }
-// Una subasta puesta en el tablero: tipo + ficha de intensidad
+// Una subasta: tipo + ficha de intensidad
 function bidChip(b){
   const d=el('span','bchip');
   d.appendChild(tokenEl('T',b.t));
@@ -142,19 +148,27 @@ function bidChip(b){
   return d;
 }
 // Subasta elegida por el jugador (todavía sin revelar) en el frente donde la manda
-function previewEl(f){
+function previewChip(f){
   const pk=S.pick[f];
-  const wrap=el('div','bids');
-  wrap.appendChild(el('span','','Tú '));
+  const wrap=el('span','bchip');
   wrap.appendChild(pk.t?tokenEl('T',pk.t):el('span','','?'));
   wrap.appendChild(pk.i!==null?intSprite(S.players[0].hand[pk.i],26):el('span','','?'));
   return wrap;
+}
+// Un par de fichas con el nombre de su jugador, en una posición del tablero
+function cbidAt(pos,name,chip){
+  const d=el('div','cbid');
+  d.style.left=pos.x+'px';
+  d.style.top=pos.y+'px';
+  d.appendChild(el('div','',name));
+  d.appendChild(chip);
+  return d;
 }
 
 function newGame(n){
   const deck=shuffle(makeDeck());
   const L=CFG[n].L, C=CFG[n].C;
-  S={n,players:[],laterals:[],center:[],pool:[],cInt:0,round:0,box:[],log:[],rev:null,phase:'bid',steps:[],stepIdx:0,ended:false,pick:null,msg:''};
+  S={n,total:L-1,players:[],laterals:[],center:[],pool:[],cInt:0,round:0,box:[],log:[],rev:null,phase:'bid',steps:[],stepIdx:0,ended:false,pick:null,msg:''};
   const nombres=shuffle([...PLAYER_NAMES]);
   for(let i=0;i<n;i++) S.players.push({name:i===0?'Tú':nombres[i-1],human:i===0,zone:[],hand:[20,40,60,80,100],bid:null});
   for(let i=0;i<n;i++) S.laterals.push(deck.splice(0,L));
@@ -235,7 +249,7 @@ function botChoose(i){
   const wC=cen.reduce((s,c)=>s+cardValue(c,p),0);
   // Regla 4: el vecino perdería al ganar una carta chica, lo dejo ganar
   if(cardValue(Lc,P[lIdx])<0 && Lc.stars<=2) wL=-1;
-  if(cardValue(Rc,P[rIdx===n-1?0:(rIdx+1)%n])<0 && Rc.stars<=2) wR=-1;
+  if(cardValue(Rc,P[(rIdx+1)%n])<0 && Rc.stars<=2) wR=-1;
   const W={L:wL,R:wR,C:cen.length?wC:-1};
   const H={L:S.rev.lat[lIdx].hier,R:S.rev.lat[rIdx].hier,C:S.rev.cen?S.rev.cen.hier:'YCM'};
   // Tipos: lo más fuerte donde conviene ganar, lo más débil donde conviene perder
@@ -391,45 +405,51 @@ function handStars(p){return p.hand.reduce((s,v)=>s+starsOfInt(v),0);}
 function render(){
   const st=$('#stage');
   st.innerHTML='';
+  $('#ronda').textContent=S?`Ronda ${S.round} de ${S.total}`:'';
   if(!S){renderControls();return;}
   const n=S.n;
   const cur=S.phase==='resolve'?S.steps[S.stepIdx]:null;
   // Cartas en incompatibilidad (se marcan en rojo hasta resolverlas)
   const badSet=new Set(S.phase==='resolve'?findIncPairs().flatMap(x=>[x.pl,x.mi]):[]);
-  // Laterales: entre cada jugador i y el de su derecha en pantalla
+
+  // Laterales: cada uno inclinado según la cantidad de jugadores; el par de cartas gira 90° respecto del lateral
   for(let i=0;i<n;i++){
-    const a=(90-(i+0.5)*360/n)*Math.PI/180;
-    const x=700+420*Math.cos(a), y=450+200*Math.sin(a);
+    const lp=latPos(i,n);
     const d=S.laterals[i];
     const rv=S.rev?S.rev.lat[i]:null;
     const hl=cur&&cur.t==='lat'&&cur.i===i;
     const spot=el('div','spot'+(hl?' hl':''));
-    spot.style.left=x+'px';spot.style.top=y+'px';
-    // Cada duelo lateral se inclina según la forma de la mesa: 360/n grados entre uno y el siguiente
+    spot.style.left=lp.x+'px';spot.style.top=lp.y+'px';
     const thm=90-(i+0.5)*360/n;
     let rot=(thm+90)%180; if(rot>90) rot-=180;
     if(i===n-1) rot+=180; // duelo a la izquierda del jugador: girado 180°
     spot.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
-    const row=el('div','row');
-    if(rv) row.appendChild(cardEl(rv.card,false,''));
-    if(d.length) row.appendChild(cardEl(d[d.length-1],true,''));
-    spot.appendChild(row);
-    spot.appendChild(el('div','lbl',`${S.players[i].name} ↔ ${S.players[(i+1)%n].name} · mazo ${d.length}`));
-    if(S.phase==='bid'){
-      const f=i===n-1?'L':i===0?'R':null;
-      if(f) spot.appendChild(previewEl(f));
-    }else if(S.players[i].bid&&S.players[(i+1)%n].bid){
-      const A=S.players[i], B=S.players[(i+1)%n];
-      const bb=el('div','bids');
-      bb.appendChild(el('span','',A.name+' '));
-      bb.appendChild(bidChip(A.bid.R));
-      bb.appendChild(el('span','',' vs '));
-      bb.appendChild(bidChip(B.bid.L));
-      bb.appendChild(el('span','',' '+B.name));
-      spot.appendChild(bb);
-    }
+    const prow=el('div','prow');
+    const pair=el('div','pair');
+    if(rv) pair.appendChild(cardEl(rv.card,false,''));
+    if(d.length) pair.appendChild(cardEl(d[d.length-1],true,''));
+    prow.appendChild(pair);
+    spot.appendChild(prow);
     st.appendChild(spot);
   }
+
+  // Subastas de los laterales, cada una del lado de su jugador (separadas de las cartas)
+  if(S.phase==='bid'){
+    for(const f of ['L','R']){
+      const i=f==='L'?n-1:0;
+      st.appendChild(cbidAt(sidePos(latPos(i,n),seatPos(0,n),0.6),'Tú',previewChip(f)));
+    }
+  }else{
+    for(let i=0;i<n;i++){
+      const j=(i+1)%n;
+      const A=S.players[i], B=S.players[j];
+      if(!A.bid||!B.bid) continue;
+      const lp=latPos(i,n);
+      st.appendChild(cbidAt(sidePos(lp,seatPos(i,n),0.6),A.name,bidChip(A.bid.R)));
+      st.appendChild(cbidAt(sidePos(lp,seatPos(j,n),0.6),B.name,bidChip(B.bid.L)));
+    }
+  }
+
   // Centro: dos cartas reveladas
   {
     const hl=cur&&cur.t==='cen';
@@ -442,29 +462,22 @@ function render(){
     spot.appendChild(el('div','lbl',`Centro · mazo ${S.center.length} · medio ${S.pool.length}`));
     const ct=el('div','hier'); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
     spot.appendChild(ct);
-    if(S.phase==='bid'){
-      spot.appendChild(previewEl('C'));
-    }
+    if(S.phase==='bid') spot.appendChild(previewChip('C'));
     st.appendChild(spot);
   }
   // Subastas del centro: cada una del lado de su jugador, formando un círculo alrededor del centro
   if(S.phase!=='bid'&&S.players.every(p=>p.bid)){
     S.players.forEach((p,i)=>{
       const a=(90-i*360/n)*Math.PI/180;
-      const cb=el('div','cbid');
-      cb.style.left=(700+200*Math.cos(a))+'px';
-      cb.style.top=(450+140*Math.sin(a))+'px';
-      cb.appendChild(el('div','',p.name));
-      cb.appendChild(bidChip(p.bid.C));
-      st.appendChild(cb);
+      st.appendChild(cbidAt({x:700+200*Math.cos(a),y:450+140*Math.sin(a)},p.name,bidChip(p.bid.C)));
     });
   }
+
   // Asientos: el jugador 0 abajo; los siguientes van hacia la derecha de pantalla
   S.players.forEach((p,i)=>{
-    const a=(90-i*360/n)*Math.PI/180;
-    const x=700+560*Math.cos(a), y=450+330*Math.sin(a);
+    const sp=seatPos(i,n);
     const seat=el('div','seat');
-    seat.style.left=x+'px';seat.style.top=y+'px';
+    seat.style.left=sp.x+'px';seat.style.top=sp.y+'px';
     seat.appendChild(el('div','nm',`${p.name} · ★ ${zoneStars(p)}`));
     // Cartas ganadas: una columna por color, cada una debajo de la otra
     const zone=el('div','zone');
@@ -473,8 +486,7 @@ function render(){
       if(!cs.length) return;
       const colEl=el('div','zcol');
       cs.forEach((c,k)=>{
-        const m=cardEl(c,false,'mini'+(k>0?' stack':'')+(badSet.has(c)?' bad':''));
-        colEl.appendChild(m);
+        colEl.appendChild(cardEl(c,false,'mini'+(k>0?' stack':'')+(badSet.has(c)?' bad':'')));
       });
       zone.appendChild(colEl);
     });

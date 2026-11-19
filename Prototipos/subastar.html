@@ -14,11 +14,12 @@ button:disabled{opacity:.4;cursor:default}
 #holder{position:relative;margin:0 auto}
 #stage{position:absolute;left:0;top:0;width:1400px;height:900px;transform-origin:0 0}
 .card{width:66px;height:102px;border-radius:5px;background-repeat:no-repeat;background-size:900% 500%;box-shadow:0 2px 5px #0009;display:inline-block;vertical-align:top}
-.card.mini{width:44px;height:68px;border-radius:3px}
+.card.mini{width:33px;height:51px;border-radius:3px}
 .card.mini.stack{margin-top:-33px}
 .card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
 .spot{position:absolute;transform:translate(-50%,-50%);width:220px;text-align:center;background:rgba(0,0,0,.28);border-radius:12px;padding:8px}
-.spot.cen{width:230px}
+.spot.cen{width:170px}
+.cbid{position:absolute;transform:translate(-50%,-50%);background:#2f323a;border-radius:10px;padding:4px 8px;font-size:12px;text-align:center;white-space:nowrap;box-shadow:0 2px 6px #0008}
 .spot.hl{outline:3px solid #22c55e;box-shadow:0 0 16px 4px #22c55e}
 .spot .row{display:flex;gap:8px;justify-content:center}
 .seat{position:absolute;transform:translate(-50%,-50%);width:220px;background:#2f323a;border-radius:12px;padding:8px}
@@ -404,6 +405,11 @@ function render(){
     const hl=cur&&cur.t==='lat'&&cur.i===i;
     const spot=el('div','spot'+(hl?' hl':''));
     spot.style.left=x+'px';spot.style.top=y+'px';
+    // Cada duelo lateral se inclina según la forma de la mesa: 360/n grados entre uno y el siguiente
+    const thm=90-(i+0.5)*360/n;
+    let rot=(thm+90)%180; if(rot>90) rot-=180;
+    if(i===n-1) rot+=180; // duelo a la izquierda del jugador: girado 180°
+    spot.style.transform=`translate(-50%,-50%) rotate(${rot}deg)`;
     const row=el('div','row');
     if(rv) row.appendChild(cardEl(rv.card,false,''));
     if(d.length) row.appendChild(cardEl(d[d.length-1],true,''));
@@ -438,17 +444,20 @@ function render(){
     spot.appendChild(ct);
     if(S.phase==='bid'){
       spot.appendChild(previewEl('C'));
-    }else if(S.players.every(p=>p.bid)){
-      const cb=el('div','cbids');
-      S.players.forEach(p=>{
-        const x=el('span','cb');
-        x.appendChild(document.createTextNode(p.name+' '));
-        x.appendChild(bidChip(p.bid.C));
-        cb.appendChild(x);
-      });
-      spot.appendChild(cb);
     }
     st.appendChild(spot);
+  }
+  // Subastas del centro: cada una del lado de su jugador, formando un círculo alrededor del centro
+  if(S.phase!=='bid'&&S.players.every(p=>p.bid)){
+    S.players.forEach((p,i)=>{
+      const a=(90-i*360/n)*Math.PI/180;
+      const cb=el('div','cbid');
+      cb.style.left=(700+200*Math.cos(a))+'px';
+      cb.style.top=(450+140*Math.sin(a))+'px';
+      cb.appendChild(el('div','',p.name));
+      cb.appendChild(bidChip(p.bid.C));
+      st.appendChild(cb);
+    });
   }
   // Asientos: el jugador 0 abajo; los siguientes van hacia la derecha de pantalla
   S.players.forEach((p,i)=>{

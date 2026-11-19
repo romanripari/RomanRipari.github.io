@@ -58,7 +58,7 @@ footer{width:min(1200px,96vw);margin:10px auto 30px;font-size:12px;color:#aab;li
 <footer>
 <strong>Supuestos del prototipo (revisar):</strong>
 <ul>
-<li>Nombres de los jugadores: placeholder en la constante NOMBRES. Hay que reemplazarlos por los del prototipo de Eras.</li>
+<li>Nombres de los bots: tomados al azar de la lista PLAYER_NAMES (de Paseo Comercial) en cada partida. Vos sos "Tú".</li>
 <li>Las estrellas de cada ficha de Intensidad valen % / 20 (20% = 1 … 100% = 5); la vacía vale 0.</li>
 <li>Los reversos se leyeron de la imagen a ojo y se asume que cada reverso corresponde a la misma posición que su anverso. Están en la constante BACKS.</li>
 <li>En el centro se revelan dos cartas. Cada una se disputa en un duelo aparte: el que gana la primera carta no compite por la segunda, y la ficha que deja queda en el centro para el siguiente ganador.</li>
@@ -71,8 +71,8 @@ footer{width:min(1200px,96vw);margin:10px auto 30px;font-size:12px;color:#aab;li
 
 <script>
 const COLS=9, ROWS=5;
-// Placeholder: reemplazar por los nombres del prototipo de Eras.
-const NOMBRES=['Tú','Bot 1','Bot 2','Bot 3','Bot 4'];
+// Nombres de Paseo Comercial (PLAYER_NAMES). Los bots toman nombres al azar en cada partida.
+const PLAYER_NAMES=['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
 const COLOR_NAMES=['Naranja','Verde','Amarillo','Violeta','Gris'];
 const PATTERN=[[4,'+'],[4,'-'],[5,'-'],[3,'+'],[2,null],[1,null],[3,'-'],[2,'-'],[1,null]];
 // Prioridad de tipos (Y=Amarillo, C=Celeste, M=Magenta) leída del reverso de cada carta (de izquierda a derecha, arriba a abajo).
@@ -135,7 +135,8 @@ function newGame(n){
   const deck=shuffle(makeDeck());
   const L=CFG[n].L, C=CFG[n].C;
   S={n,players:[],laterals:[],center:[],pool:[],cInt:0,round:0,box:[],log:[],rev:null,phase:'bid',steps:[],stepIdx:0,ended:false,pick:null,msg:'',centerUsed:[]};
-  for(let i=0;i<n;i++) S.players.push({name:NOMBRES[i],human:i===0,zone:[],hand:[20,40,60,80,100],bid:null});
+  const nombres=shuffle([...PLAYER_NAMES]);
+  for(let i=0;i<n;i++) S.players.push({name:i===0?'Tú':nombres[i-1],human:i===0,zone:[],hand:[20,40,60,80,100],bid:null});
   for(let i=0;i<n;i++) S.laterals.push(deck.splice(0,L));
   S.center=deck.splice(0,C);
   startRound();

@@ -26,6 +26,10 @@ button:disabled{opacity:.4;cursor:default}
 .hier{font-size:12px;color:#c4c8d2;margin-top:6px;display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap}
 .tok{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;margin:2px;font-size:12px;color:#111}
 .isp{display:inline-block;background-repeat:no-repeat;background-size:100% 600%;vertical-align:middle;margin:1px}
+.bids,.cbids{font-size:12px;margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center}
+.cbids{display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;font-size:11px}
+.bchip{display:inline-flex;align-items:center;vertical-align:middle}
+.cb{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
 .card.bad{outline:3px solid #ff1a1a;outline-offset:1px;box-shadow:0 0 10px 3px #ff1a1a}
 #controls{width:min(1200px,96vw);margin:8px auto;background:#2f323a;border-radius:12px;padding:12px}
 .zones{display:flex;flex-direction:column;gap:8px}
@@ -121,6 +125,13 @@ function intSprite(v,w){
   d.style.backgroundImage='url("Cartas/Intensidades.png")';
   d.style.backgroundPosition=`0% ${INT_ROW[v]*20}%`;
   d.title=fmt(v);
+  return d;
+}
+// Una subasta puesta en el tablero: tipo + ficha de intensidad
+function bidChip(b){
+  const d=el('span','bchip');
+  d.appendChild(tokenEl('T',b.t));
+  d.appendChild(intSprite(b.v,26));
   return d;
 }
 function hierEl(h){
@@ -385,6 +396,16 @@ function render(){
     spot.appendChild(row);
     if(rv) spot.appendChild(hierEl(rv.hier));
     spot.appendChild(el('div','lbl',`${S.players[i].name} ↔ ${S.players[(i+1)%n].name} · mazo ${d.length}`));
+    if(S.phase!=='bid'&&S.players[i].bid&&S.players[(i+1)%n].bid){
+      const A=S.players[i], B=S.players[(i+1)%n];
+      const bb=el('div','bids');
+      bb.appendChild(el('span','',A.name+' '));
+      bb.appendChild(bidChip(A.bid.R));
+      bb.appendChild(el('span','',' vs '));
+      bb.appendChild(bidChip(B.bid.L));
+      bb.appendChild(el('span','',' '+B.name));
+      spot.appendChild(bb);
+    }
     st.appendChild(spot);
   }
   // Centro: dos cartas reveladas
@@ -397,6 +418,16 @@ function render(){
     spot.appendChild(row);
     if(S.rev&&S.rev.cen) spot.appendChild(hierEl(S.rev.cen.hier));
     spot.appendChild(el('div','lbl',`Centro · mazo ${S.center.length} · medio ${S.pool.length}`));
+    if(S.phase!=='bid'&&S.players.every(p=>p.bid)){
+      const cb=el('div','cbids');
+      S.players.forEach(p=>{
+        const x=el('span','cb');
+        x.appendChild(document.createTextNode(p.name+' '));
+        x.appendChild(bidChip(p.bid.C));
+        cb.appendChild(x);
+      });
+      spot.appendChild(cb);
+    }
     const ct=el('div','hier'); ct.appendChild(document.createTextNode('Intensidad:')); ct.appendChild(tokenEl('I',S.cInt));
     spot.appendChild(ct);
     st.appendChild(spot);

@@ -99,7 +99,7 @@
 // Atributos del lado compañero: S=💪 fuerza, A=🏃 agilidad, V=🎯 velocidad, I=🧠 inteligencia
 const ICON={S:"💪",A:"🏃",V:"🎯",I:"🧠"};
 const CARDS={1:"SSI",2:"SAV",3:"III",4:"SVI",5:"AAA",6:"VVV",7:"SSS",8:"SVI",9:"SAA",10:"SVV",11:"II",12:"ASI",13:"IIA",14:"VV",15:"SA",16:"VA"};
-// Movimientos para el bot por archivo
+// Movimientos para el bot por carta
 const MOV={1:1,2:5,3:4,4:2,5:3,6:6,7:2,8:4,9:2,10:6,11:3,12:1,13:4,14:5,15:5,16:3};
 // Icono que agrega la carta (pasa a ser parte de la carta)
 const ADD={3:{trig:"S",add:"A"},5:{trig:"V",add:"S"},6:{trig:"A",add:"I"},7:{trig:"I",add:"V"}};
@@ -215,13 +215,14 @@ function setup(shapeIdx,ortho){
   const rows=SHAPES[shapeIdx].rows; const W=Math.max(...rows.map(r=>r.length));
   cells=[];
   rows.forEach((row,r)=>[...row.padEnd(W,".")].forEach((ch,c)=>{
-    if(ch!==".") cells.push({r,c,side:ch==="S"?"S":"C",dotted:ch==="D",card:null,token:null});
+    if(ch!==".") cells.push({r,c,side:ch==="S"?"S":"C",dotted:ch==="D",card:null});
   }));
   const ids=shuffle(Array.from({length:16},(_,i)=>i+1));
   cells.forEach((cell,i)=>cell.card=ids[i%16]);
   deck=[];
   cells.forEach(cell=>{if(cell.dotted){deck.push(cell.card);cell.card=null;}});
-  G={W,H:rows.length,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,prevCap:-1,bot:-1,visit:-1,step:null,last:null,log:[],over:false};
+  // pancito (cap) y Roboquefort (bot) se guardan por índice de casilla
+  G={W,H:rows.length,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,prevCap:-1,bot:-1,showBot:false,prevShow:false,visit:-1,step:null,last:null,log:[],over:false};
   G.log.push("Empieza la partida. Elegí un compañero.");
 }
 
@@ -245,8 +246,7 @@ async function pick(i){
   if(G.step==="confirm") undoPick();
   const R=ROUNDS[G.r]; const c=cells[i]; const id=c.card;
   c.card=null;
-  if(G.cap>=0) cells[G.cap].token=null;
-  G.prevCap=G.cap; G.cap=i; c.token="cap";
+  G.prevCap=G.cap; G.prevShow=G.showBot; G.showBot=false; G.cap=i;
   if(R==="C"){G.picks.push(id); G.log.push(`Tomaste un compañero (${str(CARDS[id].split(""))}).`);}
   else {G.pc.push(id); G.log.push(`Tomaste una competencia.`);}
   G.step="confirm"; G.last={id,R}; render();
@@ -254,12 +254,10 @@ async function pick(i){
 // deshace la elección pendiente: la carta vuelve a su casilla y el pancito a la anterior
 function undoPick(){
   const id=G.last.id;
-  const old=cells[G.cap];
-  old.card=id; old.token=null;
+  cells[G.cap].card=id;
   if(G.last.R==="C") G.picks.pop(); else G.pc.pop();
   G.log.pop();
-  G.cap=G.prevCap;
-  if(G.cap>=0) cells[G.cap].token="cap";
+  G.cap=G.prevCap; G.showBot=G.prevShow;
   G.step=null; G.last=null;
 }
 function confirmPick(){
@@ -270,7 +268,8 @@ function confirmPick(){
 function startBot(){
   if(G.step!=="bot"||busy) return;
   G.step=null; G.last=null; busy=true; render();
-  botTurn().then(()=>{busy=false; G.r++; render();});
+  // al terminar el turno del bot, el pancito sale del tablero hasta la próxima elección
+  botTurn().then(()=>{busy=false; G.cap=-1; G.r++; render();});
 }
 
 async function botTurn(){
@@ -320,8 +319,7 @@ async function botTurn(){
   G.visit=-1;
   const landed=path[path.length-1];
   const c=cells[landed]; const id=c.card; c.card=null;
-  if(G.bot>=0) cells[G.bot].token=null;
-  c.token="bot"; G.bot=landed;
+  G.bot=landed; G.showBot=true;
   if(R==="C"){deck.push(id); G.log.push(`Roboquefort tomó un compañero y lo mezcló al mazo.`);}
   else {G.bc.push(id); G.log.push(`Roboquefort tomó una competencia, que puntúa para vos.`);}
   render();
@@ -400,6 +398,28 @@ function finish(){
   document.getElementById("end").classList.remove("hidden");
 }
 
+/* ---------- FLECHAS DE BLOQUEO ---------- */
+// Líneas desde una casilla en cada dirección de bloqueo, hasta la última casilla real del tablero
+function arrowLines(idx,color,mk){
+  if(idx<0) return "";
+  const W=G.W, H=G.H;
+  const cx=c=>12+c*94+43, cy=r=>12+r*126+59;
+  const p=cells[idx];
+  const dirs=G.ortho?[[-1,0],[1,0],[0,-1],[0,1]]:[[-1,-1],[-1,1],[1,-1],[1,1]];
+  const has=new Set(cells.map(x=>x.r+","+x.c));
+  let out="";
+  dirs.forEach(([dr,dc])=>{
+    let r=p.r, c=p.c, lr=p.r, lc=p.c;
+    while(r+dr>=0 && r+dr<H && c+dc>=0 && c+dc<W){
+      r+=dr; c+=dc;
+      if(has.has(r+","+c)){lr=r; lc=c;}
+    }
+    if(lr===p.r && lc===p.c) return;
+    out+=`<line x1="${cx(p.c)}" y1="${cy(p.r)}" x2="${cx(lc)+dc*47}" y2="${cy(lr)+dr*63}" stroke="${color}" stroke-width="6" stroke-linecap="round" opacity=".75" marker-end="url(#${mk})"/>`;
+  });
+  return out;
+}
+
 /* ---------- RENDER ---------- */
 function render(){
   if(G.over) return;
@@ -407,12 +427,12 @@ function render(){
   if(!busy && !G.step && legalPlayer().length===0){
     G.log.push("No tenés cartas legales en esta ronda: pasa Roboquefort.");
     busy=true; render();
-    botTurn().then(()=>{busy=false; if(G.r>=4){finish();return;} G.r++; render();});
+    botTurn().then(()=>{busy=false; G.cap=-1; if(G.r>=4){finish();return;} G.r++; render();});
     return;
   }
   const legal=(busy||G.step==="bot")?[]:legalPlayer();
 
-  // tablero
+  // tablero: pancito y Roboquefort se dibujan desde su casilla guardada
   const b=document.getElementById("board");
   b.style.gridTemplateColumns=`repeat(${G.W},86px)`;
   b.innerHTML="";
@@ -422,8 +442,8 @@ function render(){
       const side=c.side==="S"?"b":"a";
       inner=`<img src="${img(c.card,side)}" alt="" ${tipAttr(c.card)}>`;
     }
-    else if(c.token==="cap"){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty";}
-    else if(c.token==="bot"){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty";}
+    else if(i===G.cap){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty";}
+    else if(i===G.bot){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty";}
     else {cls+=" empty"; if(c.dotted) cls+=" dotted";}
     if(legal.includes(i)) cls+=" legal";
     if(G.visit===i) cls+=" visit";
@@ -433,28 +453,10 @@ function render(){
     if(legal.includes(i)) d.onclick=()=>pick(i);
     b.appendChild(d);
   });
-  // flechas del pancito: tachan las líneas bloqueadas hasta el borde del tablero
-  if(G.cap>=0){
-    const W=G.W, H=G.H;
-    const bw=24+W*86+(W-1)*8, bh=24+H*118+(H-1)*8;
-    const cx=c=>12+c*94+43, cy=r=>12+r*126+59;
-    const p=cells[G.cap];
-    const dirs=G.ortho?[[-1,0],[1,0],[0,-1],[0,1]]:[[-1,-1],[-1,1],[1,-1],[1,1]];
-    let lines="";
-    const has=new Set(cells.map(x=>x.r+","+x.c));
-    dirs.forEach(([dr,dc])=>{
-      // la línea recorre la dirección y termina en la última casilla real del tablero
-      let r=p.r, c=p.c, lr=p.r, lc=p.c;
-      while(r+dr>=0 && r+dr<H && c+dc>=0 && c+dc<W){
-        r+=dr; c+=dc;
-        if(has.has(r+","+c)){lr=r; lc=c;}
-      }
-      if(lr===p.r && lc===p.c) return;
-      const x1=cx(p.c), y1=cy(p.r);
-      const x2=cx(lc)+dc*47, y2=cy(lr)+dr*63;
-      lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c0392b" stroke-width="6" stroke-linecap="round" opacity=".75" marker-end="url(#ah)"/>`;
-    });
-    b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker></defs>${lines}</svg>`);
+  // flechas: rojas del pancito, grises de Roboquefort
+  if(G.cap>=0 || (G.bot>=0 && G.showBot)){
+    const bw=24+G.W*86+(G.W-1)*8, bh=24+G.H*118+(G.H-1)*8;
+    b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker><marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#7f8c8d"/></marker></defs>${arrowLines(G.cap,"#c0392b","ah")}${G.showBot?arrowLines(G.bot,"#7f8c8d","ahg"):""}</svg>`);
   }
 
   // barra superior: competencias (izq.), confirmar + carta elegida (centro), mis compañeros (der.)

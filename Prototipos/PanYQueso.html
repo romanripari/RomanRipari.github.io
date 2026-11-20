@@ -156,6 +156,25 @@ const TIP={
   15:{c:"Tantos puntos como 🎯 tenés en la carta anterior.",k:"2 o más compañeros con exactamente 2 atributos: 3 puntos."},
   16:{c:"Si está en la segunda posición: 1 punto.",k:"2 o más compañeros con exactamente 3 atributos: 2 puntos."}
 };
+// Condición de cada tuerquita, para mostrar en el resumen final
+const COND={
+  1:"Igual cantidad de 💪 que de 🧠",
+  2:"2 o más cartas con algún 🏃",
+  3:"3 o más símbolos 💪",
+  4:"Más 🎯 que 🧠",
+  5:"3 o más símbolos 🧠",
+  6:"3 o más símbolos 🏃",
+  7:"3 o más símbolos 🎯",
+  8:"Igual cantidad de 🏃 que de 🎯",
+  9:"Más 🏃 que 💪",
+  10:"5 o más símbolos sumando 💪 y 🎯",
+  11:"2 o más cartas con algún 🧠",
+  12:"2 o más cartas con algún 💪",
+  13:"5 o más símbolos sumando 🧠 y 🏃",
+  14:"2 o más cartas con algún 🎯",
+  15:"2 o más compañeros con exactamente 2 atributos",
+  16:"2 o más compañeros con exactamente 3 atributos"
+};
 // Tableros (C = lado compañero, S = lado competencia, D = compañero con línea punteada)
 const SHAPES=[
   {rows:["SCCS","DSCC","CCSD","SCCS"]},
@@ -267,7 +286,7 @@ function confirmPick(){
   if(G.step!=="confirm") return;
   // al confirmar, la carta pasa a la lista de compañeros o de competencias
   if(G.last.R==="C") G.picks.push(G.last.id); else G.pc.push(G.last.id);
-  if(G.r===4){G.step=null; finish(); return;}
+  if(G.r===4){G.step=null; render(); finish(); return;}
   G.step="bot"; render();
 }
 function startBot(){
@@ -395,12 +414,13 @@ function finish(){
   body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Puntos inferiores</th></tr>`;
   zone.forEach((id,i)=>{body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${win?"":"0 (no ganaste)"}</td></tr>`;});
   body+=`</table><p>Puntos inferiores: ${botP}</p>`;
-  body+=`<table><tr><th>Competencia</th><th>Estrellas</th></tr>`;
-  objs.forEach((id,k)=>{const ok=evalT(id,eff);body+=`<tr><td>Competencia ${k+1}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
+  body+=`<table><tr><th>Condición de la competencia</th><th>Estrellas</th></tr>`;
+  objs.forEach((id,k)=>{const ok=evalT(id,eff);body+=`<tr><td>${COND[id]}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
   body+=`</table>`;
   document.getElementById("endTitle").textContent=title;
   document.getElementById("endBody").innerHTML=body;
-  document.getElementById("game").classList.add("hidden");
+  // el tablero queda visible debajo del resumen, para revisar la última jugada
+  document.getElementById("end").scrollIntoView({behavior:"smooth"});
   document.getElementById("end").classList.remove("hidden");
 }
 

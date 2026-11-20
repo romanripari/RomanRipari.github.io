@@ -323,7 +323,7 @@ function newGame(){
   if(configError()) return;
   const n = SETUP.bots + 1;
   const names = shuffle(PLAYER_NAMES.slice()).slice(0,SETUP.bots);
-  const starter = SETUP.starter==='yo' ? 0 : Math.floor(Math.random()*n);
+const starter = Math.floor(Math.random()*n);
   S = {
     n,
     players: [SETUP.name.trim()||'Vos', ...names].map((name,i)=>({name, human:i===0, street:[], hand:[]})),
@@ -875,7 +875,7 @@ function setupHTML(){
   const err = configError();
   return `<div class="setup"><div class="setup-wrap">
     <div class="setup-left">
-      <div class="proto">UN PROTOTIPO DE BRUNO SASSONE Y ROMÁN RIPARI</div>
+<div class="proto">UN PROTOTIPO DE BRUNO SASSONE TORCELLO Y ROMÁN RIPARI</div>
       <h2>Eras</h2>
       <p>Construí edificios en tu village a lo largo de tres eras y ganá la mayoría de materiales o sellos en los criterios de cada ronda.</p>
       <h4>Paso a paso</h4>
@@ -893,16 +893,6 @@ function setupHTML(){
       <div class="opt-label">Jugar contra (bots)</div>
       <div class="opt-desc">Los bots siempre juegan en Difícil.</div>
       <div class="opts">${opt('bots',2,'2 bots (3 jugadores)')}${opt('bots',3,'3 bots (4 jugadores)')}${opt('bots',4,'4 bots (5 jugadores)')}</div>
-      <div class="opt-label">Cartas en mano</div>
-      <div class="opts">${[4,5,6].map(v=>`<button class="opt ${SETUP.hand===v?'on':''}" data-opt="hand" data-val="${v}">${v}</button>`).join('')}</div>
-      <div class="opt-label">Largo de village</div>
-      <div class="opts">${[5,6].map(v=>`<button class="opt ${SETUP.village===v?'on':''}" data-opt="village" data-val="${v}">${v}</button>`).join('')}</div>
-      <div class="opt-label">Completados valen +1 (solo recursos)</div>
-      <div class="opts">${opt('completeSix',true,'Sí')}${opt('completeSix',false,'No')}</div>
-      <div class="opt-label">Modo descarte</div>
-      <div class="opts">${opt('discard',true,'Sí')}${opt('discard',false,'No')}</div>
-      <div class="opt-label">Empieza</div>
-      <div class="opts">${opt('starter','azar','Al azar')}${opt('starter','yo','Yo')}</div>
       <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
       <button class="start" data-act="start" ${err?'disabled':''}>▷ Empezar partida</button>
     </div>

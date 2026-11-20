@@ -412,7 +412,7 @@ function finish(){
   else if(score>=9){title="Ganaste pero tampoco te creas mucho";cls="ok";}
   else {title="Mancoooooo";cls="no";}
   let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
-  body+=`<p>Tuerquitas cumplidas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
+  body+=`<p>Competencias ganadas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
   body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Condición de los puntos inferiores</th><th>Puntos</th></tr>`;
   zone.forEach((id,i)=>{
     const p=win?bottomPts(zone,eff,i):0;

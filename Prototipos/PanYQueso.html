@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pan y Queso · Solitario vs Roboquefort</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5efe2;margin:0;color:#222}
+  header{padding:12px 18px;background:#e7c97a;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  main{padding:14px}
+  .hidden{display:none!important}
+  .menu{max-width:920px;margin:0 auto}
+  .shapes{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0}
+  .shape{background:#fff;border:3px solid transparent;border-radius:10px;padding:10px;cursor:pointer;text-align:center;font-size:14px}
+  .shape.sel{border-color:#c0392b}
+  .mini{display:grid;gap:3px;justify-content:center;margin-bottom:6px}
+  .mini div{width:16px;height:16px;border-radius:3px}
+  .mini .C{background:#7fb3d5}.mini .S{background:#f4d03f}.mini .D{background:#aab7b8}.mini .x{background:transparent}
+  button{padding:10px 18px;font-size:16px;border:0;border-radius:6px;background:#c0392b;color:#fff;cursor:pointer}
+  button:disabled{background:#aaa;cursor:default}
+  .game{display:grid;grid-template-columns:1fr 300px;gap:14px;max-width:1200px;margin:0 auto}
+  .board{display:grid;gap:8px;justify-content:center;background:#fff;padding:12px;border-radius:10px}
+  .cell{width:86px;height:118px;border-radius:6px;position:relative;overflow:hidden;box-sizing:border-box}
+  .cell img{width:100%;height:100%;object-fit:cover;display:block}
+  .cell.empty{border:2px dashed #bbb;background:#eee}
+  .cell.dotted{opacity:.45}
+  .cell.legal{outline:4px solid #27ae60;cursor:pointer}
+  .cell.legal:hover{transform:scale(1.04)}
+  .side{background:#fff;padding:12px;border-radius:10px;font-size:14px}
+  .thumbs img{width:58px;margin:2px;border-radius:4px;vertical-align:top}
+  .log{height:200px;overflow:auto;background:#fafafa;border:1px solid #ddd;padding:6px;font-size:13px;line-height:1.35}
+  .note{font-size:13px;color:#555;margin-top:10px}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px}
+  td,th{border-bottom:1px solid #ddd;padding:4px;text-align:left}
+  .ok{color:#1e8449;font-weight:700}.no{color:#922b21}
+</style>
+</head>
+<body>
+<header><span>Pan y Queso · Solitario vs Roboquefort</span><span id="hdr"></span></header>
+<main>
+  <section id="menu" class="menu">
+    <h2>Elegí el tablero</h2>
+    <div id="shapes" class="shapes"></div>
+    <h3>Bloqueo del pancito y de Roboquefort</h3>
+    <label><input type="radio" name="blk" value="ortho" checked> Ortogonal (fila y columna)</label>
+    &nbsp;&nbsp;
+    <label><input type="radio" name="blk" value="diag"> Diagonal</label>
+    <p><button id="start" disabled>Empezar partida</button></p>
+    <p class="note">Los diagramas provisorios (Anillo, Pirámide, Cuadro con hueco y Mixto) están armados aproximados: revisalos contra el reglamento antes de probar.</p>
+  </section>
+
+  <section id="game" class="game hidden">
+    <div>
+      <div id="board" class="board"></div>
+      <p id="info" class="note"></p>
+    </div>
+    <div class="side">
+      <div id="status"></div>
+      <h4>Tus compañeros</h4><div id="myComp" class="thumbs"></div>
+      <h4>Tus objetivos</h4><div id="myObj" class="thumbs"></div>
+      <h4>Registro</h4><div id="log" class="log"></div>
+    </div>
+  </section>
+
+  <section id="end" class="menu hidden">
+    <h2 id="endTitle"></h2>
+    <div id="endBody"></div>
+    <p><button id="again">Jugar otra vez</button></p>
+  </section>
+</main>
+
+<script>
+/* ---------- DATOS ---------- */
+// Atributos del lado compañero: S=💪 fuerza, A=🏃 agilidad, V=🎯 velocidad, I=🧠 inteligencia
+const ICON={S:"💪",A:"🏃",V:"🎯",I:"🧠"};
+const CARDS={1:"SSI",2:"SAV",3:"III",4:"SVI",5:"AAA",6:"VVV",7:"SSS",8:"SVI",9:"SAA",10:"SVV",11:"II",12:"ASI",13:"IIA",14:"VV",15:"SA",16:"VA"};
+// Movimientos del bot por archivo
+const MOV={1:1,2:5,3:4,4:2,5:3,6:6,7:2,8:4,9:2,10:6,11:3,12:1,13:4,14:5,15:5,16:3};
+// Icono extra que agrega la carta (cuenta como parte de la carta)
+const ADD={3:{trig:"S",add:"A"},5:{trig:"V",add:"S"},6:{trig:"A",add:"I"},7:{trig:"I",add:"V"}};
+// Parte inferior del lado compañero (puntos)
+const BOT={
+  1:{k:"prev",x:"A"},
+  2:{k:"next",x:"I",n:2,p:2},
+  4:{k:"next",x:"A",n:2,p:2},
+  8:{k:"next",x:"S",n:2,p:2},
+  9:{k:"four"},
+  10:{k:"prev",x:"I"},
+  11:{k:"pos",p:3,pts:2},
+  12:{k:"next",x:"V",n:2,p:2},
+  13:{k:"prev",x:"S"},
+  14:{k:"pos",p:1,pts:1},
+  15:{k:"prev",x:"V"},
+  16:{k:"pos",p:2,pts:1}
+};
+// Tuerquitas del lado competencia (cumplir = true)
+const T={
+  1:{t:"eq",a:"S",b:"I",pts:4},
+  2:{t:"cardsWith",x:"A",n:2,pts:2},
+  3:{t:"sym",x:"S",n:3,pts:2},
+  4:{t:"more",a:"V",b:"I",pts:3},
+  5:{t:"sym",x:"I",n:3,pts:2},
+  6:{t:"sym",x:"A",n:3,pts:2},
+  7:{t:"sym",x:"V",n:3,pts:2},
+  8:{t:"eq",a:"A",b:"V",pts:4},
+  9:{t:"more",a:"A",b:"S",pts:3},
+  10:{t:"sum",x:"S",y:"V",n:5,pts:3},
+  11:{t:"cardsWith",x:"I",n:2,pts:2},
+  12:{t:"cardsWith",x:"S",n:2,pts:2},
+  13:{t:"sum",x:"I",y:"A",n:5,pts:3},
+  14:{t:"cardsWith",x:"V",n:2,pts:2},
+  15:{t:"exact",k:2,n:2,pts:3},
+  16:{t:"exact",k:3,n:2,pts:2}
+};
+// Tableros: C = lado compañero, S = lado competencia, D = compañero con línea punteada (va al mazo de Roboquefort)
+const SHAPES=[
+  {name:"Cuadrado",rows:["SCCS","DSCC","CCSD","SCCS"]},
+  {name:"Óvalo",rows:[".CSCSC.","DSC.CSD",".CSCSC."]},
+  {name:"Anillo (provisorio)",rows:[".SCCS.","DC..SC","CS..CD",".SCCS."]},
+  {name:"Pirámide (provisorio)",rows:["..SC..",".CSCS.","CSCD..","SCSCSC"]},
+  {name:"Cuadro con hueco (provisorio)",rows:["SCCS.","DS.CC","CCSD.","SCCS."]},
+  {name:"Mixto (provisorio)",rows:["SCSCSC","CS..CD","DSCCS.","...S.."]}
+];
+const ROUNDS=["C","S","C","S","C"]; // C = compañeros, S = competencias
+
+/* ---------- ESTADO ---------- */
+let cells=[], deck=[], G=null, selShape=0;
+
+const img=(id,side)=>`PanYQueso/${String(id).padStart(2,"0")}${side}.png`;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const str=arr=>arr.map(s=>ICON[s]).join("");
+
+/* ---------- PORTADA ---------- */
+function drawMenu(){
+  const box=document.getElementById("shapes"); box.innerHTML="";
+  SHAPES.forEach((sh,i)=>{
+    const W=Math.max(...sh.rows.map(r=>r.length));
+    let h=`<div class="shape ${i===selShape?"sel":""}" data-i="${i}"><div class="mini" style="grid-template-columns:repeat(${W},16px)">`;
+    sh.rows.forEach(row=>{[...row.padEnd(W,".")].forEach(ch=>{h+=`<div class="${ch==="."?"x":ch==="S"?"S":ch==="D"?"D":"C"}"></div>`;});});
+    h+=`</div>${sh.name}</div>`;
+    box.insertAdjacentHTML("beforeend",h);
+  });
+  box.querySelectorAll(".shape").forEach(el=>el.onclick=()=>{selShape=+el.dataset.i;drawMenu();document.getElementById("start").disabled=false;});
+  document.getElementById("start").disabled=false;
+}
+
+/* ---------- PARTIDA ---------- */
+function setup(shapeIdx,ortho){
+  const rows=SHAPES[shapeIdx].rows; const W=Math.max(...rows.map(r=>r.length));
+  cells=[];
+  rows.forEach((row,r)=>[...row.padEnd(W,".")].forEach((ch,c)=>{
+    if(ch!==".") cells.push({r,c,side:ch==="S"?"S":"C",dotted:ch==="D",card:null,token:null});
+  }));
+  const ids=shuffle(Array.from({length:16},(_,i)=>i+1));
+  cells.forEach((cell,i)=>cell.card=ids[i%16]);
+  deck=[];
+  cells.forEach(cell=>{if(cell.dotted){deck.push(cell.card);cell.card=null;}});
+  G={W,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,bot:-1,log:[],over:false};
+  G.log.push("Empieza la partida. Elegí un compañero.");
+}
+
+// bloqueo: fila/columna (ortogonal) o diagonal, según el toggle
+function blocks(t,c){
+  if(G.ortho) return c.r===t.r||c.c===t.c;
+  return Math.abs(c.r-t.r)===Math.abs(c.c-t.c);
+}
+function legalPlayer(){
+  const R=ROUNDS[G.r];
+  return cells.map((c,i)=>i).filter(i=>{
+    const c=cells[i];
+    if(c.card==null||c.side!==R) return false;
+    if(G.bot>=0 && blocks(cells[G.bot],c)) return false;
+    return true;
+  });
+}
+function pick(i){
+  const R=ROUNDS[G.r]; const c=cells[i]; const id=c.card;
+  c.card=null;
+  if(G.cap>=0) cells[G.cap].token=null;
+  G.cap=i; c.token="cap";
+  if(R==="C"){G.picks.push(id); G.log.push(`Tomaste el compañero ${id} (${str(CARDS[id])}).`);}
+  else {G.pc.push(id); G.log.push(`Tomaste la competencia ${id} (tuerquita: ${tqText(id)}).`);}
+  if(G.r===4){finish();return;}
+  botTurn();
+  G.r++;
+  render();
+}
+function botTurn(){
+  const R=ROUNDS[G.r];
+  if(!deck.length){G.log.push("Roboquefort no tiene cartas de movimiento.");return;}
+  const drawn=deck[Math.floor(Math.random()*deck.length)];
+  const N=MOV[drawn];
+  let p=G.bot, steps=0, landed=-1, guard=0;
+  const limit=cells.length*(N+1);
+  while(steps<N && guard<limit){
+    p=(p+1)%cells.length; guard++;
+    const c=cells[p];
+    if(c.card!=null && c.side===R && !(G.cap>=0 && blocks(cells[G.cap],c))){steps++; landed=p;}
+  }
+  if(landed<0){G.log.push("Roboquefort no encontró casillas legales.");return;}
+  const c=cells[landed]; const id=c.card; c.card=null;
+  if(G.bot>=0) cells[G.bot].token=null;
+  c.token="bot"; G.bot=landed;
+  if(R==="C"){deck.push(id); G.log.push(`Roboquefort (mov ${N}) tomó el compañero ${id} y lo mezcló al mazo.`);}
+  else {G.bc.push(id); G.log.push(`Roboquefort (mov ${N}) tomó la competencia ${id}.`);}
+}
+
+/* ---------- REGLAS DE PUNTAJE ---------- */
+function effIcons(zone){
+  const eff=zone.map(id=>CARDS[id].split(""));
+  zone.forEach((id,i)=>{
+    const ad=ADD[id]; if(!ad) return;
+    let n=0;
+    [i-1,i-2].forEach(j=>{ if(j>=0 && CARDS[zone[j]].includes(ad.trig)) n++; });
+    for(let k=0;k<n;k++) eff[i].push(ad.add);
+  });
+  return eff;
+}
+function evalT(id,eff){
+  const t=T[id]; const all=eff.flat();
+  const cnt=x=>all.filter(s=>s===x).length;
+  switch(t.t){
+    case "eq": return cnt(t.a)===cnt(t.b);
+    case "more": return cnt(t.a)>cnt(t.b);
+    case "sym": return cnt(t.x)>=t.n;
+    case "sum": return cnt(t.x)+cnt(t.y)>=t.n;
+    case "cardsWith": return eff.filter(a=>a.includes(t.x)).length>=t.n;
+    case "exact": return eff.filter(a=>new Set(a).size===t.k).length>=t.n;
+  }
+  return false;
+}
+function tqText(id){
+  const t=T[id];
+  switch(t.t){
+    case "eq": return `${ICON[t.a]} = ${ICON[t.b]}`;
+    case "more": return `más ${ICON[t.a]} que ${ICON[t.b]}`;
+    case "sym": return `${t.n}+ ${ICON[t.x]}`;
+    case "sum": return `${t.n}+ ${ICON[t.x]}+${ICON[t.y]}`;
+    case "cardsWith": return `${t.n}+ cartas con ${ICON[t.x]}`;
+    case "exact": return `${t.n}+ compañeros con exactamente ${t.k} atributos`;
+  }
+}
+function bottomPts(zone,eff){
+  let s=0;
+  zone.forEach((id,i)=>{
+    const r=BOT[id]; if(!r) return;
+    if(r.k==="prev"){ if(i>0) s+=eff[i-1].filter(x=>x===r.x).length; }
+    else if(r.k==="next"){
+      let c=0; for(let j=i+1;j<=i+2&&j<zone.length;j++) c+=eff[j].filter(x=>x===r.x).length;
+      if(c>=r.n) s+=r.p;
+    }
+    else if(r.k==="pos"){ if(i+1===r.p) s+=r.pts; }
+    else if(r.k==="four"){
+      const set=new Set();
+      if(i>0) eff[i-1].forEach(x=>set.add(x));
+      if(i+1<zone.length) eff[i+1].forEach(x=>set.add(x));
+      if(["S","A","V","I"].every(x=>set.has(x))) s+=3;
+    }
+  });
+  return s;
+}
+function finish(){
+  G.over=true;
+  const zone=G.picks;
+  const eff=effIcons(zone);
+  const objs=[...G.pc,...G.bc];
+  const met=objs.filter(id=>evalT(id,eff));
+  const win=met.length>=3;
+  const botP=win?bottomPts(zone,eff):0;
+  const starP=win?met.reduce((a,id)=>a+T[id].pts,0):0;
+  const score=botP+starP;
+  let title, cls;
+  if(!win){title="Perdiste";cls="no";}
+  else if(score>=13){title="Crack infinito";cls="ok";}
+  else if(score>=9){title="Ganaste pero tampoco te creas mucho";cls="ok";}
+  else {title="Mancoooooo";cls="no";}
+  let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
+  body+=`<p>Tuerquitas cumplidas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
+  body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Puntos inferiores</th></tr>`;
+  zone.forEach((id,i)=>{body+=`<tr><td>${id}</td><td>${str(eff[i])}</td><td>${win?"":"0 (no ganaste)"}</td></tr>`;});
+  body+=`</table><p>Puntos inferiores: ${botP}</p>`;
+  body+=`<table><tr><th>Competencia</th><th>Tuerquita</th><th>Estrellas</th></tr>`;
+  objs.forEach(id=>{const ok=evalT(id,eff);body+=`<tr><td>${id}</td><td>${tqText(id)}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
+  body+=`</table>`;
+  document.getElementById("endTitle").textContent=title;
+  document.getElementById("endBody").innerHTML=body;
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("end").classList.remove("hidden");
+}
+
+/* ---------- RENDER ---------- */
+function render(){
+  if(G.over) return;
+  const b=document.getElementById("board");
+  b.style.gridTemplateColumns=`repeat(${G.W},86px)`;
+  b.innerHTML="";
+  const legal=legalPlayer();
+  cells.forEach((c,i)=>{
+    let cls="cell", inner="";
+    if(c.card!=null){ inner=`<img src="${img(c.card,c.side==="S"?"b":"a")}" alt="${c.card}">`; }
+    else if(c.token==="cap"){ inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty"; }
+    else if(c.token==="bot"){ inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty"; }
+    else { cls+=" empty"; if(c.dotted) cls+=" dotted"; }
+    const isLegal=legal.includes(i);
+    if(isLegal) cls+=" legal";
+    const d=document.createElement("div");
+    d.className=cls; d.style.gridRow=c.r+1; d.style.gridColumn=c.c+1;
+    d.innerHTML=inner;
+    if(isLegal) d.onclick=()=>pick(i);
+    b.appendChild(d);
+  });
+  const R=ROUNDS[G.r];
+  document.getElementById("hdr").textContent=`Ronda ${G.r+1} de 5 · ${R==="C"?"Compañeros":"Competencias"}`;
+  document.getElementById("status").innerHTML=`<b>${R==="C"?"Elegí un compañero (lado compañero)":"Elegí una competencia (lado competencia)"}</b><br>Mazo de Roboquefort: ${deck.length} cartas.`;
+  document.getElementById("info").textContent=legal.length?"Tocá una carta resaltada para elegirla.":"No tenés cartas legales en esta ronda.";
+  document.getElementById("myComp").innerHTML=G.picks.map(id=>`<img src="${img(id,"a")}" alt="${id}">`).join("");
+  document.getElementById("myObj").innerHTML=[...G.pc.map(id=>`<img src="${img(id,"b")}" alt="${id}">`),...G.bc.map(id=>`<img src="${img(id,"b")}" alt="${id}" style="opacity:.55" title="Roboquefort">`)].join("");
+  document.getElementById("log").innerHTML=G.log.slice(-40).map(x=>`<div>${x}</div>`).join("");
+  document.getElementById("log").scrollTop=1e9;
+  if(!legal.length && G.r<5){ // sin jugadas legales: pasa el bot
+    G.log.push("Pasás la ronda (sin cartas legales).");
+    botTurn(); G.r++; if(G.r>=5) finish(); else render();
+  }
+}
+
+/* ---------- EVENTOS ---------- */
+document.getElementById("start").onclick=()=>{
+  const ortho=document.querySelector('input[name="blk"]:checked').value==="ortho";
+  setup(selShape,ortho);
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("end").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  render();
+};
+document.getElementById("again").onclick=()=>{
+  document.getElementById("end").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+  drawMenu();
+};
+drawMenu();
+</script>
+</body>
+</html>

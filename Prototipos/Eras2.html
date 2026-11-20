@@ -138,6 +138,8 @@ const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
 const EST_LBL = {ZB:'Básico',ZI:'Medio',ZR:'Reforzado'};
 const EST_CAP = {ZB:4,ZI:5,ZR:7};
 const TIPO_ICON = {TI:'Edificios/templo_1.png', TM:'Edificios/mercado_1.png', TT:'Edificios/taller_1.png', TP:'Edificios/puerto_1.png', TC:'Edificios/castillo_1.png'};
+const EST_ICON = {ZB:'Edificios/tam_basico.png', ZI:'Edificios/tam_medio.png', ZR:'Edificios/tam_reforzado.png'};
+
 const TIPO_LBL = {TI:'Templo',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const SELLO_ICON = '🧿';
 
@@ -211,6 +213,7 @@ const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6Ky
 function iconFor(k){
   if(ERA_ICON[k]) return `<span class="ico">${ERA_ICON[k]}</span>`;
   if(TIPO_ICON[k]) return `<img class="ico-img" src="${TIPO_ICON[k]}" alt="${TIPO_LBL[k]}">`;
+  if(EST_ICON[k]) return `<img class="ico-img" src="${EST_ICON[k]}" alt="${EST_LBL[k]}">`;
   return `<span class="ico">${k}</span>`;
 }
 /* ===== ESTADO ===== */

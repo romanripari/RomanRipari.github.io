@@ -136,8 +136,8 @@ const T={
   12:{t:"cardsWith",x:"S",n:2,pts:2},
   13:{t:"sum",x:"I",y:"A",n:5,pts:3},
   14:{t:"cardsWith",x:"V",n:2,pts:2},
-  15:{t:"exact",k:2,n:2,pts:3},
-  16:{t:"exact",k:3,n:2,pts:2}
+  15:{t:"attrEq",k:2,n:2,pts:3},
+  16:{t:"attrMin",k:3,n:2,pts:2}
 };
 // Textos para los tooltips: c = lado compañero, k = lado competencia
 const TIP={
@@ -155,8 +155,8 @@ const TIP={
   12:{c:"Si tenés 2 o más 🎯 en las dos cartas siguientes: 2 puntos.",k:"2 o más cartas con algún 💪: 2 puntos."},
   13:{c:"Tantos puntos como 💪 tenés en la carta anterior.",k:"5 o más símbolos sumando 🧠 y 🏃: 3 puntos."},
   14:{c:"Si está en la primera posición: 1 punto.",k:"2 o más cartas con algún 🎯: 2 puntos."},
-  15:{c:"Tantos puntos como 🎯 tenés en la carta anterior.",k:"2 o más compañeros con exactamente 2 atributos: 3 puntos."},
-  16:{c:"Si está en la segunda posición: 1 punto.",k:"2 o más compañeros con exactamente 3 atributos: 2 puntos."}
+  15:{c:"Tantos puntos como 🎯 tenés en la carta anterior.",k:"2 atributos distintos con exactamente 2 símbolos cada uno, entre todos tus compañeros: 3 puntos."},
+  16:{c:"Si está en la segunda posición: 1 punto.",k:"2 atributos distintos con 3 o más símbolos cada uno, entre todos tus compañeros: 2 puntos."}
 };
 // Condición de cada tuerquita, para mostrar en el resumen final
 const COND={
@@ -174,8 +174,8 @@ const COND={
   12:"2 o más cartas con algún 💪",
   13:"5 o más símbolos sumando 🧠 y 🏃",
   14:"2 o más cartas con algún 🎯",
-  15:"2 o más compañeros con exactamente 2 atributos",
-  16:"2 o más compañeros con exactamente 3 atributos"
+  15:"2 atributos distintos con exactamente 2 símbolos cada uno, entre todos tus compañeros",
+  16:"2 atributos distintos con 3 o más símbolos cada uno, entre todos tus compañeros"
 };
 // Tableros (C = lado compañero, S = lado competencia, D = compañero con línea punteada)
 const SHAPES=[
@@ -373,8 +373,10 @@ function evalT(id,eff){
     case "sym": return cnt(t.x)>=t.n;
     case "sum": return cnt(t.x)+cnt(t.y)>=t.n;
     case "cardsWith": return eff.filter(a=>a.includes(t.x)).length>=t.n;
-    // cuenta símbolos, aunque se repitan (incluye los íconos agregados)
-    case "exact": return eff.filter(a=>a.length===t.k).length>=t.n;
+    // 2 atributos distintos, cada uno con exactamente k símbolos entre todas las cartas
+    case "attrEq": return ["S","A","V","I"].filter(x=>cnt(x)===t.k).length>=t.n;
+    // 2 atributos distintos, cada uno con k o más símbolos entre todas las cartas
+    case "attrMin": return ["S","A","V","I"].filter(x=>cnt(x)>=t.k).length>=t.n;
   }
   return false;
 }

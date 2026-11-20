@@ -19,7 +19,7 @@
   .mini .C{background:#7fb3d5}.mini .S{background:#f4d03f}.mini .D{background:#aab7b8}.mini .x{background:transparent}
   button{padding:10px 18px;font-size:16px;border:0;background:#c0392b;color:#fff;cursor:pointer}
   button:disabled{background:#aaa;cursor:default}
-  .game{display:grid;grid-template-columns:1fr 300px;gap:14px;max-width:1240px;margin:0 auto}
+  .game{display:grid;grid-template-columns:1fr;gap:14px;max-width:1240px;margin:0 auto}
   .topbar{background:#fff;padding:8px;margin-bottom:10px;min-height:60px}
   .topbar h4{margin:0 0 4px}
   .tbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -250,21 +250,23 @@ async function pick(i){
   const R=ROUNDS[G.r]; const c=cells[i]; const id=c.card;
   c.card=null;
   G.prevCap=G.cap; G.prevShow=G.showBot; G.showBot=false; G.cap=i;
-  if(R==="C"){G.picks.push(id); G.log.push(`Tomaste un compañero (${str(CARDS[id].split(""))}).`);}
-  else {G.pc.push(id); G.log.push(`Tomaste una competencia.`);}
+  // la elección queda pendiente: se guarda en la lista recién al confirmar
+  G.log.push(R==="C"?`Tomaste un compañero (${str(CARDS[id].split(""))}).`:"Tomaste una competencia.");
   G.step="confirm"; G.last={id,R}; render();
 }
 // deshace la elección pendiente: la carta vuelve a su casilla y el pancito a la anterior
 function undoPick(){
   const id=G.last.id;
   cells[G.cap].card=id;
-  if(G.last.R==="C") G.picks.pop(); else G.pc.pop();
+  // la elección pendiente nunca llegó a las listas confirmadas
   G.log.pop();
   G.cap=G.prevCap; G.showBot=G.prevShow;
   G.step=null; G.last=null;
 }
 function confirmPick(){
   if(G.step!=="confirm") return;
+  // al confirmar, la carta pasa a la lista de compañeros o de competencias
+  if(G.last.R==="C") G.picks.push(G.last.id); else G.pc.push(G.last.id);
   if(G.r===4){G.step=null; finish(); return;}
   G.step="bot"; render();
 }
@@ -310,7 +312,8 @@ async function botTurn(){
   // Camino: N casillas legales en orden de lectura, desde su posición
   // si todo está bloqueado para Roboquefort, todas las cartas del tipo cuentan
   const anyStrict=cells.some(c=>c.card!=null && c.side===R && !(G.cap>=0 && blocks(cells[G.cap],c)));
-  let p=G.bot, steps=0, path=[], guard=0; const limit=cells.length*(N+1);
+  // Roboquefort cuenta siempre desde la casilla superior izquierda
+  let p=-1, steps=0, path=[], guard=0; const limit=cells.length*(N+1);
   while(steps<N && guard<limit){
     p=(p+1)%cells.length; guard++;
     const c=cells[p];

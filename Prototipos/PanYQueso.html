@@ -22,8 +22,15 @@
   .game{display:grid;grid-template-columns:1fr 300px;gap:14px;max-width:1240px;margin:0 auto}
   .topbar{background:#fff;padding:8px;margin-bottom:10px;min-height:60px}
   .topbar h4{margin:0 0 4px}
+  .tbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .tcol{flex:1}
+  .tcol.tr{text-align:right}
+  .tcol.tr .row{justify-content:flex-end}
+  .tmid{flex:0 0 150px;text-align:center}
+  .tmid img{width:90px;display:block;margin:6px auto 0}
   .row{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
-  .board{display:grid;gap:8px;justify-content:center;background:#fff;padding:12px}
+  .board{position:relative;display:grid;gap:8px;justify-content:center;background:#fff;padding:12px}
+  .board svg{position:absolute;left:0;top:0;pointer-events:none}
   .cell{width:86px;height:118px;position:relative;overflow:hidden;box-sizing:border-box}
   .cell img{width:100%;height:100%;display:block}
   .cell.empty{border:2px dashed #bbb;background:#eee}
@@ -32,10 +39,9 @@
   .cell.legal:hover{transform:scale(1.04)}
   .cell.visit{outline:5px solid #e67e22}
   .side{background:#fff;padding:12px;font-size:14px}
-  .side img{width:58px;margin:2px;vertical-align:top}
-  .dk{display:inline-block;text-align:center;margin:2px;vertical-align:top}
-  .dk .n{display:block;font-weight:700;font-size:13px}
-  .dk img{width:50px;display:block}
+  .dk{position:relative;display:inline-block;margin:4px;vertical-align:top}
+  .dk img{width:74px;display:block}
+  .dk .n{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#c0392b;text-shadow:0 0 4px #fff,0 0 8px #fff,0 0 12px #fff,0 0 2px #fff;pointer-events:none}
   .log{height:180px;overflow:auto;background:#fafafa;border:1px solid #ddd;padding:6px;font-size:13px;line-height:1.35}
   .note{font-size:13px;color:#555}
   table{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px}
@@ -67,12 +73,10 @@
     <div>
       <div id="top" class="topbar"></div>
       <div id="board" class="board"></div>
-      <div id="after" class="row" style="margin-top:12px;align-items:center;min-height:130px"></div>
       <p id="info" class="note"></p>
     </div>
     <div class="side">
       <div id="status"></div>
-      <h4>Tus compañeros</h4><div id="myComp"></div>
       <h4>Mazo de Roboquefort</h4><div id="deck"></div>
       <h4>Registro</h4><div id="log" class="log"></div>
     </div>
@@ -131,7 +135,7 @@ const T={
   15:{t:"exact",k:2,n:2,pts:3},
   16:{t:"exact",k:3,n:2,pts:2}
 };
-// Textos para los tooltips (lado compañero y lado competencia)
+// Textos para los tooltips: c = lado compañero, k = lado competencia
 const TIP={
   1:{c:"Tantos puntos como 🏃 tenés en la carta anterior.",k:"Igual cantidad de 💪 que de 🧠 entre tus íconos: 4 puntos."},
   2:{c:"Si tenés 2 o más 🧠 en las dos cartas siguientes: 2 puntos.",k:"2 o más cartas con algún 🏃: 2 puntos."},
@@ -163,20 +167,20 @@ const ROUNDS=["C","S","C","S","C"]; // C = compañeros, S = competencias
 
 /* ---------- ESTADO ---------- */
 let cells=[], deck=[], G=null, selShape=0, busy=false;
+// img: a.png = lado compañero, b.png = lado competencia
 const img=(id,side)=>`PanYQueso/${String(id).padStart(2,"0")}${side}.png`;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const str=arr=>arr.map(s=>ICON[s]).join("");
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-// tooltip: lista de atributos de una carta en formato "data-id"
 const tipAttr=id=>`data-id="${id}"`;
 
-/* ---------- TOOLTIP (muestra las dos caras) ---------- */
+/* ---------- TOOLTIP (solo la cara visible) ---------- */
 const tt=document.getElementById("tt");
 document.addEventListener("mouseover",e=>{
   const el=e.target.closest("[data-id]");
   if(!el){tt.classList.add("hidden");return;}
   const id=+el.dataset.id;
-  // muestra solo el texto de la cara visible: a.png = compañero, b.png = competencia
+  // a.png = compañero, b.png = competencia
   const src=(el.tagName==="IMG"?el:el.querySelector("img")||{}).src||"";
   const side=/b\.png$/.test(src)?"S":"C";
   tt.innerHTML=`<b>${side==="C"?"Lado compañero":"Lado competencia"}</b><br>${side==="C"?TIP[id].c:TIP[id].k}`;
@@ -215,7 +219,7 @@ function setup(shapeIdx,ortho){
   cells.forEach((cell,i)=>cell.card=ids[i%16]);
   deck=[];
   cells.forEach(cell=>{if(cell.dotted){deck.push(cell.card);cell.card=null;}});
-  G={W,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,bot:-1,visit:-1,log:[],over:false};
+  G={W,H:rows.length,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,prevCap:-1,bot:-1,visit:-1,step:null,last:null,log:[],over:false};
   G.log.push("Empieza la partida. Elegí un compañero.");
 }
 
@@ -243,7 +247,6 @@ async function pick(i){
   G.prevCap=G.cap; G.cap=i; c.token="cap";
   if(R==="C"){G.picks.push(id); G.log.push(`Tomaste un compañero (${str(CARDS[id].split(""))}).`);}
   else {G.pc.push(id); G.log.push(`Tomaste una competencia.`);}
-  // la carta baja debajo del tablero, pausa, y después aparece "Confirmar"
   G.step="confirm"; G.last={id,R}; render();
 }
 // deshace la elección pendiente: la carta vuelve a su casilla y el pancito a la anterior
@@ -264,7 +267,7 @@ function confirmPick(){
 }
 function startBot(){
   if(G.step!=="bot"||busy) return;
-  G.step=null; busy=true; render();
+  G.step=null; G.last=null; busy=true; render();
   botTurn().then(()=>{busy=false; G.r++; render();});
 }
 
@@ -274,7 +277,7 @@ async function botTurn(){
   // Todas las cartas del mazo se mezclan en el aire
   const ov=document.getElementById("ov"), box=document.getElementById("ovbox"), txt=document.getElementById("ovtxt");
   box.innerHTML="";
-  const els=deck.map(id=>{const im=document.createElement("img");im.src=img(id,"a");im.alt=id;box.appendChild(im);return im;});
+  const els=deck.map(id=>{const im=document.createElement("img");im.src=img(id,"a");im.alt="";box.appendChild(im);return im;});
   ov.classList.remove("hidden");
   txt.textContent="Roboquefort mezcla el mazo...";
   for(let k=0;k<14;k++){
@@ -405,27 +408,17 @@ function render(){
     botTurn().then(()=>{busy=false; if(G.r>=4){finish();return;} G.r++; render();});
     return;
   }
+  const legal=(busy||G.step==="bot")?[]:legalPlayer();
+
+  // tablero
   const b=document.getElementById("board");
   b.style.gridTemplateColumns=`repeat(${G.W},86px)`;
   b.innerHTML="";
-  const legal=(busy||G.step==="moving"||G.step==="bot")?[]:legalPlayer();
-  // zona de confirmación debajo del tablero
-  const after=document.getElementById("after");
-  let ah="";
-  if(G.last && G.step){
-    ah+=`<img src="${img(G.last.id,G.last.R==="C"?"a":"b")}" width="90" alt="${G.last.id}" ${tipAttr(G.last.id)}>`;
-    if(G.step==="moving") ah+=`<span class="note">Guardando tu elección...</span>`;
-    if(G.step==="confirm") ah+=`<button id="btnC">Confirmar</button>`;
-    if(G.step==="bot") ah+=`<button id="btnB">Turno del Bot</button>`;
-  }
-  after.innerHTML=ah;
-  const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
-  const bb=document.getElementById("btnB"); if(bb) bb.onclick=startBot;
   cells.forEach((c,i)=>{
     let cls="cell", inner="";
     if(c.card!=null){
       const side=c.side==="S"?"b":"a";
-      inner=`<img src="${img(c.card,side)}" alt="${c.card}" ${tipAttr(c.card)}>`;
+      inner=`<img src="${img(c.card,side)}" alt="" ${tipAttr(c.card)}>`;
     }
     else if(c.token==="cap"){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty";}
     else if(c.token==="bot"){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty";}
@@ -438,19 +431,50 @@ function render(){
     if(legal.includes(i)) d.onclick=()=>pick(i);
     b.appendChild(d);
   });
+  // flechas del pancito: tachan las líneas bloqueadas hasta el borde del tablero
+  if(G.cap>=0){
+    const W=G.W, H=G.H;
+    const bw=24+W*86+(W-1)*8, bh=24+H*118+(H-1)*8;
+    const cx=c=>12+c*94+43, cy=r=>12+r*126+59;
+    const p=cells[G.cap];
+    const dirs=G.ortho?[[-1,0],[1,0],[0,-1],[0,1]]:[[-1,-1],[-1,1],[1,-1],[1,1]];
+    let lines="";
+    dirs.forEach(([dr,dc])=>{
+      let r=p.r, c=p.c;
+      while(r+dr>=0 && r+dr<H && c+dc>=0 && c+dc<W){r+=dr;c+=dc;}
+      const x1=cx(p.c), y1=cy(p.r);
+      const x2=cx(c)+dc*47, y2=cy(r)+dr*63;
+      lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c0392b" stroke-width="6" stroke-linecap="round" opacity=".75" marker-end="url(#ah)"/>`;
+    });
+    b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker></defs>${lines}</svg>`);
+  }
+
+  // barra superior: competencias (izq.), confirmar + carta elegida (centro), mis compañeros (der.)
   const R=ROUNDS[G.r];
+  let mid="";
+  if(G.last && G.step){
+    if(G.step==="confirm") mid+=`<button id="btnC">Confirmar</button>`;
+    if(G.step==="bot") mid+=`<button id="btnB">Turno del Bot</button>`;
+    mid+=`<img src="${img(G.last.id,G.last.R==="C"?"a":"b")}" alt="" ${tipAttr(G.last.id)}>`;
+  }
+  document.getElementById("top").innerHTML=
+    `<div class="tbar">`+
+      `<div class="tcol"><h4>Competencias que puntúan</h4><div class="row">`+
+        G.pc.concat(G.bc).map(id=>`<img src="${img(id,"b")}" width="60" alt="" ${tipAttr(id)}>`).join("")+
+      `</div></div>`+
+      `<div class="tmid">${mid}</div>`+
+      `<div class="tcol tr"><h4>Mis compañeros</h4><div class="row">`+
+        G.picks.map(id=>`<img src="${img(id,"a")}" width="60" alt="" ${tipAttr(id)}>`).join("")+
+      `</div></div>`+
+    `</div>`;
+  const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
+  const bb=document.getElementById("btnB"); if(bb) bb.onclick=startBot;
+
   document.getElementById("hdr").textContent=`Ronda ${G.r+1} de 5 · ${R==="C"?"Compañeros":"Competencias"}`;
   document.getElementById("status").innerHTML=busy?"<b>Roboquefort se mueve...</b>":`<b>${R==="C"?"Elegí un compañero (lado compañero).":"Elegí una competencia (lado competencia)."}</b>`;
-  document.getElementById("info").textContent=busy?"":(legal.length?"Tocá una carta resaltada para elegirla.":"");
-  // Competencias que puntúan (arriba)
-  const top=document.getElementById("top");
-  top.innerHTML=`<h4>Competencias que puntúan</h4><div class="row">`+
-    G.pc.map(id=>`<img src="${img(id,"b")}" width="60" alt="${id}" ${tipAttr(id)}>`).join("")+
-    G.bc.map(id=>`<img src="${img(id,"b")}" width="60" alt="${id}" ${tipAttr(id)} style="outline:3px solid #922b21">`).join("")+
-    `</div><p class="note">Tuyas: sin borde. Del bot: borde rojo.</p>`;
-  document.getElementById("myComp").innerHTML=G.picks.map(id=>`<img src="${img(id,"a")}" alt="${id}" ${tipAttr(id)}>`).join("");
-  // Mazo de Roboquefort con movimientos
-  document.getElementById("deck").innerHTML=deck.map(id=>`<div class="dk"><span class="n">${MOV[id]}</span><img src="${img(id,"a")}" alt="${id}" ${tipAttr(id)}></div>`).join("");
+  document.getElementById("info").textContent=busy?"":(G.step==="confirm"?"Podés cambiar tu elección tocando otra carta resaltada.":(legal.length?"Tocá una carta resaltada para elegirla.":""));
+  // mazo de Roboquefort con movimientos
+  document.getElementById("deck").innerHTML=deck.map(id=>`<div class="dk"><img src="${img(id,"a")}" alt="" ${tipAttr(id)}><span class="n">${MOV[id]}</span></div>`).join("");
   document.getElementById("log").innerHTML=G.log.slice(-40).map(x=>`<div>${x}</div>`).join("");
   document.getElementById("log").scrollTop=1e9;
 }

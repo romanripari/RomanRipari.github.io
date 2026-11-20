@@ -55,6 +55,7 @@
   .ov p{color:#fff;font-size:18px;font-weight:700;margin:10px}
   #tt{position:fixed;z-index:20;background:#222;color:#fff;padding:8px 10px;font-size:13px;max-width:320px;pointer-events:none;line-height:1.4}
   #tt b{color:#f4d03f}
+  #banner{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:14px 22px;font-size:20px;font-weight:700;z-index:30}
 </style>
 </head>
 <body>
@@ -93,6 +94,7 @@
 
 <div id="ov" class="ov hidden"><div id="ovbox"></div><p id="ovtxt"></p></div>
 <div id="tt" class="hidden"></div>
+<div id="banner" class="hidden"></div>
 
 <script>
 /* ---------- DATOS ---------- */
@@ -425,7 +427,12 @@ function finish(){
   document.getElementById("endTitle").textContent=title;
   document.getElementById("endBody").innerHTML=body;
   // el tablero queda visible debajo del resumen, para revisar la última jugada
-  document.getElementById("end").scrollIntoView({behavior:"smooth"});
+  // aviso en pantalla y el foco baja hasta la tabla de resultados
+  const bn=document.getElementById("banner");
+  bn.textContent=`Fin de la partida: ${title} · ${score} puntos`;
+  bn.classList.remove("hidden");
+  setTimeout(()=>bn.classList.add("hidden"),3000);
+  setTimeout(()=>document.querySelector("#endBody table").scrollIntoView({behavior:"smooth",block:"start"}),50);
   document.getElementById("end").classList.remove("hidden");
 }
 

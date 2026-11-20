@@ -441,11 +441,17 @@ function render(){
     const p=cells[G.cap];
     const dirs=G.ortho?[[-1,0],[1,0],[0,-1],[0,1]]:[[-1,-1],[-1,1],[1,-1],[1,1]];
     let lines="";
+    const has=new Set(cells.map(x=>x.r+","+x.c));
     dirs.forEach(([dr,dc])=>{
-      let r=p.r, c=p.c;
-      while(r+dr>=0 && r+dr<H && c+dc>=0 && c+dc<W){r+=dr;c+=dc;}
+      // la línea recorre la dirección y termina en la última casilla real del tablero
+      let r=p.r, c=p.c, lr=p.r, lc=p.c;
+      while(r+dr>=0 && r+dr<H && c+dc>=0 && c+dc<W){
+        r+=dr; c+=dc;
+        if(has.has(r+","+c)){lr=r; lc=c;}
+      }
+      if(lr===p.r && lc===p.c) return;
       const x1=cx(p.c), y1=cy(p.r);
-      const x2=cx(c)+dc*47, y2=cy(r)+dr*63;
+      const x2=cx(lc)+dc*47, y2=cy(lr)+dr*63;
       lines+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c0392b" stroke-width="6" stroke-linecap="round" opacity=".75" marker-end="url(#ah)"/>`;
     });
     b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker></defs>${lines}</svg>`);

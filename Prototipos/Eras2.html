@@ -106,6 +106,7 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
 .start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
 .cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
+.ico-img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -136,8 +137,8 @@ const ERA_LBL = {EA:'Era Antigua',EC:'Era Clásica',EM:'Era Moderna'};
 const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
 const EST_LBL = {ZB:'Básico',ZI:'Medio',ZR:'Reforzado'};
 const EST_CAP = {ZB:4,ZI:5,ZR:7};
-const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
-const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
+const TIPO_ICON = {TI:'Edificios/templo_1.png', TM:'Edificios/mercado_1.png', TT:'Edificios/taller_1.png', TP:'Edificios/puerto_1.png', TC:'Edificios/castillo_1.png'};
+const TIPO_LBL = {TI:'Templo',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const SELLO_ICON = '🧿';
 
 /* ===== MAPA CARTA → POSICIÓN EN LA IMAGEN 9x5 ===== */
@@ -209,10 +210,9 @@ const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6Ky
 
 function iconFor(k){
   if(ERA_ICON[k]) return `<span class="ico">${ERA_ICON[k]}</span>`;
-  if(TIPO_ICON[k]) return `<span class="ico">${TIPO_ICON[k]}</span>`;
+  if(TIPO_ICON[k]) return `<img class="ico-img" src="${TIPO_ICON[k]}" alt="${TIPO_LBL[k]}">`;
   return `<span class="ico">${k}</span>`;
 }
-
 /* ===== ESTADO ===== */
 let S = null;
 let SETUP = {bots:3, hand:5, village:5, discard:false, completeSix:false, starter:'azar', name:'', mode:'sellos'};

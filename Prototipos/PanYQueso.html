@@ -178,15 +178,18 @@ const tipAttr=id=>`data-id="${id}"`;
 
 /* ---------- TOOLTIP (solo la cara visible) ---------- */
 const tt=document.getElementById("tt");
+let ttTimer=null;
 document.addEventListener("mouseover",e=>{
   const el=e.target.closest("[data-id]");
-  if(!el){tt.classList.add("hidden");return;}
+  if(!el){clearTimeout(ttTimer);tt.classList.add("hidden");return;}
   const id=+el.dataset.id;
   // a.png = compañero, b.png = competencia
   const src=(el.tagName==="IMG"?el:el.querySelector("img")||{}).src||"";
   const side=/b\.png$/.test(src)?"S":"C";
   tt.innerHTML=`<b>${side==="C"?"Lado compañero":"Lado competencia"}</b><br>${side==="C"?TIP[id].c:TIP[id].k}`;
-  tt.classList.remove("hidden");
+  // el tooltip aparece recién después de 1 segundo con el mouse encima
+  clearTimeout(ttTimer); tt.classList.add("hidden");
+  ttTimer=setTimeout(()=>tt.classList.remove("hidden"),1000);
 });
 document.addEventListener("mousemove",e=>{
   if(tt.classList.contains("hidden")) return;

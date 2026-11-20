@@ -373,7 +373,8 @@ function evalT(id,eff){
     case "sym": return cnt(t.x)>=t.n;
     case "sum": return cnt(t.x)+cnt(t.y)>=t.n;
     case "cardsWith": return eff.filter(a=>a.includes(t.x)).length>=t.n;
-    case "exact": return eff.filter(a=>new Set(a).size===t.k).length>=t.n;
+    // cuenta símbolos, aunque se repitan (incluye los íconos agregados)
+    case "exact": return eff.filter(a=>a.length===t.k).length>=t.n;
   }
   return false;
 }

@@ -42,33 +42,25 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
 .bld.hand{cursor:pointer}
 
-/* Dibujo de la carta: recorte de la grilla 9x5 */
-.bld .arte{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;
-  background-image:url('Cartas/45Edificios.png');background-repeat:no-repeat;
-  background-size:calc(var(--gw) * 9) calc(var(--gh) * 5);
-  background-position:calc(var(--col) * -100%) calc(var(--fila) * -100%);}
+/* Arte: la celda de la grilla 9x5 ocupa toda la carta */
+.bld .arte{position:absolute;inset:0;border-radius:10px;background-repeat:no-repeat;background-size:900% 500%}
 
-/* Franja de huecos: se dibuja encima de la imagen */
-.bld .huecos{position:absolute;left:0;right:0;bottom:calc(12.5% + 4px);display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:0 6px}
-.bld .hueco{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #2b3a8f}
+/* Sellitos (huecos) encima de la imagen */
+.bld .huecos{position:absolute;left:0;right:0;bottom:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:0 6px}
+.bld .hueco{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #2b3a8f}
 .bld .hueco.on{background:#2b7bc4;border-color:#1f5f9e}
 
-/* Poder: fila inferior de 1/8 */
-.bld .poder-row{position:absolute;left:0;right:0;bottom:0;height:12.5%;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 4px;background:#fff;border-top:1px dashed #0004;font-size:8px;line-height:1.1;text-align:center;color:#333}
-.bld .chk{color:#00b86b;font-weight:900}
-
-/* Franja derecha 1/4 */
+/* Franja derecha: destino del sello (sin texto del poder) */
 .bld .strip{position:absolute;right:0;top:0;bottom:0;width:25%;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8px;gap:3px;padding:2px}
 .bld .strip .give-row{display:flex;align-items:center;gap:2px;font-weight:900;font-size:11px}
 .bld .strip b{font-size:8px;line-height:1.1;word-break:break-word;color:#222}
 .seal-ico{font-size:14px}
+.ico-img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
 
 /* Tooltip */
 .bld .caption{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:190px;background:#2d4a3e;color:#fff;font-size:11px;border-radius:8px;padding:8px 10px;text-align:center;z-index:60;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .15s 1s,visibility 0s 1.15s}
 .bld:hover .caption{opacity:1;visibility:visible;transition:opacity .15s 1s,visibility 0s 1s}
 
-.plus{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-weight:900;font-size:26px;color:#2b7bc4;text-shadow:0 0 4px #fff,0 0 8px #fff;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
-@keyframes floatup{0%{opacity:0;transform:translate(-50%,10px)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
 @keyframes pulse{50%{transform:scale(1.05)}}
 .empty{color:#888;font-size:12px;align-self:center}
 button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
@@ -106,7 +98,6 @@ td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
 .setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
 .start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
 .cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
-.ico-img{width:22px;height:22px;object-fit:contain;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -134,17 +125,17 @@ const DATA = [
 ];
 const ERAS = ['EA','EC','EM'];
 const ERA_LBL = {EA:'Era Antigua',EC:'Era Clásica',EM:'Era Moderna'};
-const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
 const EST_LBL = {ZB:'Básico',ZI:'Medio',ZR:'Reforzado'};
 const EST_CAP = {ZB:4,ZI:5,ZR:7};
+const TIPO_LBL = {TI:'Templo',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const TIPO_ICON = {TI:'Edificios/templo_1.png', TM:'Edificios/mercado_1.png', TT:'Edificios/taller_1.png', TP:'Edificios/puerto_1.png', TC:'Edificios/castillo_1.png'};
 const EST_ICON = {ZB:'Edificios/tam_basico.png', ZI:'Edificios/tam_medio.png', ZR:'Edificios/tam_reforzado.png'};
 const ERA_IMG = {EA:'Edificios/era_antigua.png', EC:'Edificios/era_clasica.png', EM:'Edificios/era_moderna.png'};
-const TIPO_LBL = {TI:'Templo',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
 const SELLO_ICON = '🧿';
+const LBL = {...ERA_LBL,...EST_LBL,...TIPO_LBL};
 
-/* ===== MAPA CARTA → POSICIÓN EN LA IMAGEN 9x5 ===== */
-// Clave: era|tamaño|tipo. Fila = tipo (0 Iglesia, 1 Mercado, 2 Taller, 3 Puerto, 4 Castillo). Columna = era×tamaño.
+/* ===== MAPA CARTA → CELDA EN LA GRILLA 9x5 ===== */
+// Fila = tipo (0 Templo, 1 Mercado, 2 Taller, 3 Puerto, 4 Castillo). Columna = era × tamaño.
 const CARTA_IMG = {
   'EA|ZB|TI':{fila:0,col:0}, 'EC|ZB|TI':{fila:0,col:1}, 'EM|ZB|TI':{fila:0,col:2},
   'EA|ZI|TI':{fila:0,col:3}, 'EC|ZI|TI':{fila:0,col:4}, 'EM|ZI|TI':{fila:0,col:5},
@@ -162,8 +153,6 @@ const CARTA_IMG = {
   'EA|ZI|TC':{fila:4,col:3}, 'EC|ZI|TC':{fila:4,col:4}, 'EM|ZI|TC':{fila:4,col:5},
   'EA|ZR|TC':{fila:4,col:6}, 'EC|ZR|TC':{fila:4,col:7}, 'EM|ZR|TC':{fila:4,col:8},
 };
-// Tamaño de cada celda de la imagen (ajustar al archivo real: ancho y alto en px)
-const CELDA = {w:300, h:440};
 const IMG_SRC = 'Cartas/45Edificios.png';
 
 /* ===== PODERES ===== */
@@ -184,28 +173,9 @@ const PODER_POR_TAM = {
   },
   ZR:{}
 };
-const PODER_TXT_POR_TAM = {
-  ZB:{
-    TI:`+1 ${SELLO_ICON} a ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
-    TM:`Mover 1 ${SELLO_ICON} entre tus edificios`,
-    TT:`+1 ${SELLO_ICON} a ${TIPO_ICON.TI}, ${TIPO_ICON.TM}, ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
-    TP:`+1 ${SELLO_ICON} a ${TIPO_ICON.TM} o ${TIPO_ICON.TI}`,
-    TC:`+1 ${SELLO_ICON} a ${TIPO_ICON.TT} o ${TIPO_ICON.TM}`
-  },
-  ZI:{
-    TI:`+1 ${SELLO_ICON} a ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
-    TM:`Mover 1 ${SELLO_ICON} entre tus edificios`,
-    TT:`+1 ${SELLO_ICON} a ${TIPO_ICON.TI}, ${TIPO_ICON.TM}, ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
-    TP:`+1 ${SELLO_ICON} a ${TIPO_ICON.TM} o ${TIPO_ICON.TI}`,
-    TC:`+1 ${SELLO_ICON} a ${TIPO_ICON.TT} o ${TIPO_ICON.TM}`
-  },
-  ZR:{ TI:'Sin poder', TM:'Sin poder', TT:'Sin poder', TP:'Sin poder', TC:'Sin poder' }
-};
 function poderDe(b){ return PODER_POR_TAM[b.est][b.tipo] || null; }
-function poderTxt(b){ return PODER_TXT_POR_TAM[b.est][b.tipo]; }
 
 const CAP = {ZB:{ST:4}, ZI:{ST:5}, ZR:{ST:7}};
-const LBL = {...ERA_LBL,...EST_LBL,...TIPO_LBL};
 const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
 const SLOTS = [5,3,1];
 const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6KyIMqNLaXGmAMazl8/edit?usp=sharing';
@@ -216,6 +186,7 @@ function iconFor(k){
   if(EST_ICON[k]) return `<img class="ico-img" src="${EST_ICON[k]}" alt="${EST_LBL[k]}">`;
   return `<span class="ico">${k}</span>`;
 }
+
 /* ===== ESTADO ===== */
 let S = null;
 let SETUP = {bots:3, hand:5, village:5, discard:false, completeSix:false, starter:'azar', name:'', mode:'sellos'};
@@ -547,7 +518,6 @@ function nextRound(){
 }
 
 /* ===== RENDER ===== */
-// Posición de los huecos: se reparten en filas según la capacidad
 function huecosHTML(b, hand){
   const n = hand ? 0 : b.st;
   const cap = EST_CAP[b.est];
@@ -556,27 +526,14 @@ function huecosHTML(b, hand){
   return `<div class="huecos">${s}</div>`;
 }
 
-function powerReady(b){
-  if(!isComplete(b)) return false;
-  const p = poderDe(b);
-  if(!p) return false;
-  const o = b.owner;
-  if(p.accion==='mover') return o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y)));
-  return o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x));
-}
-
 function arteHTML(b){
   const pos = CARTA_IMG[b.era+'|'+b.est+'|'+b.tipo];
   if(!pos) return '';
-  return `<div class="arte" style="--col:${pos.col};--fila:${pos.fila};--gw:${CELDA.w}px;--gh:${CELDA.h}px;background-image:url('${IMG_SRC}')"></div>`;
+  return `<div class="arte" style="background-image:url('${IMG_SRC}');background-position:${pos.col*12.5}% ${pos.fila*25}%"></div>`;
 }
 
 function bldInner(b, hand){
-  const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus">+1</div>` : '';
-  return `${arteHTML(b)}
-    ${huecosHTML(b,hand)}
-    <div class="poder-row">${powerReady(b)?'<span class="chk">✔</span>':''}<span><b>Lleno →</b> ${poderTxt(b)}</span></div>
-    ${pl}`;
+  return `${arteHTML(b)}${huecosHTML(b,hand)}`;
 }
 
 function stripHTML(c){
@@ -587,10 +544,12 @@ function stripHTML(c){
   </div>`;
 }
 function captionHTML(b){
+  const p = poderDe(b);
+  const txt = p ? `${p.accion==='mover' ? 'Mover 1 sello' : '+1 sello'}` : 'Sin poder';
   return `<div class="caption">
     <span style="display:block;font-weight:700">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
     <span style="display:block">+${SELLO_ICON} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
-    <span style="display:block">Lleno → ${poderTxt(b)}</span>
+    <span style="display:block">${txt}</span>
   </div>`;
 }
 function bldHTML(b){

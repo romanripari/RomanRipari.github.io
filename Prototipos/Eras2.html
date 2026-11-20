@@ -46,8 +46,9 @@ main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(sa
 .bld .arte{position:absolute;inset:0;border-radius:10px;background-repeat:no-repeat;background-size:900% 500%}
 
 /* Sellitos (huecos) encima de la imagen */
-.bld .huecos{position:absolute;left:0;right:0;bottom:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:0 6px}
-.bld .hueco{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #2b3a8f}
+
+.bld .huecos{position:absolute;left:0;right:25%;top:0;bottom:0;pointer-events:none}
+.bld .hueco{position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;border:2px solid #2b3a8f;transform:translate(-50%,-50%)}
 .bld .hueco.on{background:#2b7bc4;border-color:#1f5f9e}
 
 /* Franja derecha: destino del sello (sin texto del poder) */
@@ -518,11 +519,18 @@ function nextRound(){
 }
 
 /* ===== RENDER ===== */
+const HUECOS_POS = {
+  ZB:[[22,64],[40,64],[58,64],[76,64]],
+  ZI:[[24,62],[42,62],[60,62],[33,78],[51,78]],
+  ZR:[[22,62],[37,62],[52,62],[67,62],[30,80],[45,80],[60,80]]
+};
 function huecosHTML(b, hand){
   const n = hand ? 0 : b.st;
-  const cap = EST_CAP[b.est];
+  const pos = HUECOS_POS[b.est];
   let s='';
-  for(let i=0;i<cap;i++) s += `<i class="hueco ${i<n?'on':''}"></i>`;
+  pos.forEach((p,i)=>{
+    s += `<i class="hueco ${i<n?'on':''}" style="left:${p[0]}%;top:${p[1]}%"></i>`;
+  });
   return `<div class="huecos">${s}</div>`;
 }
 

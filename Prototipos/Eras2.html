@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Eras</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:system-ui,sans-serif}
+body{background:#efe9dd;color:#222}
+header{background:#2d4a3e;color:#fff;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+h1{font-size:18px;margin:0}
+.chip{display:inline-block;background:#fff3;padding:3px 9px;border-radius:12px;margin:2px;font-size:12px}
+main{padding:10px;max-width:1100px;margin:auto;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.stickytop{position:sticky;top:0;z-index:50}
+.handdock{position:sticky;bottom:0;z-index:40;box-shadow:0 -6px 14px #0003;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.loseta{position:relative;background:#b9cbd6;border:2px solid #333;border-radius:10px;padding:6px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:space-around;box-shadow:0 2px 6px #0004}
+.loseta.glow{box-shadow:0 0 0 3px #00b86b,0 0 14px #00b86b88}
+.lg{display:flex;flex-direction:column;align-items:center;min-width:64px;padding:3px;border-radius:6px;opacity:.45}
+.lg.act{opacity:1;background:#fff9;outline:2px solid #e0007a}
+.lg.pick{opacity:1;cursor:pointer;background:#d9f7e8;outline:3px solid #00b86b;box-shadow:0 0 10px #00b86b;animation:pulse 1.2s infinite}
+.lg span{font-size:11px;font-weight:700;color:#111}
+.lg .ico{font-size:26px;line-height:1.1}
+.street{background:#fff;border-radius:10px;padding:8px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
+.street.glow{box-shadow:0 0 0 3px #00b86b,0 0 14px #00b86b88}
+.street.glowred{box-shadow:0 0 0 3px #e0302a,0 0 14px #e0302a88}
+.street h3{margin:0 0 6px;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tot{font-weight:400;color:#555}
+
+.row{display:flex;justify-content:flex-start;gap:10px;overflow-x:auto;padding:22px 4px 6px;min-height:235px}
+.row.mesa{gap:0}
+.row.mesa .bld{margin-right:-38px;flex-shrink:0}
+.row.mesa .bld:last-child{margin-right:0}
+.row.mano .bld{margin-right:10px;flex-shrink:0}
+
+/* Carta: 63x88 (proporción), 150x210 px */
+.bld{position:relative;flex:0 0 150px;width:150px;height:210px;background:#fff;border:2px solid #444;border-radius:12px;overflow:visible;font-size:10px}
+.bld.full{border-color:#00b86b;box-shadow:0 0 10px #00b86b}
+.bld.act{outline:4px solid #e0007a}
+.bld.sel{outline:4px solid #e0a000}
+.bld.dsel{outline:4px solid #e0302a}
+.bld.pwok{outline:3px dashed #00b86b;cursor:pointer}
+.bld.hand{cursor:pointer}
+
+/* Dibujo de la carta: recorte de la grilla 9x5 */
+.bld .arte{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;
+  background-image:url('Cartas/45Edificios.png');background-repeat:no-repeat;
+  background-size:calc(var(--gw) * 9) calc(var(--gh) * 5);
+  background-position:calc(var(--col) * -100%) calc(var(--fila) * -100%);}
+
+/* Franja de huecos: se dibuja encima de la imagen */
+.bld .huecos{position:absolute;left:0;right:0;bottom:calc(12.5% + 4px);display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:0 6px}
+.bld .hueco{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #2b3a8f}
+.bld .hueco.on{background:#2b7bc4;border-color:#1f5f9e}
+
+/* Poder: fila inferior de 1/8 */
+.bld .poder-row{position:absolute;left:0;right:0;bottom:0;height:12.5%;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 4px;background:#fff;border-top:1px dashed #0004;font-size:8px;line-height:1.1;text-align:center;color:#333}
+.bld .chk{color:#00b86b;font-weight:900}
+
+/* Franja derecha 1/4 */
+.bld .strip{position:absolute;right:0;top:0;bottom:0;width:25%;border-left:2px dashed #0006;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:8px;gap:3px;padding:2px}
+.bld .strip .give-row{display:flex;align-items:center;gap:2px;font-weight:900;font-size:11px}
+.bld .strip b{font-size:8px;line-height:1.1;word-break:break-word;color:#222}
+.seal-ico{font-size:14px}
+
+/* Tooltip */
+.bld .caption{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:190px;background:#2d4a3e;color:#fff;font-size:11px;border-radius:8px;padding:8px 10px;text-align:center;z-index:60;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .15s 1s,visibility 0s 1.15s}
+.bld:hover .caption{opacity:1;visibility:visible;transition:opacity .15s 1s,visibility 0s 1s}
+
+.plus{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-weight:900;font-size:26px;color:#2b7bc4;text-shadow:0 0 4px #fff,0 0 8px #fff;animation:floatup 1s ease-out forwards;pointer-events:none;z-index:30}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,10px)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.empty{color:#888;font-size:12px;align-self:center}
+button{background:#2d4a3e;color:#fff;border:0;border-radius:8px;padding:9px 14px;font-size:14px;cursor:pointer;margin:3px}
+button:disabled{opacity:.4;cursor:default}
+button.ghost{background:#5b7a6c}
+button.danger{background:#e0302a}
+button.glowbtn{box-shadow:0 0 0 3px #00b86b,0 0 12px #00b86b;animation:pulse 1.2s infinite}
+.banner{background:#00b86b;color:#fff;font-weight:700;border-radius:8px;padding:8px 12px;margin-bottom:8px;text-align:center}
+.banner button{background:#fff;color:#1d6b4a}
+.panel{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:0 1px 3px #0002}
+.log{font-size:12px;max-height:110px;overflow-y:auto;line-height:1.5}
+.infos{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.infos>.panel{flex:1 1 280px;min-width:0}
+.overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}
+.overlay .panel{max-width:460px;width:100%;max-height:92vh;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:4px;border-bottom:1px solid #0002;text-align:left}
+
+.setup{background:linear-gradient(#bfe9fb 0%,#e9f8ff 60%,#fff6dc 100%);color:#3b2f2f;position:relative;min-height:100vh;padding:24px 16px 150px;display:flex;justify-content:center;overflow:hidden}
+.setup::after{content:"";position:absolute;left:0;right:0;bottom:0;height:78px;background:repeating-linear-gradient(90deg,#b9b9b9 0 46px,#a7a7a7 46px 48px);border-top:10px solid #e4787a;box-shadow:inset 0 10px 0 #fff,inset 0 -6px 0 #7a7a7a}
+.setup-wrap{display:flex;flex-wrap:wrap;gap:28px;max-width:1000px;width:100%;position:relative;z-index:1}
+.setup-left{flex:1 1 380px;min-width:0}
+.setup-left h2{color:#2d6b4f;font-size:52px;margin:14px 0 6px;text-shadow:3px 3px 0 #ffd66b}
+.setup-left .proto{color:#e0007a;font-weight:700;font-size:14px}
+.setup-left p{color:#4a3d36;font-size:17px;line-height:1.5}
+.setup-left h4{margin:22px 0 6px;font-size:18px;color:#c2410c}
+.setup-left ul{color:#5a4a3a;font-size:15px;line-height:1.55;padding-left:20px}
+.setup-left a{color:#2d8a5a;font-size:16px;font-weight:700}
+.setup-right{flex:1 1 380px;background:#fff;border:3px solid #ffd66b;border-radius:24px;box-shadow:0 8px 0 #f2b33d55;padding:18px}
+.opt-label{font-size:12px;letter-spacing:1px;color:#8a5a2b;font-weight:700;margin:14px 0 6px;text-transform:uppercase}
+.opt-desc{font-size:12px;color:#7a6a5a;margin:-2px 0 6px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{background:#fff8ea;color:#5a4a3a;border:2px solid #f2c46b;border-radius:14px;padding:10px 16px;margin:0;font-size:15px;font-weight:600}
+.opt.on{background:#ff7a59;color:#fff;border-color:#e0553a;box-shadow:0 3px 0 #b8402a}
+.setup-right input{width:100%;background:#fffdf6;color:#3b2f2f;border:2px solid #f2c46b;border-radius:14px;padding:14px;font-size:16px;margin-top:14px}
+.start{width:100%;background:#2fb67c;color:#fff;font-size:19px;font-weight:800;padding:16px;border-radius:16px;margin-top:14px;box-shadow:0 5px 0 #1d8a5b}
+.cfg-error{background:#e0302a;color:#fff;font-weight:700;border-radius:12px;padding:10px 12px;margin-top:14px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="stickytop"><header>
+  <h1>Eras</h1>
+  <div id="hdr"></div>
+</header>
+<div id="loseta"></div></div>
+<main>
+  <div id="app"></div>
+</main>
+
+<script>
+/* ===== DATOS (45 cartas) ===== */
+const DATA = [
+[1,'EA','ZB','TI','MT','EC'],[2,'EA','ZB','TM','MD','EM'],[3,'EA','ZB','TT','MD','ZR'],[4,'EA','ZB','TP','MT','ZI'],[5,'EA','ZB','TC','MT','ZR'],
+[6,'EA','ZI','TI','MD','ZB'],[7,'EA','ZI','TM','MT','TI'],[8,'EA','ZI','TT','MT','EM'],[9,'EA','ZI','TP','MD','TC'],[10,'EA','ZI','TC','MT','TT'],
+[11,'EA','ZR','TI','MD','ZB'],[12,'EA','ZR','TM','MT','ZB'],[13,'EA','ZR','TT','MD','TI'],[14,'EA','ZR','TP','MD','EM'],[15,'EA','ZR','TC','MD','EC'],
+[16,'EC','ZB','TI','MD','EA'],[17,'EC','ZB','TM','MT','TP'],[18,'EC','ZB','TT','MT','EM'],[19,'EC','ZB','TP','MT','TC'],[20,'EC','ZB','TC','MD','TM'],
+[21,'EC','ZI','TI','MD','ZR'],[22,'EC','ZI','TM','MD','TT'],[23,'EC','ZI','TT','MD','TP'],[24,'EC','ZI','TP','MT','TI'],[25,'EC','ZI','TC','MT','EA'],
+[26,'EC','ZR','TI','MT','TM'],[27,'EC','ZR','TM','MT','TI'],[28,'EC','ZR','TT','MD','ZB'],[29,'EC','ZR','TP','MD','TC'],[30,'EC','ZR','TC','MD','ZI'],
+[31,'EM','ZB','TI','MT','TT'],[32,'EM','ZB','TM','MT','TP'],[33,'EM','ZB','TT','MT','TC'],[34,'EM','ZB','TP','MD','EA'],[35,'EM','ZB','TC','MT','EC'],
+[36,'EM','ZI','TI','MD','TM'],[37,'EM','ZI','TM','MT','ZR'],[38,'EM','ZI','TT','MD','EC'],[39,'EM','ZI','TP','MD','TT'],[40,'EM','ZI','TC','MD','TP'],
+[41,'EM','ZR','TI','MT','ZI'],[42,'EM','ZR','TM','MD','TC'],[43,'EM','ZR','TT','MT','EA'],[44,'EM','ZR','TP','MD','ZI'],[45,'EM','ZR','TC','MT','TM']
+];
+const ERAS = ['EA','EC','EM'];
+const ERA_LBL = {EA:'Era Antigua',EC:'Era Clásica',EM:'Era Moderna'};
+const ERA_ICON = {EA:'🏛️',EC:'🏘️',EM:'🏙️'};
+const EST_LBL = {ZB:'Básico',ZI:'Medio',ZR:'Reforzado'};
+const EST_CAP = {ZB:4,ZI:5,ZR:7};
+const TIPO_LBL = {TI:'Iglesia',TM:'Mercado',TT:'Taller',TP:'Puerto',TC:'Castillo'};
+const TIPO_ICON = {TI:'🌟',TM:'⚖️',TT:'🔧',TP:'⚓',TC:'🪨'};
+const SELLO_ICON = '🧿';
+
+/* ===== MAPA CARTA → POSICIÓN EN LA IMAGEN 9x5 ===== */
+// Clave: era|tamaño|tipo. Fila = tipo (0 Iglesia, 1 Mercado, 2 Taller, 3 Puerto, 4 Castillo). Columna = era×tamaño.
+const CARTA_IMG = {
+  'EA|ZB|TI':{fila:0,col:0}, 'EC|ZB|TI':{fila:0,col:1}, 'EM|ZB|TI':{fila:0,col:2},
+  'EA|ZI|TI':{fila:0,col:3}, 'EC|ZI|TI':{fila:0,col:4}, 'EM|ZI|TI':{fila:0,col:5},
+  'EA|ZR|TI':{fila:0,col:6}, 'EC|ZR|TI':{fila:0,col:7}, 'EM|ZR|TI':{fila:0,col:8},
+  'EA|ZB|TM':{fila:1,col:0}, 'EC|ZB|TM':{fila:1,col:1}, 'EM|ZB|TM':{fila:1,col:2},
+  'EA|ZI|TM':{fila:1,col:3}, 'EC|ZI|TM':{fila:1,col:4}, 'EM|ZI|TM':{fila:1,col:5},
+  'EA|ZR|TM':{fila:1,col:6}, 'EC|ZR|TM':{fila:1,col:7}, 'EM|ZR|TM':{fila:1,col:8},
+  'EA|ZB|TT':{fila:2,col:0}, 'EC|ZB|TT':{fila:2,col:1}, 'EM|ZB|TT':{fila:2,col:2},
+  'EA|ZI|TT':{fila:2,col:3}, 'EC|ZI|TT':{fila:2,col:4}, 'EM|ZI|TT':{fila:2,col:5},
+  'EA|ZR|TT':{fila:2,col:6}, 'EC|ZR|TT':{fila:2,col:7}, 'EM|ZR|TT':{fila:2,col:8},
+  'EA|ZB|TP':{fila:3,col:0}, 'EC|ZB|TP':{fila:3,col:1}, 'EM|ZB|TP':{fila:3,col:2},
+  'EA|ZI|TP':{fila:3,col:3}, 'EC|ZI|TP':{fila:3,col:4}, 'EM|ZI|TP':{fila:3,col:5},
+  'EA|ZR|TP':{fila:3,col:6}, 'EC|ZR|TP':{fila:3,col:7}, 'EM|ZR|TP':{fila:3,col:8},
+  'EA|ZB|TC':{fila:4,col:0}, 'EC|ZB|TC':{fila:4,col:1}, 'EM|ZB|TC':{fila:4,col:2},
+  'EA|ZI|TC':{fila:4,col:3}, 'EC|ZI|TC':{fila:4,col:4}, 'EM|ZI|TC':{fila:4,col:5},
+  'EA|ZR|TC':{fila:4,col:6}, 'EC|ZR|TC':{fila:4,col:7}, 'EM|ZR|TC':{fila:4,col:8},
+};
+// Tamaño de cada celda de la imagen (ajustar al archivo real: ancho y alto en px)
+const CELDA = {w:300, h:440};
+const IMG_SRC = 'Cartas/45Edificios.png';
+
+/* ===== PODERES ===== */
+const PODER_POR_TAM = {
+  ZB:{
+    TI:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
+    TT:{accion:'sumar', cantidad:1, destino:['TI','TM','TP','TC']},
+    TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
+    TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
+  },
+  ZI:{
+    TI:{accion:'sumar', cantidad:1, destino:['TP','TC']},
+    TM:{accion:'mover', cantidad:1, destino:'cualquiera'},
+    TT:{accion:'sumar', cantidad:1, destino:['TI','TM','TP','TC']},
+    TP:{accion:'sumar', cantidad:1, destino:['TM','TI']},
+    TC:{accion:'sumar', cantidad:1, destino:['TT','TM']}
+  },
+  ZR:{}
+};
+const PODER_TXT_POR_TAM = {
+  ZB:{
+    TI:`+1 ${SELLO_ICON} a ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
+    TM:`Mover 1 ${SELLO_ICON} entre tus edificios`,
+    TT:`+1 ${SELLO_ICON} a ${TIPO_ICON.TI}, ${TIPO_ICON.TM}, ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
+    TP:`+1 ${SELLO_ICON} a ${TIPO_ICON.TM} o ${TIPO_ICON.TI}`,
+    TC:`+1 ${SELLO_ICON} a ${TIPO_ICON.TT} o ${TIPO_ICON.TM}`
+  },
+  ZI:{
+    TI:`+1 ${SELLO_ICON} a ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
+    TM:`Mover 1 ${SELLO_ICON} entre tus edificios`,
+    TT:`+1 ${SELLO_ICON} a ${TIPO_ICON.TI}, ${TIPO_ICON.TM}, ${TIPO_ICON.TP} o ${TIPO_ICON.TC}`,
+    TP:`+1 ${SELLO_ICON} a ${TIPO_ICON.TM} o ${TIPO_ICON.TI}`,
+    TC:`+1 ${SELLO_ICON} a ${TIPO_ICON.TT} o ${TIPO_ICON.TM}`
+  },
+  ZR:{ TI:'Sin poder', TM:'Sin poder', TT:'Sin poder', TP:'Sin poder', TC:'Sin poder' }
+};
+function poderDe(b){ return PODER_POR_TAM[b.est][b.tipo] || null; }
+function poderTxt(b){ return PODER_TXT_POR_TAM[b.est][b.tipo]; }
+
+const CAP = {ZB:{ST:4}, ZI:{ST:5}, ZR:{ST:7}};
+const LBL = {...ERA_LBL,...EST_LBL,...TIPO_LBL};
+const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
+const SLOTS = [5,3,1];
+const MANUAL = 'https://docs.google.com/document/d/1zihOBsNf2MCNUJAewKQNNPNmX6KyIMqNLaXGmAMazl8/edit?usp=sharing';
+
+function iconFor(k){
+  if(ERA_ICON[k]) return `<span class="ico">${ERA_ICON[k]}</span>`;
+  if(TIPO_ICON[k]) return `<span class="ico">${TIPO_ICON[k]}</span>`;
+  return `<span class="ico">${k}</span>`;
+}
+
+/* ===== ESTADO ===== */
+let S = null;
+let SETUP = {bots:3, hand:5, village:5, discard:false, completeSix:false, starter:'azar', name:'', mode:'sellos'};
+let UID = 0;
+
+function configError(){
+  const players = SETUP.bots + 1;
+  const need = players * (SETUP.hand - 1 + SETUP.village);
+  if(need <= 45) return null;
+  return `Con ${players} jugadores, mano de ${SETUP.hand} y villages de ${SETUP.village} hacen falta ${need} cartas, y el mazo tiene 45.`;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function log(msg){ S.log.push(msg); }
+function mkCard(row,owner){
+  return {uid:++UID, row, id:row[0], era:row[1], est:row[2], tipo:row[3], tgt:row[5], owner, st:0, fired:false, act:false, plusTs:0};
+}
+function tableCards(){ return S.players.flatMap(p=>p.street); }
+
+function isComplete(b){ return b.st>=CAP[b.est].ST; }
+function hasRoom(b){ return b.st<CAP[b.est].ST; }
+function matches(b,k){ return b.era===k || b.est===k || b.tipo===k; }
+function countElems(p,k){ return p.street.filter(b=>matches(b,k)).reduce((s,b)=>s+b.st,0); }
+
+function addSello(b){
+  if(!hasRoom(b)) return false;
+  b.st++; b.plusTs = Date.now();
+  if(isComplete(b) && !b.fired){ b.fired=true; S.pwQ.push({owner:b.owner, b}); }
+  return true;
+}
+function quitarSello(b){ if(b.st>0) b.st--; }
+
+function giveFrom(src){
+  tableCards().forEach(b=>{ if(b!==src && matches(b,src.tgt)) addSello(b); });
+}
+
+function drawCards(p,n){
+  for(let i=0;i<n;i++){
+    if(!S.deck.length && S.discard.length){
+      S.deck = shuffle(S.discard.splice(0));
+      log('Se mezcló el descarte y se armó un mazo nuevo.');
+    }
+    if(S.deck.length) p.hand.push(mkCard(S.deck.pop(),p));
+  }
+}
+function discardFrom(p,card){ p.hand = p.hand.filter(c=>c!==card); S.discard.push(card.row); }
+function discardCardToDeck(p,card){ p.hand = p.hand.filter(c=>c!==card); S.deck.push(card.row); S.deck = shuffle(S.deck); }
+
+/* ===== PARTIDA ===== */
+function newGame(){
+  if(configError()) return;
+  const n = SETUP.bots + 1;
+  const names = shuffle(PLAYER_NAMES.slice()).slice(0,SETUP.bots);
+  const starter = Math.floor(Math.random()*n);
+  S = {
+    n,
+    players: [SETUP.name.trim()||'Vos', ...names].map((name,i)=>({name, human:i===0, street:[], hand:[]})),
+    deck: shuffle(DATA.slice()), discard:[],
+    round:1, totals:[], roundResults:[], start:starter,
+    active:[], turn:1, totalTurns:5,
+    pendingPick:false, pendingDiscard:false, discardSel:null, selCard:null,
+    simQueue:[], simDone:false, animating:false,
+    over:false, hideOverlay:false,
+    pwQ:[], pw:null, afterPw:null,
+    revealOrder:[], log:[]
+  };
+  S.totals = S.players.map(()=>0);
+  S.players.forEach(p=>{ for(let i=0;i<SETUP.hand;i++) p.hand.push(mkCard(S.deck.pop(),p)); });
+  beginRound();
+}
+
+function beginRound(){
+  S.turn=1; S.over=false; S.hideOverlay=false; S.selCard=null; S.discardSel=null;
+  S.pendingPick=false; S.pendingDiscard=false; S.animating=false;
+  S.simQueue=[]; S.simDone=false; S.pwQ=[]; S.pw=null; S.afterPw=null;
+  S.totalTurns = S.round===1 ? SETUP.village : SETUP.village - 2;
+  S.active = [ERAS[S.round-1]];
+  log(`— Ronda ${S.round}: puntúa ${ERA_LBL[S.active[0]]} —`);
+  log(`Empieza ${S.players[S.start].name}.`);
+  render();
+}
+
+/* ===== TURNO ===== */
+function doTurn(uid){
+  const picks = S.players.map(p => p.human ? p.hand.find(c=>c.uid===uid) : botPick(p));
+  S.players.forEach((p,i)=>{ p.hand = p.hand.filter(c=>c!==picks[i]); p.street.push(picks[i]); });
+  S.selCard = null;
+  log(`— Turno ${S.turn}: ${S.players.map((p,i)=>`${p.name} bajó #${picks[i].id}`).join(' · ')}`);
+  S.revealOrder = [...Array(S.n).keys()].map(k=>picks[(S.start+k)%S.n]);
+  S.animating = true;
+  render();
+  setTimeout(()=>activateStep(0), 600);
+}
+
+function activateStep(i){
+  if(!S) return;
+  tableCards().forEach(b=>{ b.act=false; });
+  if(i>=S.revealOrder.length){
+    S.animating = false;
+    runPowers(()=>afterPowers());
+    return;
+  }
+  const src = S.revealOrder[i];
+  src.act = true;
+  giveFrom(src);
+  render();
+  setTimeout(()=>activateStep(i+1), 1000);
+}
+
+// Orden: reposición → criterios (turno 3) → rotación/descarte
+function afterPowers(){
+  if(S.turn < S.totalTurns && !SETUP.discard) S.players.forEach(p=>drawCards(p,1));
+  if(!S.simDone && S.players.some(p=>p.street.length>=3)){
+    S.simDone = true;
+    startSimPick();
+    return;
+  }
+  finishTurn();
+}
+
+function runPowers(then){
+  S.afterPw = then;
+  while(S.pwQ.length){
+    const it = S.pwQ.shift();
+    if(!it.owner.human){ botPower(it.owner, it.b); continue; }
+    if(startHumanPower(it.owner, it.b)){ render(); return; }
+  }
+  S.pw = null;
+  const t = S.afterPw; S.afterPw = null;
+  if(t) t();
+}
+
+function startHumanPower(o,b){
+  const p = poderDe(b);
+  if(!p) return false;
+  if(p.accion==='mover'){
+    if(!o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y)))) return false;
+    S.pw = {owner:o, kind:b.tipo, stage:'src', cantidad:p.cantidad, b};
+    return true;
+  }
+  if(!o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x))) return false;
+  S.pw = {owner:o, kind:b.tipo, stage:'dest', allowed:p.destino, b};
+  return true;
+}
+
+function pwValid(b){
+  const pw = S.pw;
+  if(!pw || b.owner!==pw.owner) return false;
+  if(pw.stage==='src') return b.st>0;
+  if(pw.stage==='dst') return b!==pw.src && hasRoom(b);
+  if(pw.stage==='dest') return pw.allowed.includes(b.tipo) && hasRoom(b);
+  return false;
+}
+
+function pwClick(b){
+  const pw = S.pw;
+  if(!pw || !pwValid(b)) return;
+  if(pw.stage==='src'){ pw.src=b; pw.stage='dst'; render(); return; }
+  if(pw.stage==='dst'){
+    quitarSello(pw.src); addSello(b);
+    log(`Mercado: moviste 1 sello de ${LBL[pw.src.tipo]} a ${LBL[b.tipo]}.`);
+    finishPw(); return;
+  }
+  if(pw.stage==='dest'){
+    addSello(b);
+    log(`${LBL[pw.kind]}: sumaste 1 sello a ${LBL[b.tipo]}.`);
+    finishPw(); return;
+  }
+}
+
+function finishPw(){
+  const then = S.afterPw;
+  S.pw = null;
+  runPowers(then);
+}
+
+function botPower(o,b){
+  const p = poderDe(b);
+  if(!p) return;
+  if(p.accion==='mover'){
+    const srcs = o.street.filter(x=>x.st>0);
+    const dsts = o.street.filter(x=>hasRoom(x));
+    if(!srcs.length || !dsts.length) return;
+    const s = srcs[0];
+    const d = dsts.find(x=>x!==s);
+    if(!d) return;
+    quitarSello(s); addSello(d);
+    return;
+  }
+  const targets = o.street.filter(x=>p.destino.includes(x.tipo) && hasRoom(x));
+  if(targets.length) addSello(targets[0]);
+}
+
+/* ===== BOTS ===== */
+function botPick(p){
+  let best=null, bs=-1e9;
+  p.hand.forEach(c=>{
+    let v=0;
+    tableCards().forEach(b=>{
+      if(!matches(b,c.tgt) || !hasRoom(b)) return;
+      v += b.owner===p ? 2 : -1;
+    });
+    S.active.forEach(k=>{ if(matches(c,k)) v+=1.5; });
+    v += Math.random()*0.3;
+    if(v>bs){ bs=v; best=c; }
+  });
+  return best;
+}
+function botDiscard(p){
+  let worst=null, wv=1e9;
+  p.hand.forEach(c=>{
+    const v = tableCards().filter(b=>matches(b,c.tgt) && hasRoom(b)).length + Math.random()*0.2;
+    if(v<wv){ wv=v; worst=c; }
+  });
+  return worst;
+}
+function botCrit(p){
+  const cand = pickablePool();
+  const val = k => countElems(p,k) - 0.7*Math.max(0,...S.players.filter(q=>q!==p).map(q=>countElems(q,k))) + Math.random()*0.5;
+  return cand.sort((a,b)=>val(b)-val(a))[0];
+}
+
+/* ===== CRITERIOS EN EL TERCER TURNO ===== */
+function pickablePool(){
+  return [...Object.keys(EST_LBL), ...Object.keys(TIPO_LBL)].filter(k=>!S.active.includes(k));
+}
+function startSimPick(){
+  S.simQueue = [...Array(S.n).keys()].map(i=>(S.start+i)%S.n);
+  log('Cada jugador elige un criterio, en orden desde el jugador inicial.');
+  runSimQueue();
+}
+function runSimQueue(){
+  while(S.simQueue.length){
+    const p = S.players[S.simQueue[0]];
+    if(p.human){ S.pendingPick = true; render(); return; }
+    const k = botCrit(p);
+    S.active.push(k);
+    S.simQueue.shift();
+    log(`${p.name} elige el criterio ${LBL[k]}.`);
+  }
+  S.pendingPick = false;
+  finishTurn();
+}
+function pickCriterion(k){
+  if(!S.pendingPick || !pickablePool().includes(k)) return;
+  S.active.push(k);
+  S.simQueue.shift();
+  S.pendingPick = false;
+  log(`Criterio elegido: ${LBL[k]}.`);
+  runSimQueue();
+}
+
+/* ===== FIN DE TURNO ===== */
+function finishTurn(){
+  S.start = (S.start+1) % S.n;
+  if(!SETUP.discard){ completeTurn(); return; }
+  if(S.turn>=S.totalTurns){ completeTurn(); return; }
+  S.players.filter(p=>!p.human).forEach(p=>{
+    discardFrom(p, botDiscard(p));
+    drawCards(p,2);
+  });
+  S.pendingDiscard = true;
+  render();
+}
+function completeTurn(){
+  S.pendingDiscard = false;
+  S.turn++;
+  if(S.turn>S.totalTurns) endRound(); else render();
+}
+function confirmDiscard(){
+  const me = S.players[0];
+  if(!S.pendingDiscard || !S.discardSel) return;
+  discardFrom(me, S.discardSel);
+  log(`Descartaste #${S.discardSel.id}.`);
+  S.discardSel = null;
+  drawCards(me,2);
+  completeTurn();
+}
+
+/* ===== PUNTUACIÓN ===== */
+function score(){
+  const pts = S.players.map(()=>0);
+  const lines = [];
+  S.active.forEach(k=>{
+    const vals = S.players.map((p,i)=>({i, v:countElems(p,k)}));
+    vals.sort((a,b)=>b.v-a.v);
+    let pos=0;
+    while(pos<vals.length && vals[pos].v>0){
+      let end=pos;
+      while(end<vals.length && vals[end].v===vals[pos].v) end++;
+      const group = vals.slice(pos,end);
+      let sum=0;
+      for(let q=pos;q<end && q<3;q++) sum+=SLOTS[q];
+      const avg = Math.floor(sum/group.length);
+      group.forEach(g=>pts[g.i]+=avg);
+      lines.push({crit:k, group:group.map(g=>({name:S.players[g.i].name, v:g.v, pts:avg}))});
+      pos=end;
+    }
+  });
+  return {pts, lines};
+}
+
+function endRound(){
+  S.over = true;
+  S.hideOverlay = false;
+  const res = score();
+  res.pts.forEach((v,i)=>S.totals[i]+=v);
+  S.roundResults.push(res);
+  log(`Fin de la ronda ${S.round}.`);
+  render();
+}
+
+// Se guardan siempre las 2 últimas cartas de cada vereda
+function nextRound(){
+  const kept = new Set();
+  S.players.forEach(p=>{ p.street.slice(-2).forEach(b=>kept.add(b)); });
+  const back = [];
+  S.players.forEach(p=>{
+    p.street.forEach(b=>{ if(!kept.has(b)) back.push(b.row); });
+    p.hand.forEach(c=>back.push(c.row));
+    p.street = p.street.filter(b=>kept.has(b));
+    p.hand = [];
+  });
+  S.deck = shuffle([...S.deck, ...S.discard, ...back]);
+  S.discard = [];
+  S.players.forEach(p=>{ for(let i=0;i<SETUP.hand;i++) p.hand.push(mkCard(S.deck.pop(),p)); });
+  S.round++;
+  beginRound();
+}
+
+/* ===== RENDER ===== */
+// Posición de los huecos: se reparten en filas según la capacidad
+function huecosHTML(b, hand){
+  const n = hand ? 0 : b.st;
+  const cap = EST_CAP[b.est];
+  let s='';
+  for(let i=0;i<cap;i++) s += `<i class="hueco ${i<n?'on':''}"></i>`;
+  return `<div class="huecos">${s}</div>`;
+}
+
+function powerReady(b){
+  if(!isComplete(b)) return false;
+  const p = poderDe(b);
+  if(!p) return false;
+  const o = b.owner;
+  if(p.accion==='mover') return o.street.some(x=>x.st>0 && o.street.some(y=>y!==x && hasRoom(y)));
+  return o.street.some(x=>p.destino.includes(x.tipo) && hasRoom(x));
+}
+
+function arteHTML(b){
+  const pos = CARTA_IMG[b.era+'|'+b.est+'|'+b.tipo];
+  if(!pos) return '';
+  return `<div class="arte" style="--col:${pos.col};--fila:${pos.fila};--gw:${CELDA.w}px;--gh:${CELDA.h}px;background-image:url('${IMG_SRC}')"></div>`;
+}
+
+function bldInner(b, hand){
+  const pl = (!hand && b.plusTs && Date.now()-b.plusTs<1000) ? `<div class="plus">+1</div>` : '';
+  return `${arteHTML(b)}
+    ${huecosHTML(b,hand)}
+    <div class="poder-row">${powerReady(b)?'<span class="chk">✔</span>':''}<span><b>Lleno →</b> ${poderTxt(b)}</span></div>
+    ${pl}`;
+}
+
+function stripHTML(c){
+  return `<div class="strip">
+    <div class="give-row"><span>+</span><span class="seal-ico">${SELLO_ICON}</span></div>
+    <span>${iconFor(c.tgt)}</span>
+    <b>${LBL[c.tgt]}</b>
+  </div>`;
+}
+function captionHTML(b){
+  return `<div class="caption">
+    <span style="display:block;font-weight:700">${ERA_LBL[b.era]} / ${LBL[b.tipo]} / ${EST_LBL[b.est]}</span>
+    <span style="display:block">+${SELLO_ICON} a ${iconFor(b.tgt)} ${LBL[b.tgt]}</span>
+    <span style="display:block">Lleno → ${poderTxt(b)}</span>
+  </div>`;
+}
+function bldHTML(b){
+  const cls = ['bld', isComplete(b)?'full':'', b.act?'act':'', pwValid(b)?'pwok':''].join(' ');
+  return `<div class="${cls}" data-card="${b.uid}">${captionHTML(b)}${bldInner(b,false)}${stripHTML(b)}</div>`;
+}
+function handCardHTML(c){
+  const sel = (S.selCard===c?' sel':'') + (S.discardSel===c?' dsel':'');
+  return `<div class="bld hand${sel}" data-card="${c.uid}">${captionHTML(c)}${bldInner(c,true)}${stripHTML(c)}</div>`;
+}
+
+function losetaHTML(){
+  const pick = S && S.pendingPick ? pickablePool() : [];
+  const item = k => {
+    const isPick = pick.includes(k);
+    const act = S && S.active.includes(k) ? ' act' : '';
+    return `<div class="lg${act}${isPick?' pick':''}" ${isPick?`data-crit="${k}"`:''}>${iconFor(k)}<span>${LBL[k]}</span></div>`;
+  };
+  return [...ERAS, ...Object.keys(TIPO_LBL), ...Object.keys(EST_LBL)].map(item).join('');
+}
+
+function pwBanner(){
+  const pw = S.pw;
+  let msg = '';
+  if(pw.stage==='src') msg = `${LBL[pw.kind]}: tocá un edificio tuyo con sellos para moverlo.`;
+  else if(pw.stage==='dst') msg = `${LBL[pw.kind]}: tocá el edificio de destino.`;
+  else msg = `${LBL[pw.kind]}: tocá un edificio válido (${pw.allowed.map(x=>LBL[x]).join(' o ')}) para sumarle 1 sello.`;
+  return `<div class="banner">${msg}<div><button class="ghost" data-act="pwskip">Saltar poder</button></div></div>`;
+}
+
+function roundTableHTML(res){
+  const rows = S.players.map((p,i)=>`<tr><td>${p.name}</td><td>${res.pts[i]}</td><td>${S.totals[i]}</td></tr>`).join('');
+  const detail = res.lines.map(l=>`${LBL[l.crit]}: `+l.group.map(g=>`${g.name} (${g.v} el., +${g.pts})`).join(' · ')).join('<br>');
+  return `<table><tr><th>Jugador</th><th>Ronda</th><th>Total</th></tr>${rows}</table>
+    <h4>Detalle</h4><div class="log" style="max-height:none">${detail || 'Nadie puntuó.'}</div>`;
+}
+
+function liveHTML(){
+  const res = score();
+  const rows = S.active.map(k=>{
+    const parts = res.lines.filter(l=>l.crit===k);
+    return `<div><b>${LBL[k]}:</b> ${parts.length ? parts.map(l=>l.group.map(g=>`${g.name} (${g.v} el., +${g.pts})`).join(' · ')).join(' | ') : '<i>nadie puntúa aún</i>'}</div>`;
+  }).join('');
+  return `<div class="panel"><b>Puntuación en vivo (ronda ${S.round})</b><div class="log" style="max-height:none;margin-top:6px">${rows}</div></div>`;
+}
+
+function setupHTML(){
+  const opt = (key,val,label) => `<button class="opt ${SETUP[key]===val?'on':''}" data-opt="${key}" data-val="${val}">${label}</button>`;
+  const err = configError();
+  return `<div class="setup"><div class="setup-wrap">
+    <div class="setup-left">
+      <div class="proto">UN PROTOTIPO DE BRUNO SASSONE TORCELLO Y ROMÁN RIPARI</div>
+      <h2>Eras</h2>
+      <p>Construí edificios en tu village a lo largo de tres eras y ganá la mayoría de sellos en los criterios de cada ronda.</p>
+      <h4>Paso a paso</h4>
+      <ul>
+        <li>Cada turno, todos bajan una carta a la vez. Cada carta reparte sellos a los edificios de la mesa que cumplen su "a quién".</li>
+        <li>Si un edificio se completa, su poder se hace en el momento, una sola vez. Los poderes pueden encadenarse.</li>
+        <li>Cuando alguien tiene 3 edificios, cada jugador elige un criterio nuevo (nunca una era).</li>
+        <li>Al final de cada ronda puntúa la era de esa ronda, más los criterios elegidos.</li>
+        <li>Entre rondas, conservás tus 2 últimos edificios.</li>
+      </ul>
+      <a href="${MANUAL}" target="_blank" rel="noopener">Ver el manual completo</a>
+    </div>
+    <div class="setup-right">
+      ${err ? `<div class="cfg-error">${err}</div>` : ''}
+      <div class="opt-label">Jugar contra (bots)</div>
+      <div class="opt-desc">Los bots siempre juegan en Difícil.</div>
+      <div class="opts">${opt('bots',2,'2 bots (3 jugadores)')}${opt('bots',3,'3 bots (4 jugadores)')}${opt('bots',4,'4 bots (5 jugadores)')}</div>
+      <input id="nm" placeholder="Tu nombre" value="${SETUP.name.replace(/"/g,'&quot;')}" maxlength="16">
+      <button class="start" data-act="start" ${err?'disabled':''}>▷ Empezar partida</button>
+    </div>
+  </div></div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const hdr = document.getElementById('hdr');
+  const picking = !!S && !S.over && S.pendingPick;
+  document.getElementById('loseta').innerHTML = `<div class="loseta${picking?' glow':''}">${losetaHTML()}</div>`;
+  if(!S){
+    hdr.innerHTML = '';
+    app.innerHTML = setupHTML();
+    const nm = document.getElementById('nm');
+    if(nm) nm.addEventListener('input', e=>{ SETUP.name = e.target.value; });
+    return;
+  }
+  hdr.innerHTML = `<span class="chip">Ronda ${S.round} / 3 · ${ERA_LBL[ERAS[S.round-1]]}</span>
+    <span class="chip">Turno ${Math.min(S.turn,S.totalTurns)} / ${S.totalTurns}</span>
+    <span class="chip">Mazo: ${S.deck.length}</span>
+    <span class="chip">Inicial: ${S.players[S.start].name}</span>`;
+
+  const me = S.players[0];
+  const sc = score();
+  let html = '';
+  let handHTML = '';
+
+  if(S.pw) html += pwBanner();
+  else if(S.animating) html += `<div class="banner">Bajando cartas...</div>`;
+  else if(S.pendingPick) html += `<div class="banner">Elegí un criterio: tocá un ícono verde de arriba</div>`;
+  else if(S.pendingDiscard) html += `<div class="banner">Descartá una carta de tu mano: después robás 2</div>`;
+  else if(!S.over && !S.selCard) html += `<div class="banner">Elegí una carta de tu mano</div>`;
+  else if(!S.over) html += `<div class="banner">Bajá la carta elegida</div>`;
+
+  S.players.forEach((p,i)=>{
+    html += `<div class="street"><h3><span><b>${p.name}${p.human?' (vos)':''} · ${sc.pts[i]} pts ronda</b> · ${S.totals[i]}${sc.pts[i]?`(+${sc.pts[i]})`:''} total</span><span class="tot">${p.street.length} edificios</span></h3>
+      <div class="row mesa">${p.street.length ? p.street.map(bldHTML).join('') : '<span class="empty">Sin edificios aún</span>'}</div></div>`;
+  });
+
+  if(!S.over){
+    const needPlay = !S.pw && !S.animating && !S.pendingPick && !S.pendingDiscard;
+    const glow = S.pendingDiscard ? ' glowred' : ((needPlay && !S.selCard) ? ' glow' : '');
+    const head = S.pendingDiscard
+      ? (S.discardSel ? `Elegida para descartar #${S.discardSel.id}` : 'Tocá la carta que querés descartar')
+      : (S.selCard ? `Elegida #${S.selCard.id}` : 'Elegí una carta');
+    handHTML = `<div class="street handdock${glow}"><h3><span>Tu mano</span><span>${head}</span></h3>
+      <div class="row mano">${me.hand.map(handCardHTML).join('')}</div>
+      <div>
+        ${S.pendingDiscard ? `<button class="danger${S.discardSel?' glowbtn':''}" data-act="confirmDiscard" ${S.discardSel?'':'disabled'}>Confirmar descarte</button>` : ''}
+        <button data-act="play" class="${needPlay && S.selCard ? 'glowbtn' : ''}" ${(!S.selCard || !needPlay)?'disabled':''}>Bajar carta</button>
+      </div></div>`;
+  } else {
+    const res = S.roundResults[S.roundResults.length-1];
+    const isLast = S.round>=3;
+    html += `<div class="panel"><b>Ronda ${S.round} terminada</b><div style="margin-top:6px">
+      <button class="ghost" data-act="showscore">Ver puntuación</button>
+      ${isLast ? '<button data-act="new">Nueva partida</button>' : '<button data-act="nextround">Siguiente ronda</button>'}</div></div>`;
+    if(!S.hideOverlay){
+      html += `<div class="overlay"><div class="panel">
+        <h3>${isLast ? 'Puntuación final' : `Ronda ${S.round} terminada`}</h3>
+        ${roundTableHTML(res)}
+        <div style="margin-top:8px">
+          <button class="ghost" data-act="viewtable">Ver mesa</button>
+          ${isLast ? '<button data-act="new">Nueva partida</button>' : '<button data-act="nextround">Siguiente ronda</button>'}
+        </div></div></div>`;
+    }
+  }
+
+  html += `<div class="infos">${!S.over ? liveHTML() : ''}<div class="panel"><b>Registro</b><div class="log" id="logbox">${S.log.slice(-40).map(l=>`<div>${l}</div>`).join('')}</div></div></div>`;
+  app.innerHTML = html + handHTML;
+  const logEl = document.getElementById('logbox');
+  if(logEl) logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ===== EVENTOS ===== */
+document.addEventListener('click', e=>{
+  if(S && S.animating && e.target.closest('[data-card],[data-crit],[data-act="play"],[data-act="confirmDiscard"]')) return;
+
+  const crit = e.target.closest('[data-crit]');
+  if(crit && S && !S.over && S.pendingPick){ pickCriterion(crit.dataset.crit); return; }
+
+  const opt = e.target.closest('[data-opt]');
+  if(opt){
+    const k = opt.dataset.opt;
+    const raw = opt.dataset.val;
+    let v = raw;
+    if(!isNaN(raw) && raw!=='') v = +raw;
+    SETUP[k] = v;
+    render();
+    return;
+  }
+
+  const act = e.target.closest('[data-act]');
+  if(act){
+    const a = act.dataset.act;
+    if(a==='start'){ newGame(); return; }
+    if(a==='new'){ S=null; render(); return; }
+    if(!S) return;
+    if(a==='viewtable'){ S.hideOverlay=true; render(); return; }
+    if(a==='showscore'){ S.hideOverlay=false; render(); return; }
+    if(a==='nextround'){ nextRound(); return; }
+    if(S.over) return;
+    if(a==='pwskip' && S.pw){ finishPw(); return; }
+    if(a==='play' && S.selCard && !S.pw && !S.pendingPick && !S.pendingDiscard){ doTurn(S.selCard.uid); return; }
+    if(a==='confirmDiscard'){ confirmDiscard(); return; }
+  }
+
+  const cardEl = e.target.closest('[data-card]');
+  if(cardEl && S && !S.over){
+    const uid = +cardEl.dataset.card;
+    const me = S.players[0];
+    if(S.pw){
+      const b = me.street.find(x=>x.uid===uid);
+      if(b) pwClick(b);
+      return;
+    }
+    if(S.animating || S.pendingPick) return;
+    if(S.pendingDiscard){
+      const dc = me.hand.find(x=>x.uid===uid);
+      if(dc){ S.discardSel = dc; render(); }
+      return;
+    }
+    const hc = me.hand.find(x=>x.uid===uid);
+    if(hc){ S.selCard = hc; render(); }
+  }
+});
+
+render();
+</script>
+</body>
+</html>

@@ -100,7 +100,7 @@
 /* ---------- DATOS ---------- */
 // Atributos del lado compañero: S=💪 fuerza, A=🏃 agilidad, V=🎯 velocidad, I=🧠 inteligencia
 const ICON={S:"💪",A:"🏃",V:"🎯",I:"🧠"};
-const CARDS={1:"SSI",2:"SAV",3:"III",4:"SVI",5:"AAA",6:"VVV",7:"SSS",8:"SVI",9:"SAA",10:"SVV",11:"II",12:"ASI",13:"IIA",14:"VV",15:"SA",16:"VA"};
+const CARDS={1:"SSI",2:"SAV",3:"III",4:"SVI",5:"AAA",6:"VVV",7:"SSS",8:"AVI",9:"SAA",10:"SVV",11:"II",12:"ASI",13:"IIA",14:"VV",15:"SA",16:"VA"};
 // Movimientos para el bot por carta
 const MOV={1:1,2:5,3:4,4:2,5:3,6:6,7:2,8:4,9:2,10:6,11:3,12:1,13:4,14:5,15:5,16:3};
 // Icono que agrega la carta (pasa a ser parte de la carta)
@@ -288,7 +288,7 @@ function confirmPick(){
   if(G.step!=="confirm") return;
   // al confirmar, la carta pasa a la lista de compañeros o de competencias
   if(G.last.R==="C") G.picks.push(G.last.id); else G.pc.push(G.last.id);
-  if(G.r===4){G.step=null; render(); finish(); return;}
+  if(G.r===4){G.step="done"; render(); finish(); return;}
   G.step="bot"; render();
 }
 function startBot(){
@@ -475,7 +475,9 @@ function render(){
     botTurn().then(()=>{busy=false; G.cap=-1; if(G.r>=4){finish();return;} G.r++; render();});
     return;
   }
-  const legal=(busy||G.step==="bot")?[]:legalPlayer();
+  // en el último turno del jugador, después de elegir no quedan movimientos: no hay verdes ni flechas
+  const lastTurnDone=G.r===4 && (G.step==="confirm"||G.step==="done");
+  const legal=(busy||G.step==="bot"||lastTurnDone)?[]:legalPlayer();
 
   // tablero: pancito y Roboquefort se dibujan desde su casilla guardada
   const b=document.getElementById("board");
@@ -499,7 +501,7 @@ function render(){
     b.appendChild(d);
   });
   // flechas: rojas del pancito, grises de Roboquefort
-  if(G.cap>=0 || (G.bot>=0 && G.showBot)){
+  if(!lastTurnDone && (G.cap>=0 || (G.bot>=0 && G.showBot))){
     const bw=24+G.W*86+(G.W-1)*8, bh=24+G.H*118+(G.H-1)*8;
     b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker><marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#7f8c8d"/></marker></defs>${arrowLines(G.cap,"#c0392b","ah")}${G.showBot?arrowLines(G.bot,"#7f8c8d","ahg"):""}</svg>`);
   }

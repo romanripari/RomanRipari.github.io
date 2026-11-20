@@ -375,9 +375,11 @@ function evalT(id,eff){
   }
   return false;
 }
-function bottomPts(zone,eff){
+// si se pasa "only", calcula solo los puntos inferiores de esa carta
+function bottomPts(zone,eff,only){
   let s=0;
   zone.forEach((id,i)=>{
+    if(only!==undefined && i!==only) return;
     const r=BOT[id]; if(!r) return;
     if(r.k==="prev"){ if(i>0) s+=eff[i-1].filter(x=>x===r.x).length; }
     else if(r.k==="next"){
@@ -411,8 +413,11 @@ function finish(){
   else {title="Mancoooooo";cls="no";}
   let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
   body+=`<p>Tuerquitas cumplidas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
-  body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Puntos inferiores</th></tr>`;
-  zone.forEach((id,i)=>{body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${win?"":"0 (no ganaste)"}</td></tr>`;});
+  body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Condición de los puntos inferiores</th><th>Puntos</th></tr>`;
+  zone.forEach((id,i)=>{
+    const p=win?bottomPts(zone,eff,i):0;
+    body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${TIP[id].c}</td><td class="${p>0?"ok":"no"}">${p>0?"+"+p:"0"}${win?"":" (no ganaste)"}</td></tr>`;
+  });
   body+=`</table><p>Puntos inferiores: ${botP}</p>`;
   body+=`<table><tr><th>Condición de la competencia</th><th>Estrellas</th></tr>`;
   objs.forEach((id,k)=>{const ok=evalT(id,eff);body+=`<tr><td>${COND[id]}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});

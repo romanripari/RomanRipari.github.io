@@ -334,8 +334,8 @@ async function botTurn(){
   // Camino: N casillas legales en orden de lectura, desde su posición
   // si todo está bloqueado para Roboquefort, todas las cartas del tipo cuentan
   const anyStrict=cells.some(c=>c.card!=null && c.side===R && !(G.cap>=0 && blocks(cells[G.cap],c)));
-  // Roboquefort cuenta siempre desde la casilla superior izquierda
-  let p=-1, steps=0, path=[], guard=0; const limit=cells.length*(N+1);
+  // Roboquefort cuenta desde su posición actual (la primera vez, desde arriba a la izquierda)
+  let p=G.bot, steps=0, path=[], guard=0; const limit=cells.length*(N+1);
   while(steps<N && guard<limit){
     p=(p+1)%cells.length; guard++;
     const c=cells[p];
@@ -421,16 +421,16 @@ function finish(){
   else if(score>=4){title="Está bien para una primera partida";cls="ok";}
   else {title="Lo importante es participar";cls="no";}
   let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
-  body+=`<p>Competencias ganadas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
-  body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Condición de los puntos inferiores</th><th>Puntos</th></tr>`;
+  body+=`<h4>Puntos de compañeros</h4><table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Condición de los puntos inferiores</th><th>Puntos</th></tr>`;
   zone.forEach((id,i)=>{
     const p=bottomPts(zone,eff,i);
     body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${TIP[id].c}</td><td class="${p>0?"ok":"no"}">${p>0?"+"+p:"0"}</td></tr>`;
   });
-  body+=`</table><p>Puntos inferiores: ${botP}</p>`;
-  body+=`<table><tr><th>Condición de la competencia</th><th>Estrellas</th></tr>`;
+  body+=`<tr><td colspan="3"><b>Subtotal de compañeros</b></td><td><b>${botP}</b></td></tr></table>`;
+  body+=`<h4>Puntos de competencias</h4><table><tr><th>Condición de la competencia</th><th>Estrellas</th></tr>`;
   objs.forEach((id,k)=>{const ok=evalT(id,eff);body+=`<tr><td>${COND[id]}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
-  body+=`</table>`;
+  body+=`<tr><td><b>Subtotal de competencias</b></td><td><b>${starP}</b></td></tr></table>`;
+  body+=`<h3>Total de puntos: ${score}</h3>`;
   document.getElementById("endTitle").textContent=title;
   document.getElementById("endBody").innerHTML=body;
   // el tablero queda visible debajo del resumen, para revisar la última jugada

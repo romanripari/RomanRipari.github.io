@@ -3,61 +3,77 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pan y Queso · Solitario vs Roboquefort</title>
+<title>Pan y Queso - Un juego de Bruno Sassone Torcello</title>
 <style>
+  *{border-radius:0!important}
   body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5efe2;margin:0;color:#222}
   header{padding:12px 18px;background:#e7c97a;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
   main{padding:14px}
   .hidden{display:none!important}
-  .menu{max-width:920px;margin:0 auto}
-  .shapes{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0}
-  .shape{background:#fff;border:3px solid transparent;border-radius:10px;padding:10px;cursor:pointer;text-align:center;font-size:14px}
+  .menu{max-width:920px;margin:0 auto;text-align:center}
+  .shapes{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0;justify-content:center}
+  .shape{background:#fff;border:3px solid transparent;padding:10px;cursor:pointer}
   .shape.sel{border-color:#c0392b}
-  .mini{display:grid;gap:3px;justify-content:center;margin-bottom:6px}
-  .mini div{width:16px;height:16px;border-radius:3px}
+  .mini{display:grid;gap:3px;justify-content:center}
+  .mini div{width:16px;height:16px}
   .mini .C{background:#7fb3d5}.mini .S{background:#f4d03f}.mini .D{background:#aab7b8}.mini .x{background:transparent}
-  button{padding:10px 18px;font-size:16px;border:0;border-radius:6px;background:#c0392b;color:#fff;cursor:pointer}
+  button{padding:10px 18px;font-size:16px;border:0;background:#c0392b;color:#fff;cursor:pointer}
   button:disabled{background:#aaa;cursor:default}
-  .game{display:grid;grid-template-columns:1fr 300px;gap:14px;max-width:1200px;margin:0 auto}
-  .board{display:grid;gap:8px;justify-content:center;background:#fff;padding:12px;border-radius:10px}
-  .cell{width:86px;height:118px;border-radius:6px;position:relative;overflow:hidden;box-sizing:border-box}
-  .cell img{width:100%;height:100%;object-fit:cover;display:block}
+  .game{display:grid;grid-template-columns:1fr 300px;gap:14px;max-width:1240px;margin:0 auto}
+  .topbar{background:#fff;padding:8px;margin-bottom:10px;min-height:60px}
+  .topbar h4{margin:0 0 4px}
+  .row{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
+  .board{display:grid;gap:8px;justify-content:center;background:#fff;padding:12px}
+  .cell{width:86px;height:118px;position:relative;overflow:hidden;box-sizing:border-box}
+  .cell img{width:100%;height:100%;display:block}
   .cell.empty{border:2px dashed #bbb;background:#eee}
   .cell.dotted{opacity:.45}
   .cell.legal{outline:4px solid #27ae60;cursor:pointer}
   .cell.legal:hover{transform:scale(1.04)}
-  .side{background:#fff;padding:12px;border-radius:10px;font-size:14px}
-  .thumbs img{width:58px;margin:2px;border-radius:4px;vertical-align:top}
-  .log{height:200px;overflow:auto;background:#fafafa;border:1px solid #ddd;padding:6px;font-size:13px;line-height:1.35}
-  .note{font-size:13px;color:#555;margin-top:10px}
+  .cell.visit{outline:5px solid #e67e22}
+  .side{background:#fff;padding:12px;font-size:14px}
+  .side img{width:58px;margin:2px;vertical-align:top}
+  .dk{display:inline-block;text-align:center;margin:2px;vertical-align:top}
+  .dk .n{display:block;font-weight:700;font-size:13px}
+  .dk img{width:50px;display:block}
+  .log{height:180px;overflow:auto;background:#fafafa;border:1px solid #ddd;padding:6px;font-size:13px;line-height:1.35}
+  .note{font-size:13px;color:#555}
   table{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px}
   td,th{border-bottom:1px solid #ddd;padding:4px;text-align:left}
   .ok{color:#1e8449;font-weight:700}.no{color:#922b21}
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9}
+  #ovbox{position:relative;width:640px;height:380px}
+  #ovbox img{position:absolute;width:90px;transition:all .08s;box-shadow:0 0 6px #000;background:#fff}
+  .ov p{color:#fff;font-size:18px;font-weight:700;margin:10px}
+  #tt{position:fixed;z-index:20;background:#222;color:#fff;padding:8px 10px;font-size:13px;max-width:320px;pointer-events:none;line-height:1.4}
+  #tt b{color:#f4d03f}
 </style>
 </head>
 <body>
-<header><span>Pan y Queso · Solitario vs Roboquefort</span><span id="hdr"></span></header>
+<header><span>Pan y Queso - Un juego de Bruno Sassone Torcello</span><span id="hdr"></span></header>
 <main>
   <section id="menu" class="menu">
-    <h2>Elegí el tablero</h2>
+    <h2>Pan y Queso - Solitario vs Roboquefort</h2>
+    <h3>Elegí el tablero</h3>
     <div id="shapes" class="shapes"></div>
     <h3>Bloqueo del pancito y de Roboquefort</h3>
     <label><input type="radio" name="blk" value="ortho" checked> Ortogonal (fila y columna)</label>
     &nbsp;&nbsp;
     <label><input type="radio" name="blk" value="diag"> Diagonal</label>
     <p><button id="start" disabled>Empezar partida</button></p>
-    <p class="note">Los diagramas provisorios (Anillo, Pirámide, Cuadro con hueco y Mixto) están armados aproximados: revisalos contra el reglamento antes de probar.</p>
   </section>
 
   <section id="game" class="game hidden">
     <div>
+      <div id="top" class="topbar"></div>
       <div id="board" class="board"></div>
+      <div id="after" class="row" style="margin-top:12px;align-items:center;min-height:130px"></div>
       <p id="info" class="note"></p>
     </div>
     <div class="side">
       <div id="status"></div>
-      <h4>Tus compañeros</h4><div id="myComp" class="thumbs"></div>
-      <h4>Tus objetivos</h4><div id="myObj" class="thumbs"></div>
+      <h4>Tus compañeros</h4><div id="myComp"></div>
+      <h4>Mazo de Roboquefort</h4><div id="deck"></div>
       <h4>Registro</h4><div id="log" class="log"></div>
     </div>
   </section>
@@ -69,22 +85,25 @@
   </section>
 </main>
 
+<div id="ov" class="ov hidden"><div id="ovbox"></div><p id="ovtxt"></p></div>
+<div id="tt" class="hidden"></div>
+
 <script>
 /* ---------- DATOS ---------- */
 // Atributos del lado compañero: S=💪 fuerza, A=🏃 agilidad, V=🎯 velocidad, I=🧠 inteligencia
 const ICON={S:"💪",A:"🏃",V:"🎯",I:"🧠"};
 const CARDS={1:"SSI",2:"SAV",3:"III",4:"SVI",5:"AAA",6:"VVV",7:"SSS",8:"SVI",9:"SAA",10:"SVV",11:"II",12:"ASI",13:"IIA",14:"VV",15:"SA",16:"VA"};
-// Movimientos del bot por archivo
+// Movimientos para el bot por archivo
 const MOV={1:1,2:5,3:4,4:2,5:3,6:6,7:2,8:4,9:2,10:6,11:3,12:1,13:4,14:5,15:5,16:3};
-// Icono extra que agrega la carta (cuenta como parte de la carta)
+// Icono que agrega la carta (pasa a ser parte de la carta)
 const ADD={3:{trig:"S",add:"A"},5:{trig:"V",add:"S"},6:{trig:"A",add:"I"},7:{trig:"I",add:"V"}};
-// Parte inferior del lado compañero (puntos)
+// Parte inferior del lado compañero
 const BOT={
   1:{k:"prev",x:"A"},
   2:{k:"next",x:"I",n:2,p:2},
   4:{k:"next",x:"A",n:2,p:2},
   8:{k:"next",x:"S",n:2,p:2},
-  9:{k:"four"},
+  9:{k:"four",p:3},
   10:{k:"prev",x:"I"},
   11:{k:"pos",p:3,pts:2},
   12:{k:"next",x:"V",n:2,p:2},
@@ -93,7 +112,7 @@ const BOT={
   15:{k:"prev",x:"V"},
   16:{k:"pos",p:2,pts:1}
 };
-// Tuerquitas del lado competencia (cumplir = true)
+// Tuerquitas (lado competencia)
 const T={
   1:{t:"eq",a:"S",b:"I",pts:4},
   2:{t:"cardsWith",x:"A",n:2,pts:2},
@@ -112,23 +131,62 @@ const T={
   15:{t:"exact",k:2,n:2,pts:3},
   16:{t:"exact",k:3,n:2,pts:2}
 };
-// Tableros: C = lado compañero, S = lado competencia, D = compañero con línea punteada (va al mazo de Roboquefort)
+// Textos para los tooltips (lado compañero y lado competencia)
+const TIP={
+  1:{c:"Tantos puntos como 🏃 tenés en la carta anterior.",k:"Igual cantidad de 💪 que de 🧠 entre tus íconos: 4 puntos."},
+  2:{c:"Si tenés 2 o más 🧠 en las dos cartas siguientes: 2 puntos.",k:"2 o más cartas con algún 🏃: 2 puntos."},
+  3:{c:"Por cada carta con algún 💪 en las dos anteriores, agrega un 🏃 a esta carta.",k:"3 o más símbolos 💪: 2 puntos."},
+  4:{c:"Si tenés 2 o más 🏃 en las dos cartas siguientes: 2 puntos.",k:"Más 🎯 que 🧠: 3 puntos."},
+  5:{c:"Por cada carta con algún 🎯 en las dos anteriores, agrega un 💪 a esta carta.",k:"3 o más símbolos 🧠: 2 puntos."},
+  6:{c:"Por cada carta con algún 🏃 en las dos anteriores, agrega un 🧠 a esta carta.",k:"3 o más símbolos 🏃: 2 puntos."},
+  7:{c:"Por cada carta con algún 🧠 en las dos anteriores, agrega un 🎯 a esta carta.",k:"3 o más símbolos 🎯: 2 puntos."},
+  8:{c:"Si tenés 2 o más 💪 en las dos cartas siguientes: 2 puntos.",k:"Igual cantidad de 🏃 que de 🎯: 4 puntos."},
+  9:{c:"Si entre la carta anterior y la posterior aparecen los 4 símbolos: 3 puntos.",k:"Más 🏃 que 💪: 3 puntos."},
+  10:{c:"Tantos puntos como 🧠 tenés en la carta anterior.",k:"5 o más símbolos sumando 💪 y 🎯: 3 puntos."},
+  11:{c:"Si está en la tercera posición: 2 puntos.",k:"2 o más cartas con algún 🧠: 2 puntos."},
+  12:{c:"Si tenés 2 o más 🎯 en las dos cartas siguientes: 2 puntos.",k:"2 o más cartas con algún 💪: 2 puntos."},
+  13:{c:"Tantos puntos como 💪 tenés en la carta anterior.",k:"5 o más símbolos sumando 🧠 y 🏃: 3 puntos."},
+  14:{c:"Si está en la primera posición: 1 punto.",k:"2 o más cartas con algún 🎯: 2 puntos."},
+  15:{c:"Tantos puntos como 🎯 tenés en la carta anterior.",k:"2 o más compañeros con exactamente 2 atributos: 3 puntos."},
+  16:{c:"Si está en la segunda posición: 1 punto.",k:"2 o más compañeros con exactamente 3 atributos: 2 puntos."}
+};
+// Tableros (C = lado compañero, S = lado competencia, D = compañero con línea punteada)
 const SHAPES=[
-  {name:"Cuadrado",rows:["SCCS","DSCC","CCSD","SCCS"]},
-  {name:"Óvalo",rows:[".CSCSC.","DSC.CSD",".CSCSC."]},
-  {name:"Anillo (provisorio)",rows:[".SCCS.","DC..SC","CS..CD",".SCCS."]},
-  {name:"Pirámide (provisorio)",rows:["..SC..",".CSCS.","CSCD..","SCSCSC"]},
-  {name:"Cuadro con hueco (provisorio)",rows:["SCCS.","DS.CC","CCSD.","SCCS."]},
-  {name:"Mixto (provisorio)",rows:["SCSCSC","CS..CD","DSCCS.","...S.."]}
+  {rows:["SCCS","DSCC","CCSD","SCCS"]},
+  {rows:[".CSCSC.","DSC.CSD",".CSCSC."]},
+  {rows:[".SCCS.","DC..CS","SC..CD",".SCCS."]},
+  {rows:["...C...","..CSC..",".CSCSC.","DSCSCSD"]},
+  {rows:[".CCS.","DCSCS","SCSCD",".SCC."]},
+  {rows:["SCCC.","D.SC.S","S.CS.D",".CCCS"]}
 ];
 const ROUNDS=["C","S","C","S","C"]; // C = compañeros, S = competencias
 
 /* ---------- ESTADO ---------- */
-let cells=[], deck=[], G=null, selShape=0;
-
+let cells=[], deck=[], G=null, selShape=0, busy=false;
 const img=(id,side)=>`PanYQueso/${String(id).padStart(2,"0")}${side}.png`;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const str=arr=>arr.map(s=>ICON[s]).join("");
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+// tooltip: lista de atributos de una carta en formato "data-id"
+const tipAttr=id=>`data-id="${id}"`;
+
+/* ---------- TOOLTIP (muestra las dos caras) ---------- */
+const tt=document.getElementById("tt");
+document.addEventListener("mouseover",e=>{
+  const el=e.target.closest("[data-id]");
+  if(!el){tt.classList.add("hidden");return;}
+  const id=+el.dataset.id;
+  // muestra solo el texto de la cara visible: a.png = compañero, b.png = competencia
+  const src=(el.tagName==="IMG"?el:el.querySelector("img")||{}).src||"";
+  const side=/b\.png$/.test(src)?"S":"C";
+  tt.innerHTML=`<b>${side==="C"?"Lado compañero":"Lado competencia"}</b><br>${side==="C"?TIP[id].c:TIP[id].k}`;
+  tt.classList.remove("hidden");
+});
+document.addEventListener("mousemove",e=>{
+  if(tt.classList.contains("hidden")) return;
+  tt.style.left=(e.clientX+14)+"px"; tt.style.top=(e.clientY+14)+"px";
+});
+document.addEventListener("mouseout",e=>{ if(!e.target.closest||!e.target.closest("[data-id]")) tt.classList.add("hidden"); });
 
 /* ---------- PORTADA ---------- */
 function drawMenu(){
@@ -136,15 +194,17 @@ function drawMenu(){
   SHAPES.forEach((sh,i)=>{
     const W=Math.max(...sh.rows.map(r=>r.length));
     let h=`<div class="shape ${i===selShape?"sel":""}" data-i="${i}"><div class="mini" style="grid-template-columns:repeat(${W},16px)">`;
-    sh.rows.forEach(row=>{[...row.padEnd(W,".")].forEach(ch=>{h+=`<div class="${ch==="."?"x":ch==="S"?"S":ch==="D"?"D":"C"}"></div>`;});});
-    h+=`</div>${sh.name}</div>`;
+    sh.rows.forEach(row=>[...row.padEnd(W,".")].forEach(ch=>{
+      h+=`<div class="${ch==="."?"x":ch==="S"?"S":ch==="D"?"D":"C"}"></div>`;
+    }));
+    h+=`</div></div>`;
     box.insertAdjacentHTML("beforeend",h);
   });
-  box.querySelectorAll(".shape").forEach(el=>el.onclick=()=>{selShape=+el.dataset.i;drawMenu();document.getElementById("start").disabled=false;});
+  box.querySelectorAll(".shape").forEach(el=>el.onclick=()=>{selShape=+el.dataset.i;drawMenu();});
   document.getElementById("start").disabled=false;
 }
 
-/* ---------- PARTIDA ---------- */
+/* ---------- PREPARACIÓN ---------- */
 function setup(shapeIdx,ortho){
   const rows=SHAPES[shapeIdx].rows; const W=Math.max(...rows.map(r=>r.length));
   cells=[];
@@ -155,57 +215,115 @@ function setup(shapeIdx,ortho){
   cells.forEach((cell,i)=>cell.card=ids[i%16]);
   deck=[];
   cells.forEach(cell=>{if(cell.dotted){deck.push(cell.card);cell.card=null;}});
-  G={W,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,bot:-1,log:[],over:false};
+  G={W,ortho,r:0,picks:[],pc:[],bc:[],cap:-1,bot:-1,visit:-1,log:[],over:false};
   G.log.push("Empieza la partida. Elegí un compañero.");
 }
 
-// bloqueo: fila/columna (ortogonal) o diagonal, según el toggle
+// bloqueo: fila y columna (ortogonal) o diagonal, según el toggle
 function blocks(t,c){
   if(G.ortho) return c.r===t.r||c.c===t.c;
   return Math.abs(c.r-t.r)===Math.abs(c.c-t.c);
 }
+// si todo está bloqueado, todas las cartas del tipo de la ronda pasan a ser válidas
 function legalPlayer(){
   const R=ROUNDS[G.r];
-  return cells.map((c,i)=>i).filter(i=>{
-    const c=cells[i];
-    if(c.card==null||c.side!==R) return false;
-    if(G.bot>=0 && blocks(cells[G.bot],c)) return false;
-    return true;
-  });
+  const base=cells.map((c,i)=>i).filter(i=>cells[i].card!=null && cells[i].side===R);
+  const strict=base.filter(i=>!(G.bot>=0 && blocks(cells[G.bot],cells[i])));
+  return strict.length?strict:base;
 }
-function pick(i){
+
+/* ---------- TURNOS ---------- */
+async function pick(i){
+  if(busy||G.over) return;
+  // antes de confirmar, clickear otra carta válida cambia la elección
+  if(G.step==="confirm") undoPick();
   const R=ROUNDS[G.r]; const c=cells[i]; const id=c.card;
   c.card=null;
   if(G.cap>=0) cells[G.cap].token=null;
-  G.cap=i; c.token="cap";
-  if(R==="C"){G.picks.push(id); G.log.push(`Tomaste el compañero ${id} (${str(CARDS[id])}).`);}
-  else {G.pc.push(id); G.log.push(`Tomaste la competencia ${id} (tuerquita: ${tqText(id)}).`);}
-  if(G.r===4){finish();return;}
-  botTurn();
-  G.r++;
-  render();
+  G.prevCap=G.cap; G.cap=i; c.token="cap";
+  if(R==="C"){G.picks.push(id); G.log.push(`Tomaste un compañero (${str(CARDS[id].split(""))}).`);}
+  else {G.pc.push(id); G.log.push(`Tomaste una competencia.`);}
+  // la carta baja debajo del tablero, pausa, y después aparece "Confirmar"
+  G.step="confirm"; G.last={id,R}; render();
 }
-function botTurn(){
+// deshace la elección pendiente: la carta vuelve a su casilla y el pancito a la anterior
+function undoPick(){
+  const id=G.last.id;
+  const old=cells[G.cap];
+  old.card=id; old.token=null;
+  if(G.last.R==="C") G.picks.pop(); else G.pc.pop();
+  G.log.pop();
+  G.cap=G.prevCap;
+  if(G.cap>=0) cells[G.cap].token="cap";
+  G.step=null; G.last=null;
+}
+function confirmPick(){
+  if(G.step!=="confirm") return;
+  if(G.r===4){G.step=null; finish(); return;}
+  G.step="bot"; render();
+}
+function startBot(){
+  if(G.step!=="bot"||busy) return;
+  G.step=null; busy=true; render();
+  botTurn().then(()=>{busy=false; G.r++; render();});
+}
+
+async function botTurn(){
   const R=ROUNDS[G.r];
   if(!deck.length){G.log.push("Roboquefort no tiene cartas de movimiento.");return;}
-  const drawn=deck[Math.floor(Math.random()*deck.length)];
-  const N=MOV[drawn];
-  let p=G.bot, steps=0, landed=-1, guard=0;
-  const limit=cells.length*(N+1);
+  // Todas las cartas del mazo se mezclan en el aire
+  const ov=document.getElementById("ov"), box=document.getElementById("ovbox"), txt=document.getElementById("ovtxt");
+  box.innerHTML="";
+  const els=deck.map(id=>{const im=document.createElement("img");im.src=img(id,"a");im.alt=id;box.appendChild(im);return im;});
+  ov.classList.remove("hidden");
+  txt.textContent="Roboquefort mezcla el mazo...";
+  for(let k=0;k<14;k++){
+    els.forEach(im=>{
+      im.style.left=(Math.random()*540)+"px";
+      im.style.top=(Math.random()*290)+"px";
+      im.style.transform=`rotate(${Math.random()*40-20}deg)`;
+    });
+    await sleep(90);
+  }
+  // Saca una carta: queda al frente, el resto se apaga
+  const pick_i=Math.floor(Math.random()*deck.length);
+  const drawn=deck[pick_i]; const N=MOV[drawn];
+  els.forEach((im,k)=>{
+    if(k===pick_i){im.style.left="275px";im.style.top="140px";im.style.width="130px";im.style.transform="rotate(0deg)";im.style.zIndex=5;}
+    else im.style.opacity=".25";
+  });
+  txt.textContent=`Roboquefort saca una carta: se mueve ${N} casillas`;
+  await sleep(1400);
+  // Todas vuelven al mazo
+  txt.textContent="Las cartas vuelven al mazo";
+  els.forEach(im=>{im.style.opacity="0";});
+  await sleep(400);
+  ov.classList.add("hidden");
+  box.innerHTML="";
+  // Camino: N casillas legales en orden de lectura, desde su posición
+  // si todo está bloqueado para Roboquefort, todas las cartas del tipo cuentan
+  const anyStrict=cells.some(c=>c.card!=null && c.side===R && !(G.cap>=0 && blocks(cells[G.cap],c)));
+  let p=G.bot, steps=0, path=[], guard=0; const limit=cells.length*(N+1);
   while(steps<N && guard<limit){
     p=(p+1)%cells.length; guard++;
     const c=cells[p];
-    if(c.card!=null && c.side===R && !(G.cap>=0 && blocks(cells[G.cap],c))){steps++; landed=p;}
+    const blockedNow=anyStrict && G.cap>=0 && blocks(cells[G.cap],c);
+    if(c.card!=null && c.side===R && !blockedNow){steps++; path.push(p);}
   }
-  if(landed<0){G.log.push("Roboquefort no encontró casillas legales.");return;}
+  if(!path.length){G.log.push("Roboquefort no encontró casillas legales."); return;}
+  for(const idx of path){G.visit=idx; render(); await sleep(1000);}
+  G.visit=-1;
+  const landed=path[path.length-1];
   const c=cells[landed]; const id=c.card; c.card=null;
   if(G.bot>=0) cells[G.bot].token=null;
   c.token="bot"; G.bot=landed;
-  if(R==="C"){deck.push(id); G.log.push(`Roboquefort (mov ${N}) tomó el compañero ${id} y lo mezcló al mazo.`);}
-  else {G.bc.push(id); G.log.push(`Roboquefort (mov ${N}) tomó la competencia ${id}.`);}
+  if(R==="C"){deck.push(id); G.log.push(`Roboquefort tomó un compañero y lo mezcló al mazo.`);}
+  else {G.bc.push(id); G.log.push(`Roboquefort tomó una competencia, que puntúa para vos.`);}
+  render();
+  await sleep(300);
 }
 
-/* ---------- REGLAS DE PUNTAJE ---------- */
+/* ---------- PUNTAJE ---------- */
 function effIcons(zone){
   const eff=zone.map(id=>CARDS[id].split(""));
   zone.forEach((id,i)=>{
@@ -228,17 +346,6 @@ function evalT(id,eff){
     case "exact": return eff.filter(a=>new Set(a).size===t.k).length>=t.n;
   }
   return false;
-}
-function tqText(id){
-  const t=T[id];
-  switch(t.t){
-    case "eq": return `${ICON[t.a]} = ${ICON[t.b]}`;
-    case "more": return `más ${ICON[t.a]} que ${ICON[t.b]}`;
-    case "sym": return `${t.n}+ ${ICON[t.x]}`;
-    case "sum": return `${t.n}+ ${ICON[t.x]}+${ICON[t.y]}`;
-    case "cardsWith": return `${t.n}+ cartas con ${ICON[t.x]}`;
-    case "exact": return `${t.n}+ compañeros con exactamente ${t.k} atributos`;
-  }
 }
 function bottomPts(zone,eff){
   let s=0;
@@ -277,10 +384,10 @@ function finish(){
   let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
   body+=`<p>Tuerquitas cumplidas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
   body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Puntos inferiores</th></tr>`;
-  zone.forEach((id,i)=>{body+=`<tr><td>${id}</td><td>${str(eff[i])}</td><td>${win?"":"0 (no ganaste)"}</td></tr>`;});
+  zone.forEach((id,i)=>{body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${win?"":"0 (no ganaste)"}</td></tr>`;});
   body+=`</table><p>Puntos inferiores: ${botP}</p>`;
-  body+=`<table><tr><th>Competencia</th><th>Tuerquita</th><th>Estrellas</th></tr>`;
-  objs.forEach(id=>{const ok=evalT(id,eff);body+=`<tr><td>${id}</td><td>${tqText(id)}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
+  body+=`<table><tr><th>Competencia</th><th>Estrellas</th></tr>`;
+  objs.forEach((id,k)=>{const ok=evalT(id,eff);body+=`<tr><td>Competencia ${k+1}</td><td class="${ok?"ok":"no"}">${ok?T[id].pts:0}${ok?"":" (no cumplida)"}</td></tr>`;});
   body+=`</table>`;
   document.getElementById("endTitle").textContent=title;
   document.getElementById("endBody").innerHTML=body;
@@ -291,42 +398,68 @@ function finish(){
 /* ---------- RENDER ---------- */
 function render(){
   if(G.over) return;
+  // Sin cartas legales: Roboquefort juega solo
+  if(!busy && !G.step && legalPlayer().length===0){
+    G.log.push("No tenés cartas legales en esta ronda: pasa Roboquefort.");
+    busy=true; render();
+    botTurn().then(()=>{busy=false; if(G.r>=4){finish();return;} G.r++; render();});
+    return;
+  }
   const b=document.getElementById("board");
   b.style.gridTemplateColumns=`repeat(${G.W},86px)`;
   b.innerHTML="";
-  const legal=legalPlayer();
+  const legal=(busy||G.step==="moving"||G.step==="bot")?[]:legalPlayer();
+  // zona de confirmación debajo del tablero
+  const after=document.getElementById("after");
+  let ah="";
+  if(G.last && G.step){
+    ah+=`<img src="${img(G.last.id,G.last.R==="C"?"a":"b")}" width="90" alt="${G.last.id}" ${tipAttr(G.last.id)}>`;
+    if(G.step==="moving") ah+=`<span class="note">Guardando tu elección...</span>`;
+    if(G.step==="confirm") ah+=`<button id="btnC">Confirmar</button>`;
+    if(G.step==="bot") ah+=`<button id="btnB">Turno del Bot</button>`;
+  }
+  after.innerHTML=ah;
+  const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
+  const bb=document.getElementById("btnB"); if(bb) bb.onclick=startBot;
   cells.forEach((c,i)=>{
     let cls="cell", inner="";
-    if(c.card!=null){ inner=`<img src="${img(c.card,c.side==="S"?"b":"a")}" alt="${c.card}">`; }
-    else if(c.token==="cap"){ inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty"; }
-    else if(c.token==="bot"){ inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty"; }
-    else { cls+=" empty"; if(c.dotted) cls+=" dotted"; }
-    const isLegal=legal.includes(i);
-    if(isLegal) cls+=" legal";
+    if(c.card!=null){
+      const side=c.side==="S"?"b":"a";
+      inner=`<img src="${img(c.card,side)}" alt="${c.card}" ${tipAttr(c.card)}>`;
+    }
+    else if(c.token==="cap"){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty";}
+    else if(c.token==="bot"){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="Roboquefort">`; cls+=" empty";}
+    else {cls+=" empty"; if(c.dotted) cls+=" dotted";}
+    if(legal.includes(i)) cls+=" legal";
+    if(G.visit===i) cls+=" visit";
     const d=document.createElement("div");
     d.className=cls; d.style.gridRow=c.r+1; d.style.gridColumn=c.c+1;
     d.innerHTML=inner;
-    if(isLegal) d.onclick=()=>pick(i);
+    if(legal.includes(i)) d.onclick=()=>pick(i);
     b.appendChild(d);
   });
   const R=ROUNDS[G.r];
   document.getElementById("hdr").textContent=`Ronda ${G.r+1} de 5 · ${R==="C"?"Compañeros":"Competencias"}`;
-  document.getElementById("status").innerHTML=`<b>${R==="C"?"Elegí un compañero (lado compañero)":"Elegí una competencia (lado competencia)"}</b><br>Mazo de Roboquefort: ${deck.length} cartas.`;
-  document.getElementById("info").textContent=legal.length?"Tocá una carta resaltada para elegirla.":"No tenés cartas legales en esta ronda.";
-  document.getElementById("myComp").innerHTML=G.picks.map(id=>`<img src="${img(id,"a")}" alt="${id}">`).join("");
-  document.getElementById("myObj").innerHTML=[...G.pc.map(id=>`<img src="${img(id,"b")}" alt="${id}">`),...G.bc.map(id=>`<img src="${img(id,"b")}" alt="${id}" style="opacity:.55" title="Roboquefort">`)].join("");
+  document.getElementById("status").innerHTML=busy?"<b>Roboquefort se mueve...</b>":`<b>${R==="C"?"Elegí un compañero (lado compañero).":"Elegí una competencia (lado competencia)."}</b>`;
+  document.getElementById("info").textContent=busy?"":(legal.length?"Tocá una carta resaltada para elegirla.":"");
+  // Competencias que puntúan (arriba)
+  const top=document.getElementById("top");
+  top.innerHTML=`<h4>Competencias que puntúan</h4><div class="row">`+
+    G.pc.map(id=>`<img src="${img(id,"b")}" width="60" alt="${id}" ${tipAttr(id)}>`).join("")+
+    G.bc.map(id=>`<img src="${img(id,"b")}" width="60" alt="${id}" ${tipAttr(id)} style="outline:3px solid #922b21">`).join("")+
+    `</div><p class="note">Tuyas: sin borde. Del bot: borde rojo.</p>`;
+  document.getElementById("myComp").innerHTML=G.picks.map(id=>`<img src="${img(id,"a")}" alt="${id}" ${tipAttr(id)}>`).join("");
+  // Mazo de Roboquefort con movimientos
+  document.getElementById("deck").innerHTML=deck.map(id=>`<div class="dk"><span class="n">${MOV[id]}</span><img src="${img(id,"a")}" alt="${id}" ${tipAttr(id)}></div>`).join("");
   document.getElementById("log").innerHTML=G.log.slice(-40).map(x=>`<div>${x}</div>`).join("");
   document.getElementById("log").scrollTop=1e9;
-  if(!legal.length && G.r<5){ // sin jugadas legales: pasa el bot
-    G.log.push("Pasás la ronda (sin cartas legales).");
-    botTurn(); G.r++; if(G.r>=5) finish(); else render();
-  }
 }
 
 /* ---------- EVENTOS ---------- */
 document.getElementById("start").onclick=()=>{
   const ortho=document.querySelector('input[name="blk"]:checked').value==="ortho";
   setup(selShape,ortho);
+  busy=false;
   document.getElementById("menu").classList.add("hidden");
   document.getElementById("end").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");

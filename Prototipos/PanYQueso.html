@@ -408,20 +408,22 @@ function finish(){
   const objs=[...G.pc,...G.bc];
   const met=objs.filter(id=>evalT(id,eff));
   const win=met.length>=3;
-  const botP=win?bottomPts(zone,eff):0;
-  const starP=win?met.reduce((a,id)=>a+T[id].pts,0):0;
+  // los puntos siempre se suman, cumpla o no 3 competencias
+  const botP=bottomPts(zone,eff);
+  const starP=met.reduce((a,id)=>a+T[id].pts,0);
   const score=botP+starP;
   let title, cls;
-  if(!win){title="Perdiste";cls="no";}
-  else if(score>=13){title="Crack infinito";cls="ok";}
-  else if(score>=9){title="Ganaste pero tampoco te creas mucho";cls="ok";}
-  else {title="Mancoooooo";cls="no";}
+  if(score>=13){title="Imbatible";cls="ok";}
+  else if(score>=10){title="Simplemente crack";cls="ok";}
+  else if(score>=7){title="Bieeeen mitad de tabla pero bieeen";cls="ok";}
+  else if(score>=4){title="Está bien para una primera partida";cls="ok";}
+  else {title="Lo importante es participar";cls="no";}
   let body=`<p class="${cls}"><b>Puntaje: ${score}</b> · ${title}</p>`;
   body+=`<p>Competencias ganadas: ${met.length} de ${objs.length} (necesitás 3).</p>`;
   body+=`<table><tr><th>Compañero</th><th>Íconos (con agregados)</th><th>Condición de los puntos inferiores</th><th>Puntos</th></tr>`;
   zone.forEach((id,i)=>{
-    const p=win?bottomPts(zone,eff,i):0;
-    body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${TIP[id].c}</td><td class="${p>0?"ok":"no"}">${p>0?"+"+p:"0"}${win?"":" (no ganaste)"}</td></tr>`;
+    const p=bottomPts(zone,eff,i);
+    body+=`<tr><td>Compañero ${i+1}</td><td>${str(eff[i])}</td><td>${TIP[id].c}</td><td class="${p>0?"ok":"no"}">${p>0?"+"+p:"0"}</td></tr>`;
   });
   body+=`</table><p>Puntos inferiores: ${botP}</p>`;
   body+=`<table><tr><th>Condición de la competencia</th><th>Estrellas</th></tr>`;

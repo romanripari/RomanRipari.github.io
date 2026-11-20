@@ -49,7 +49,7 @@
   .ok{color:#1e8449;font-weight:700}.no{color:#922b21}
   .ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9}
   #ovbox{position:relative;width:640px;height:380px}
-  #ovbox .ovc{position:absolute;width:90px;transition:all .45s;box-shadow:0 0 6px #000;background:#fff}
+  #ovbox .ovc{position:absolute;width:90px;transition:all .08s;box-shadow:0 0 6px #000;background:#fff}
   #ovbox .ovc img{width:100%;display:block}
   #ovbox .ovc .n{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#c0392b;text-shadow:0 0 4px #fff,0 0 8px #fff,0 0 12px #fff,0 0 2px #fff;pointer-events:none}
   .ov p{color:#fff;font-size:18px;font-weight:700;margin:10px}
@@ -307,15 +307,14 @@ async function botTurn(){
   const els=deck.map(id=>{const im=document.createElement("div");im.className="ovc";im.innerHTML=`<img src="${img(id,"a")}" alt=""><span class="n">${MOV[id]}</span>`;box.appendChild(im);return im;});
   ov.classList.remove("hidden");
   txt.textContent="Roboquefort mezcla el mazo...";
-  // cada carta tarda 450ms en moverse, con 50ms de diferencia entre una y otra
-  for(let k=0;k<4;k++){
-    els.forEach((im,j)=>{
-      im.style.transitionDelay=(j*50)+"ms";
+  // mezcla igual que antes (14 vueltas), pero más rápida
+  for(let k=0;k<14;k++){
+    els.forEach(im=>{
       im.style.left=(Math.random()*540)+"px";
       im.style.top=(Math.random()*290)+"px";
       im.style.transform=`rotate(${Math.random()*40-20}deg)`;
     });
-    await sleep(450+50*(els.length-1));
+    await sleep(50);
   }
   // Saca una carta: queda al frente, el resto se apaga
   const pick_i=Math.floor(Math.random()*deck.length);

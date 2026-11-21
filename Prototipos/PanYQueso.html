@@ -26,7 +26,9 @@
   .tcol{flex:1}
   .tcol.tr{text-align:right}
   .tcol.tr .row{justify-content:flex-end}
-  .tmid{flex:0 0 150px;text-align:center}
+  .tmid{flex:0 0 230px;text-align:center}
+  .tmid #status{font-size:14px;margin-bottom:4px}
+  .tmid #info{margin:0 0 6px;font-size:12px}
   .tmid img{width:90px;display:block;margin:6px auto 0}
   .row{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
   .board{position:relative;display:grid;gap:8px;width:max-content;margin:0 auto;background:#fff;padding:12px}
@@ -35,9 +37,16 @@
   .cell img{width:100%;height:100%;display:block}
   .cell.empty{border:2px dashed #bbb;background:#eee}
   .cell.dotted{opacity:.45}
-  .cell.legal{outline:4px solid #27ae60;cursor:pointer}
+  .cell.legal{cursor:pointer}
+  .cell.legal.p0{outline:4px solid #c0392b}
+  .cell.legal.p1{outline:4px solid #2a78d6}
   .cell.legal:hover{transform:scale(1.04)}
-  .cell.visit{outline:5px solid #e67e22}
+  .cell.visit{outline:5px solid #2a78d6}
+  #deckBox{display:none}
+  .pair{display:flex;gap:16px;justify-content:flex-end;align-items:flex-start}
+  .pair>div{flex:1}
+  .turn0{color:#c0392b;font-weight:700}
+  .turn1{color:#2a78d6;font-weight:700}
   .side{background:#fff;padding:12px;font-size:14px}
   .dk{position:relative;display:inline-block;margin:4px;vertical-align:top}
   .dk img{width:74px;display:block}
@@ -78,10 +87,8 @@
     <div>
       <div id="top" class="topbar"></div>
       <div id="board" class="board"></div>
-      <p id="info" class="note"></p>
     </div>
     <div class="side">
-      <div id="status"></div>
       <div id="deckBox"><h4>Mazo de Roboquefort</h4><div id="deck"></div></div>
       <h4>Registro</h4><div id="log" class="log"></div>
     </div>
@@ -300,7 +307,7 @@ function pick(i){
   else {G.prevPos=G.cap; G.cap=i;}
   if(solo){G.prevShow=G.showBot; G.showBot=false;}
   G.step="confirm"; G.last={id,R,who};
-  const name=solo?"Tomaste":(who===0?"Pan tomó":"Queso tomó");
+  const name=solo?"Tomaste":(who===0?"Pancito tomó":"Quesito tomó");
   G.log.push(R==="C"?`${name} un compañero (${str(CARDS[id].split(""))}).`:`${name} una competencia.`);
   render();
 }
@@ -520,15 +527,15 @@ function finishDos(){
     compRows+=`<tr><td>${K2[id]}</td><td class="${pA>0?"ok":"no"}">${pA}</td><td class="${pB>0?"ok":"no"}">${pB}</td></tr>`;
   });
   const totA=cA.sum+subA, totB=cB.sum+subB;
-  const winner=totA>totB?"Gana pan":totB>totA?"Gana queso":"Empate";
-  let body=`<p class="ok"><b>${winner}</b> · Pan ${totA} · Queso ${totB}</p>`;
-  body+=`<h4>Compañeros de pan</h4><table>${COMP_HEAD}${cA.rows}<tr><td colspan="3"><b>Subtotal de pan</b></td><td><b>${cA.sum}</b></td></tr></table>`;
-  body+=`<h4>Compañeros de queso</h4><table>${COMP_HEAD}${cB.rows}<tr><td colspan="3"><b>Subtotal de queso</b></td><td><b>${cB.sum}</b></td></tr></table>`;
-  body+=`<h4>Competencias (las puntúan los dos)</h4><table><tr><th>Condición</th><th>Pan</th><th>Queso</th></tr>${compRows}<tr><td><b>Subtotal de competencias</b></td><td><b>${subA}</b></td><td><b>${subB}</b></td></tr></table>`;
-  body+=`<h3>Total de puntos · Pan ${totA} · Queso ${totB}</h3>`;
+  const winner=totA>totB?"Gana Pancito":totB>totA?"Gana Quesito":"Empate";
+  let body=`<p class="ok"><b>${winner}</b> · Pancito ${totA} · Quesito ${totB}</p>`;
+  body+=`<h4>Compañeros de Pancito</h4><table>${COMP_HEAD}${cA.rows}<tr><td colspan="3"><b>Subtotal de Pancito</b></td><td><b>${cA.sum}</b></td></tr></table>`;
+  body+=`<h4>Compañeros de Quesito</h4><table>${COMP_HEAD}${cB.rows}<tr><td colspan="3"><b>Subtotal de Quesito</b></td><td><b>${cB.sum}</b></td></tr></table>`;
+  body+=`<h4>Competencias (las puntúan los dos)</h4><table><tr><th>Condición</th><th>Pancito</th><th>Quesito</th></tr>${compRows}<tr><td><b>Subtotal de competencias</b></td><td><b>${subA}</b></td><td><b>${subB}</b></td></tr></table>`;
+  body+=`<h3>Total de puntos · Pancito ${totA} · Quesito ${totB}</h3>`;
   document.getElementById("endTitle").textContent=winner;
   document.getElementById("endBody").innerHTML=body;
-  document.getElementById("banner").textContent=`Fin: ${winner} · Pan ${totA} · Queso ${totB}`;
+  document.getElementById("banner").textContent=`Fin: ${winner} · Pancito ${totA} · Quesito ${totB}`;
 }
 
 /* ---------- FLECHAS DE BLOQUEO ---------- */
@@ -566,6 +573,8 @@ function render(){
   }
   const who=solo?0:G.turn;
   const R=ROUNDS[G.r];
+  // en 1 vs. 1, la pieza del que tiene el turno se levanta del tablero (sin flecha) hasta que confirma
+  const liftR=!solo && G.turn===0, liftB=!solo && G.turn===1;
   // en la última jugada no quedan movimientos: ni verdes ni flechas
   const lastDone=G.r===4 && (G.step==="done" || (G.step==="confirm" && (solo || G.turn===1)));
   const legal=(busy||G.step==="bot"||lastDone)?[]:legalFor(who);
@@ -580,10 +589,10 @@ function render(){
       const side=c.side==="S"?"b":"a";
       inner=`<img src="${img(c.card,side)}" alt="" ${tipAttr(c.card)}>`;
     }
-    else if(i===G.cap){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pan">`; cls+=" empty";}
-    else if(i===G.bot){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="${solo?"Roboquefort":"Queso"}">`; cls+=" empty";}
+    else if(i===G.cap && !liftR){inner=`<img src="PanYQueso/pancito_${G.ortho?"a":"b"}.png" alt="Pancito">`; cls+=" empty";}
+    else if(i===G.bot && !liftB){inner=`<img src="PanYQueso/quesito_${G.ortho?"a":"b"}.png" alt="${solo?"Roboquefort":"Quesito"}">`; cls+=" empty";}
     else {cls+=" empty"; if(c.dotted) cls+=" dotted";}
-    if(legal.includes(i)) cls+=" legal";
+    if(legal.includes(i)) cls+=" legal p"+who;
     if(G.visit===i) cls+=" visit";
     const d=document.createElement("div");
     d.className=cls; d.style.gridRow=c.r+1; d.style.gridColumn=c.c+1;
@@ -591,33 +600,36 @@ function render(){
     if(legal.includes(i)) d.onclick=()=>pick(i);
     b.appendChild(d);
   });
-  // flechas: rojas del pancito, grises de Roboquefort (solo si todavía bloquea)
+  // flechas: rojas = pancito, azules = Quesito/Roboquefort (solo mientras bloquean)
   if(!lastDone){
     let parts="";
-    if(G.cap>=0) parts+=arrowLines(G.cap,"#c0392b","ah");
-    if(G.bot>=0 && (!solo || G.showBot)) parts+=arrowLines(G.bot,"#7f8c8d","ahg");
+    const hideRed=liftR, hideBlue=liftB;
+    if(G.cap>=0 && !hideRed) parts+=arrowLines(G.cap,"#c0392b","ah");
+    if(G.bot>=0 && !hideBlue && (!solo || G.showBot)) parts+=arrowLines(G.bot,"#2a78d6","ahb");
     if(parts){
       const bw=24+G.W*86+(G.W-1)*8, bh=24+G.H*118+(G.H-1)*8;
-      b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker><marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#7f8c8d"/></marker></defs>${parts}</svg>`);
+      b.insertAdjacentHTML("beforeend",`<svg width="${bw}" height="${bh}" viewBox="0 0 ${bw} ${bh}"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker><marker id="ahb" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2a78d6"/></marker></defs>${parts}</svg>`);
     }
   }
 
   // barra superior: competencias (izq.), confirmar + carta elegida (centro), compañeros (der.)
   let mid="";
   if(G.last && G.step){
-    if(G.step==="confirm") mid+=`<button id="btnC">Confirmar</button>`;
+    if(G.step==="confirm") mid+=`<button id="btnC">${solo?"Confirmar":(G.last.who===0?"Pancito confirma":"Quesito confirma")}</button>`;
     if(G.step==="bot") mid+=`<button id="btnB">Turno del Bot</button>`;
     mid+=`<img src="${img(G.last.id,G.last.R==="C"?"a":"b")}" alt="" ${tipAttr(G.last.id)}>`;
   }
   const imgsOf=arr=>arr.map(id=>`<img src="${img(id,"a")}" width="60" alt="" ${tipAttr(id)}>`).join("");
   const comps=G.pc.concat(solo?G.bc:[]).map(id=>`<img src="${img(id,"b")}" width="60" alt="" ${tipAttr(id)}>`).join("");
+  const deckHTML=deck.map(id=>`<div class="dk"><img src="${img(id,"a")}" alt="" ${tipAttr(id)}><span class="n">${MOV[id]}</span></div>`).join("");
+  // compañeros (y en solitario, el mazo de Roboquefort) uno al lado del otro
   const right=solo
-    ? `<h4>Mis compañeros</h4><div class="row">${imgsOf(G.picks)}</div>`
-    : `<h4>Compañeros de pan</h4><div class="row">${imgsOf(G.picks)}</div><h4>Compañeros de queso</h4><div class="row">${imgsOf(G.picks2)}</div>`;
+    ? `<div class="pair"><div><h4>Mis compañeros</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4>Mazo de Roboquefort</h4><div class="row">${deckHTML}</div></div></div>`
+    : `<div class="pair"><div><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div></div>`;
   document.getElementById("top").innerHTML=
     `<div class="tbar">`+
       `<div class="tcol"><h4>Competencias que puntúan</h4><div class="row">${comps}</div></div>`+
-      `<div class="tmid">${mid}</div>`+
+      `<div class="tmid"><div id="status"></div><p id="info" class="note"></p>${mid}</div>`+
       `<div class="tcol tr">${right}</div>`+
     `</div>`;
   const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
@@ -625,12 +637,15 @@ function render(){
 
   const roundTxt=`Ronda ${G.r+1} de 5 · ${R==="C"?"Compañeros":"Competencias"}`;
   document.getElementById("hdr").textContent=solo?roundTxt:`1 vs. 1 · ${roundTxt}`;
-  const who2=solo?"":(G.turn===0?"Pan":"Queso")+": ";
-  document.getElementById("status").innerHTML=busy?"<b>Roboquefort se mueve...</b>":`<b>${who2}${R==="C"?"elegí un compañero.":"elegí una competencia."}</b>`;
+  let status;
+  if(busy) status="<b>Roboquefort se mueve...</b>";
+  else if(solo) status=`<b>${R==="C"?"Elegí un compañero (lado compañero).":"Elegí una competencia (lado competencia)."}</b>`;
+  else {
+    const cls=G.turn===0?"turn0":"turn1", name=G.turn===0?"Pancito":"Quesito";
+    status=`<b class="${cls}">Turno de ${name}</b> <b>· ${R==="C"?"elegí un compañero.":"elegí una competencia."}</b>`;
+  }
+  document.getElementById("status").innerHTML=status;
   document.getElementById("info").textContent=busy?"":(G.step==="confirm"?"Podés cambiar tu elección tocando otra carta resaltada.":(legal.length?"Tocá una carta resaltada para elegirla.":""));
-  // mazo de Roboquefort: solo en solitario
-  document.getElementById("deckBox").classList.toggle("hidden",!solo);
-  if(solo) document.getElementById("deck").innerHTML=deck.map(id=>`<div class="dk"><img src="${img(id,"a")}" alt="" ${tipAttr(id)}><span class="n">${MOV[id]}</span></div>`).join("");
   document.getElementById("log").innerHTML=G.log.slice(-40).map(x=>`<div>${x}</div>`).join("");
   document.getElementById("log").scrollTop=1e9;
 }

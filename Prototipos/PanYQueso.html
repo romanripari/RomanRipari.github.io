@@ -67,6 +67,20 @@
   #tt{position:fixed;z-index:20;background:#222;color:#fff;padding:8px 10px;font-size:13px;max-width:320px;pointer-events:none;line-height:1.4}
   #tt b{color:#f4d03f}
   #banner{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:14px 22px;font-size:20px;font-weight:700;z-index:30}
+  /* adaptable: en pantallas angostas la barra se apila y el tablero se escala */
+  .board{zoom:1}
+  @media (max-width:760px){
+    body{padding:8px}
+    .topbar{padding:6px}
+    .tbar{flex-wrap:wrap;gap:8px}
+    .tmid{order:-1;flex:0 0 100%}
+    .tcol{flex:1 1 40%}
+    .tbar img,.tmid img{width:50px}
+    .dosmid .row{flex-wrap:nowrap}
+    .tmid{flex-basis:100%}
+    .side{font-size:13px}
+    .log{max-height:180px}
+  }
 </style>
 </head>
 <body>
@@ -667,7 +681,17 @@ function render(){
   document.getElementById("info").textContent=busy?"":(G.step==="confirm"?"Podés cambiar tu elección tocando otra carta resaltada.":(legal.length?"Tocá una carta resaltada para elegirla.":""));
   document.getElementById("log").innerHTML=G.log.slice(-40).map(x=>`<div>${x}</div>`).join("");
   document.getElementById("log").scrollTop=1e9;
+  fitBoard();
 }
+// escala el tablero (y sus flechas, que van dentro) para que entre en el ancho disponible
+function fitBoard(){
+  const b=document.getElementById("board"); if(!b) return;
+  b.style.zoom=1;
+  const avail=document.getElementById("game").clientWidth-16;
+  const w=b.offsetWidth;
+  b.style.zoom=w>avail && avail>0 ? (avail/w).toFixed(3) : 1;
+}
+if(typeof window!=="undefined") window.addEventListener("resize",()=>{ if(G) fitBoard(); });
 
 /* ---------- EVENTOS ---------- */
 document.getElementById("start").onclick=()=>{

@@ -26,7 +26,7 @@
   .tcol{flex:1}
   .tcol.tr{text-align:right}
   .tcol.tr .row{justify-content:flex-end}
-  .tmid{flex:0 0 230px;text-align:center}
+  .tmid{flex:0 0 330px;text-align:center}
   .tmid #status{font-size:14px;margin-bottom:4px}
   .tmid #info{margin:0 0 6px;font-size:12px}
   .tmid img{width:90px;display:block;margin:6px auto 0}
@@ -275,7 +275,7 @@ function setup(shapeIdx,ortho,mode){
   deck=[];
   // en solitario, las cartas punteadas forman el mazo de Roboquefort; en 1 vs. 1 quedan en el tablero
   if(mode==="solo") cells.forEach(cell=>{if(cell.dotted){deck.push(cell.card);cell.card=null;}});
-  G={W,H:rows.length,ortho,r:0,turn:0,picks:[],picks2:[],pc:[],bc:[],cap:-1,prevPos:-1,bot:-1,showBot:false,prevShow:false,visit:-1,step:null,last:null,log:[],over:false};
+  G={W,H:rows.length,ortho,r:0,turn:0,picks:[],picks2:[],pc:[],bc:[],cap:-1,prevPos:-1,bot:-1,showBot:false,prevShow:false,visit:-1,step:null,last:null,log:[],over:false,result:null};
   G.log.push(mode==="solo"?"Empieza la partida. Elegí un compañero.":"Empieza la partida. Empieza pan.");
 }
 
@@ -528,6 +528,7 @@ function finishDos(){
   });
   const totA=cA.sum+subA, totB=cB.sum+subB;
   const winner=totA>totB?"Gana Pancito":totB>totA?"Gana Quesito":"Empate";
+  G.result=winner; document.getElementById("status").innerHTML=`<b>${winner}</b>`;
   let body=`<p class="ok"><b>${winner}</b> · Pancito ${totA} · Quesito ${totB}</p>`;
   body+=`<h4>Compañeros de Pancito</h4><table>${COMP_HEAD}${cA.rows}<tr><td colspan="3"><b>Subtotal de Pancito</b></td><td><b>${cA.sum}</b></td></tr></table>`;
   body+=`<h4>Compañeros de Quesito</h4><table>${COMP_HEAD}${cB.rows}<tr><td colspan="3"><b>Subtotal de Quesito</b></td><td><b>${cB.sum}</b></td></tr></table>`;
@@ -626,11 +627,17 @@ function render(){
   const right=solo
     ? `<div class="pair"><div><h4>Mis compañeros</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4>Mazo de Roboquefort</h4><div class="row">${deckHTML}</div></div></div>`
     : `<div class="pair"><div><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div></div>`;
-  document.getElementById("top").innerHTML=
-    `<div class="tbar">`+
+  const ctr=`<div class="tmid"><h4>Competencias que puntúan</h4><div class="row">${comps}</div><div id="status"></div><p id="info" class="note"></p>${mid}</div>`;
+  document.getElementById("top").innerHTML=solo
+    ? `<div class="tbar">`+
       `<div class="tcol"><h4>Competencias que puntúan</h4><div class="row">${comps}</div></div>`+
       `<div class="tmid"><div id="status"></div><p id="info" class="note"></p>${mid}</div>`+
       `<div class="tcol tr">${right}</div>`+
+    `</div>`
+    : `<div class="tbar">`+
+      `<div class="tcol"><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div>`+
+      ctr+
+      `<div class="tcol tr"><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div>`+
     `</div>`;
   const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
   const bb=document.getElementById("btnB"); if(bb) bb.onclick=startBot;
@@ -638,7 +645,8 @@ function render(){
   const roundTxt=`Ronda ${G.r+1} de 5 · ${R==="C"?"Compañeros":"Competencias"}`;
   document.getElementById("hdr").textContent=solo?roundTxt:`1 vs. 1 · ${roundTxt}`;
   let status;
-  if(busy) status="<b>Roboquefort se mueve...</b>";
+  if(G.result && G.step==="done") status=`<b>${G.result}</b>`;
+  else if(busy) status="<b>Roboquefort se mueve...</b>";
   else if(solo) status=`<b>${R==="C"?"Elegí un compañero (lado compañero).":"Elegí una competencia (lado competencia)."}</b>`;
   else {
     const cls=G.turn===0?"turn0":"turn1", name=G.turn===0?"Pancito":"Quesito";

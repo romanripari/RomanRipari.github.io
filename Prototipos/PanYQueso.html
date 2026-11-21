@@ -14,6 +14,7 @@
   .shapes{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0;justify-content:center}
   .shape{background:#fff;border:3px solid transparent;padding:10px;cursor:pointer}
   .shape.sel{border-color:#c0392b}
+  .mini .R{background:conic-gradient(#c0392b 0 25%,#2a78d6 0 50%,#e6b84a 0 75%,#999 0)}
   .mini{display:grid;gap:3px;justify-content:center}
   .mini div{width:16px;height:16px}
   .mini .C{background:#7fb3d5}.mini .S{background:#f4d03f}.mini .D{background:#aab7b8}.mini .x{background:transparent}
@@ -29,7 +30,8 @@
   .tmid{flex:0 0 330px;text-align:center}
   .tmid #status{font-size:14px;margin-bottom:4px}
   .tmid #info{margin:0 0 6px;font-size:12px}
-  .tmid img{width:90px;display:block;margin:6px auto 0}
+  .tmid img{width:60px;display:block;margin:6px auto 0}
+  .dosmid .row{flex-wrap:nowrap;justify-content:center}
   .row{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end}
   .board{position:relative;display:grid;gap:8px;width:max-content;margin:0 auto;background:#fff;padding:12px}
   .board svg{position:absolute;left:0;top:0;pointer-events:none}
@@ -212,7 +214,8 @@ const SHAPES=[
   {rows:[".SCCS.","DC..CS","SC..CD",".SCCS."]},
   {rows:["...C...","..CSC..",".CSCSC.","DSCSCSD"]},
   {rows:[".CCS.","DCSCS","SCSCD",".SCC."]},
-  {rows:[".SCCC","D.SC.S","S.CS.D",".CCCS"]}
+  {rows:[".SCCC","D.SC.S","S.CS.D",".CCCS"]},
+  {rows:["SCCC","CCCC","CCCC","CCCC"],random:true}
 ];
 const ROUNDS=["C","S","C","S","C"]; // C = compañeros, S = competencias
 
@@ -252,7 +255,8 @@ function drawMenu(){
   SHAPES.forEach((sh,i)=>{
     const W=Math.max(...sh.rows.map(r=>r.length));
     let h=`<div class="shape ${i===selShape?"sel":""}" data-i="${i}"><div class="mini" style="grid-template-columns:repeat(${W},16px)">`;
-    sh.rows.forEach(row=>[...row.padEnd(W,".")].forEach(ch=>{
+    if(sh.random){ for(let k=0;k<16;k++) h+=`<div class="R"></div>`; }
+    else sh.rows.forEach(row=>[...row.padEnd(W,".")].forEach(ch=>{
       h+=`<div class="${ch==="."?"x":ch==="S"?"S":ch==="D"?"D":"C"}"></div>`;
     }));
     h+=`</div></div>`;
@@ -267,7 +271,14 @@ function setup(shapeIdx,ortho,mode){
   MODE=mode;
   const rows=SHAPES[shapeIdx].rows; const W=Math.max(...rows.map(r=>r.length));
   cells=[];
-  rows.forEach((row,r)=>[...row.padEnd(W,".")].forEach((ch,c)=>{
+  if(SHAPES[shapeIdx].random){
+    // RANDOM: 4x4 completo; 6 competencias y 2 punteadas caen en cualquier casilla
+    const pos=shuffle(Array.from({length:16},(_,i)=>i));
+    const sideOf=Array(16).fill("C"), dotOf=Array(16).fill(false);
+    pos.slice(0,6).forEach(i=>sideOf[i]="S");
+    pos.slice(6,8).forEach(i=>dotOf[i]=true);
+    for(let i=0;i<16;i++) cells.push({r:Math.floor(i/4),c:i%4,side:sideOf[i],dotted:dotOf[i],card:null});
+  } else rows.forEach((row,r)=>[...row.padEnd(W,".")].forEach((ch,c)=>{
     if(ch!==".") cells.push({r,c,side:ch==="S"?"S":"C",dotted:ch==="D",card:null});
   }));
   const ids=shuffle(Array.from({length:16},(_,i)=>i+1));
@@ -627,7 +638,7 @@ function render(){
   const right=solo
     ? `<div class="pair"><div><h4>Mis compañeros</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4>Mazo de Roboquefort</h4><div class="row">${deckHTML}</div></div></div>`
     : `<div class="pair"><div><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div></div>`;
-  const ctr=`<div class="tmid"><h4>Competencias que puntúan</h4><div class="row">${comps}</div><div id="status"></div><p id="info" class="note"></p>${mid}</div>`;
+  const ctr=`<div class="tmid dosmid"><h4>Competencias que puntúan</h4><div class="row">${comps}</div><div id="status"></div><p id="info" class="note"></p>${mid}</div>`;
   document.getElementById("top").innerHTML=solo
     ? `<div class="tbar">`+
       `<div class="tcol"><h4>Competencias que puntúan</h4><div class="row">${comps}</div></div>`+

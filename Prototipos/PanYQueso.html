@@ -648,22 +648,17 @@ function render(){
   const imgsOf=arr=>arr.map(id=>`<img src="${img(id,"a")}" width="60" alt="" ${tipAttr(id)}>`).join("");
   const comps=G.pc.concat(solo?G.bc:[]).map(id=>`<img src="${img(id,"b")}" width="60" alt="" ${tipAttr(id)}>`).join("");
   const deckHTML=deck.map(id=>`<div class="dk"><img src="${img(id,"a")}" alt="" ${tipAttr(id)}><span class="n">${MOV[id]}</span></div>`).join("");
-  // compañeros (y en solitario, el mazo de Roboquefort) uno al lado del otro
-  const right=solo
-    ? `<div class="pair"><div><h4>Mis compañeros</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4>Mazo de Roboquefort</h4><div class="row">${deckHTML}</div></div></div>`
-    : `<div class="pair"><div><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div><div><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div></div>`;
+  // cada lado lleva a su personaje (mismas imágenes que el tablero)
+  const pImg=`PanYQueso/pancito_${G.ortho?"a":"b"}.png`, qImg=`PanYQueso/quesito_${G.ortho?"a":"b"}.png`;
+  const hd=(src,txt,cls)=>`<h4 class="${cls}"><img src="${src}" alt="" style="width:40px;vertical-align:middle;margin-right:4px">${txt}</h4>`;
   const ctr=`<div class="tmid dosmid"><h4>Competencias que puntúan</h4><div class="row">${comps}</div><div id="status"></div><p id="info" class="note"></p>${mid}</div>`;
-  document.getElementById("top").innerHTML=solo
-    ? `<div class="tbar">`+
-      `<div class="tcol"><h4>Competencias que puntúan</h4><div class="row">${comps}</div></div>`+
-      `<div class="tmid"><div id="status"></div><p id="info" class="note"></p>${mid}</div>`+
-      `<div class="tcol tr">${right}</div>`+
-    `</div>`
-    : `<div class="tbar">`+
-      `<div class="tcol"><h4 class="turn0">Compañeros de Pancito</h4><div class="row">${imgsOf(G.picks)}</div></div>`+
-      ctr+
-      `<div class="tcol tr"><h4 class="turn1">Compañeros de Quesito</h4><div class="row">${imgsOf(G.picks2)}</div></div>`+
-    `</div>`;
+  const left = solo
+    ? `<div class="tcol">${hd(pImg,"Mis compañeros","turn0")}<div class="row">${imgsOf(G.picks)}</div></div>`
+    : `<div class="tcol">${hd(pImg,"Compañeros de Pancito","turn0")}<div class="row">${imgsOf(G.picks)}</div></div>`;
+  const right = solo
+    ? `<div class="tcol tr">${hd(qImg,"Mazo de Roboquefort","turn1")}<div class="row">${deckHTML}</div></div>`
+    : `<div class="tcol tr">${hd(qImg,"Compañeros de Quesito","turn1")}<div class="row">${imgsOf(G.picks2)}</div></div>`;
+  document.getElementById("top").innerHTML=`<div class="tbar">`+left+ctr+right+`</div>`;
   const bc=document.getElementById("btnC"); if(bc) bc.onclick=confirmPick;
   const bb=document.getElementById("btnB"); if(bb) bb.onclick=startBot;
 

@@ -35,7 +35,6 @@
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
   .badge { color:#fff; background:var(--red); border-radius:4px; padding:1px 6px; font-size:0.75rem; font-weight:700; }
-  .chip { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 6px; border-radius:6px; color:#fff; font-weight:700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
   .picks { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
   .pick { display:flex; align-items:center; gap:6px; padding:3px 8px 3px 3px; border:2px solid var(--gold); background:#fffbea; font-size:0.82rem; cursor:pointer; }
   .grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
@@ -178,6 +177,13 @@
   const MAX_MOVES = 800;
 
   let N, ROUNDS, S;
+  // Generación de partida: los timers de una partida vieja se ignoran.
+  let GEN = 0;
+
+  function later(fn) {
+    const g = GEN;
+    setTimeout(() => { if (g === GEN) fn(); }, BOT_STEP);
+  }
 
   function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -191,6 +197,7 @@
   function getEatMode() { return document.getElementById('eatMode').value; }
 
   function newGame() {
+    GEN++;
     N = +document.getElementById('bots').value + 1;
     ROUNDS = Math.min(10, Math.max(1, +document.getElementById('rounds').value || N));
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
@@ -293,7 +300,7 @@
       S.lastNote = p === 0 ? '¡Estrella ★! Seguís comiendo con la misma carta.' : `${NAMES[p]} sigue comiendo con la misma carta ★.`;
       S.busy = p !== 0;
       render();
-      if (p !== 0) setTimeout(botTurn, BOT_STEP);
+      if (p !== 0) later(botTurn);
       return;
     }
     S.chain = null;
@@ -323,7 +330,7 @@
       ? `Pasaste el ${item.card.v} a ${NAMES[item.to]}, en la misma posición.`
       : `${NAMES[p]} pasó el ${item.card.v} a ${NAMES[item.to]}.`;
     render();
-    setTimeout(() => advance(p), BOT_STEP);
+    later(() => advance(p));
   }
 
   function chooseItem(i) {
@@ -360,11 +367,12 @@
       ? `Le diste el ${card.v} a ${NAMES[to]}, en la misma posición.`
       : `${NAMES[p]} no tenía movimientos y le dio el ${card.v} a ${NAMES[to]}.`;
     render();
-    setTimeout(() => advance(p), BOT_STEP);
+    later(() => advance(p));
   }
 
   function endCheck() {
-    if (getMode() === 'pass') return S.streak >= N;
+    if (S.streak >= N) return true;   // todos pasaron seguidos (modo a, o sin cartas en b/c)
+    if (getMode() === 'pass') return false;
     return S.quads.some((_, p) => visibleCount(p) === 3);
   }
 
@@ -384,7 +392,7 @@
       render();
       if (t !== 0) {
         S.busy = true;
-        setTimeout(botTurn, BOT_STEP);
+        later(botTurn);
       } else {
         S.busy = false;
       }
@@ -399,7 +407,7 @@
       S.lastNote = t === 0 ? 'No tenés movimientos: pasás.' : `${NAMES[t]} no tenía movimientos y pasó.`;
       S.busy = true;
       render();
-      setTimeout(() => advance(t), BOT_STEP);
+      later(() => advance(t));
       return;
     }
 
@@ -410,7 +418,7 @@
       S.lastNote = `${NAMES[t]} no tenía cartas visibles y pasó.`;
       S.busy = true;
       render();
-      setTimeout(() => advance(t), BOT_STEP);
+      later(() => advance(t));
       return;
     }
     if (t === 0) {
@@ -434,8 +442,9 @@
   }
 
   function botTurn() {
-    S.busy = false;
     const p = S.turn;
+    if (S.gameOver || S.roundOver || S.choosing || p === 0) return;   // guarda: solo juega el bot de turno
+    S.busy = false;
     const moves = currentMoves(p);
     if (!moves.length) { S.chain = null; runTurn(); return; }
     let best = null, bestScore = -Infinity;
@@ -446,11 +455,11 @@
     S.lastNote = '';
     S.selected = { q: best.q, x: best.x };
     render();
-    setTimeout(() => {
+    later(() => {
       const res = doMove(p, best);
       render();
       afterEat(p, res);
-    }, BOT_STEP);
+    });
   }
 
   // Puntos: solo cartas visibles. 1 por ajena, 2 por propia.
@@ -624,7 +633,7 @@
     } else if (S.roundOver) {
       text = `Ronda ${S.round + 1} terminada.`;
     } else if (S.forced) {
-      text = S.lastNote + ' Elegí la carta (en rojo):';
+      text = (S.lastNote ? S.lastNote + ' ' : '') + 'Elegí la carta (en rojo):';
     } else if (S.choosing) {
       text = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero). Las demás salen del juego.';
     } else if (S.turn !== 0) {

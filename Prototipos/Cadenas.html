@@ -38,6 +38,8 @@
   .ic { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; color:#fff; font-size:0.65rem; font-weight:700; vertical-align:middle; margin:0 3px 0 2px; }
   .ic-own { border:2px solid #fff; box-shadow:0 0 0 1px #555; }
   .ic-for { background:#222; }
+  .ic-vis { background:#222; }
+  .ic-gray { background:#999; }
 
   /* Caja del tablero: para los laterales, ancho y alto invertidos */
   .boardWrap { position:relative; width:100%; }
@@ -173,7 +175,7 @@
         <li>La ronda termina cuando ya salieron todos los jugadores, o cuando a un jugador le queda una sola carta propia visible en su cuadrado.</li>
         <li>Puntaje de la ronda: 3 por cada carta visible en tu zona, −1 por cada propia en tu zona de cartas comidas, −2 por cada ajena en tu zona de cartas comidas.</li>
         <li>Se juegan tantas rondas como jugadores (opcional en esta demo). Cada ronda se rearma desde cero. Gana el que menos puntos suma.</li>
-        <li>Íconos: <span class="ic ic-own" style="background:#999">↩</span> propia (con borde blanco) · <span class="ic ic-for">✕</span> ajena (con borde oscuro).</li>
+        <li>Íconos: <span class="ic ic-vis">✕</span> cartas visibles en tu zona · <span class="ic ic-own" style="background:#999">↓</span> propia comida (en tu zona de comidas, del color propio) · <span class="ic ic-gray">↓</span> ajena comida (gris).</li>
       </ul>
     </details>
   </section>
@@ -625,9 +627,9 @@
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
         `<span class="qname">${NAMES[p]}</span>${badge}</div>` +
         `<div class="score">` +
-          `<span><b>+${vis}</b> visibles</span>` +
-          `<span>−${ownZ} <span class="ic ic-own" style="background:${COLORS[p]}">↩</span>propias comidas</span>` +
-          `<span>−${forZ} <span class="ic ic-for">✕</span>ajenas comidas</span>` +
+          `<span><b>+${vis}</b> <span class="ic ic-vis">✕</span></span>` +
+          `<span>−${ownZ} <span class="ic ic-own" style="background:${COLORS[p]}">↓</span>propias comidas</span>` +
+          `<span>−${forZ} <span class="ic ic-gray">↓</span>ajenas comidas</span>` +
         `</div>`;
 
       // Caja del tablero: laterales con ancho y alto invertidos

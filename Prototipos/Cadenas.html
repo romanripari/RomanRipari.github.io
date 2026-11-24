@@ -461,7 +461,8 @@
       return a + (c.c === p ? 2 : 1);
     }, 0);
   }
-function endRound() {
+
+  function endRound() {
     const pts = Array.from({ length: N }, (_, p) => pointsOf(p));
     S.history.push(pts);
     pts.forEach((v, p) => { S.totals[p] += v; });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego nuevo — prototipo v4</title>
+<title>Juego nuevo — prototipo v5</title>
 <style>
   :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; }
   * { box-sizing: border-box; }
@@ -21,27 +21,29 @@
   button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
   .muted { color:var(--muted); font-size:0.85rem; }
 
-  .layout { display:grid; grid-template-columns:1fr 260px; gap:18px; align-items:start; }
-  @media (max-width:820px) { .layout { grid-template-columns:1fr; } }
+  .layout { display:grid; grid-template-columns:1fr 280px; gap:18px; align-items:start; }
+  @media (max-width:840px) { .layout { grid-template-columns:1fr; } }
   .status { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; min-height:52px; }
   .status .msg { font-size:0.98rem; }
 
-  #quads { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+  #quads { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
   .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px; }
   .quad.active { border-color:var(--accent); }
   .quad.mine { border-color:var(--mine); }
-  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.92rem; }
+  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:0.92rem; }
   .qhead .dot { width:14px; height:14px; border-radius:50%; }
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .qpass { font-size:0.76rem; color:var(--muted); margin-bottom:8px; }
   .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-  .cell { aspect-ratio:1/1; border-radius:6px; display:flex; align-items:flex-start; justify-content:flex-start; padding:4px 6px; font-weight:700; font-size:clamp(0.85rem,2.4vw,1.2rem); color:#fff; user-select:none; cursor:pointer; }
+  .cell { aspect-ratio:1/1; border-radius:6px; position:relative; display:flex; align-items:flex-start; justify-content:flex-start; padding:4px 6px; font-weight:700; font-size:clamp(0.85rem,2.4vw,1.2rem); color:#fff; user-select:none; cursor:pointer; }
   .cell.empty { border:2px dashed var(--line); background:transparent; cursor:default; }
   .cell.card { box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
   .cell.can { outline:2px solid #5a9e5a; outline-offset:1px; }
   .cell.selected { outline:3px solid #222; outline-offset:1px; }
   .cell.target { outline:3px solid #e8b84a; outline-offset:1px; }
   .cell.place { border:2px dashed var(--accent); background:#eef6fb; }
+  .cell .mark { position:absolute; right:4px; bottom:2px; font-size:0.9rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.6); }
 
   aside .box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
   aside h2 { font-size:0.95rem; margin:0 0 8px; }
@@ -49,6 +51,8 @@
   th, td { text-align:right; padding:4px 6px; border-bottom:1px solid #eee; font-variant-numeric:tabular-nums; }
   th:first-child, td:first-child { text-align:left; }
   .sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .legend { font-size:0.85rem; line-height:1.7; }
+  .legend .sw { margin-right:4px; }
 
   .rules { margin-top:22px; }
   .rules details { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 16px; margin-bottom:10px; }
@@ -59,7 +63,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Juego nuevo — prototipo v4</h1>
+    <h1>Juego nuevo — prototipo v5</h1>
     <div class="roundinfo" id="roundInfo"></div>
   </header>
 
@@ -85,6 +89,11 @@
     </section>
 
     <aside>
+      <div class="box">
+        <h2>Pases</h2>
+        <div class="legend" id="legend"></div>
+        <div class="muted" style="margin-top:6px">◀ pasa a la izquierda · ▶ pasa a la derecha · ✕ sale del juego</div>
+      </div>
       <div class="box">
         <h2>Total acumulado</h2>
         <table><tbody id="totals"></tbody></table>
@@ -112,11 +121,12 @@
     <details>
       <summary>Cómo se come</summary>
       <ul>
-        <li>Una carta puede comer a otra si su número es igual al de la comida, o 1 o 2 más alto (el 20 come al 20, al 19 y al 18).</li>
+        <li>Una carta puede comer a otra si su número es igual al de la comida o hasta 3 menos (inclusive). Por ejemplo, el 20 come al 20, 19, 18 y 17.</li>
         <li>Para comer, primero elegís la carta propia y después la movés UN espacio ortogonal (arriba, abajo, izquierda o derecha) sobre la carta que come.</li>
-        <li>Solo podés elegir una carta si tiene al menos un movimiento válido.</li>
-        <li>Si la carta comida es PROPIA: si se comió en columnas 1 y 2, pasa al jugador de la izquierda; si se comió en columnas 3 y 4, pasa al jugador de la derecha. Ese jugador decide en qué espacio vacío de su cuadrado la pone. Si ese jugador no tiene ningún espacio vacío, el movimiento no es posible.</li>
-        <li>Si la carta comida es AJENA, sale del juego.</li>
+        <li>Solo podés elegir una carta si tiene al menos un movimiento válido. Si hay un movimiento para comer, hay que hacerlo.</li>
+        <li>Si la carta comida es PROPIA: si se comió en columnas 1 y 2 pasa al jugador de la izquierda (◀); si se comió en columnas 3 y 4 pasa al jugador de la derecha (▶). Ese jugador pone la carta en un espacio vacío de su cuadrado.</li>
+        <li>Si el jugador que tiene que recibir la carta no tiene espacio vacío, la carta sale del juego (✕).</li>
+        <li>Si la carta comida es AJENA, sale del juego (✕).</li>
         <li>Después pasa el turno al siguiente jugador.</li>
       </ul>
     </details>
@@ -136,8 +146,8 @@
   const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
   const SIZE = 4;
   const LOST = 1 * SIZE + 1;          // fila 2, columna 2 (índice 5)
-  const BOT_STEP = 1000;              // ms por paso de bot
-  const MAX_MOVES = 600;              // corte de seguridad
+  const BOT_STEP = 1000;
+  const MAX_MOVES = 600;
 
   let N, ROUNDS, S;
 
@@ -180,22 +190,19 @@
     return out;
   }
 
-  // Come si su número es igual, o 1 o 2 más alto que el de la comida
+  // Puede comer si su número es igual o hasta 3 más bajo (inclusive)
   function canEat(a, b) {
     const d = a.v - b.v;
-    return d >= 0 && d <= 2;
+    return d >= 0 && d <= 3;
   }
 
-  // Jugador que recibe la carta propia comida en esa columna (izquierda 1-2, derecha 3-4)
+  // Jugador al que pasa una carta propia comida en esa columna
   function receiverFor(p, targetIdx) {
-    const col = targetIdx % SIZE;
-    return col < 2 ? (p + 1) % N : (p - 1 + N) % N;
+    return (targetIdx % SIZE) < 2 ? (p + 1) % N : (p - 1 + N) % N;
   }
 
   function hasHole(r) { return S.quads[r].includes(null); }
 
-  // Movimiento legal: la carta propia come a un vecino; si la comida es propia,
-  // el receptor debe tener un espacio vacío (si no, el movimiento es imposible).
   function legalMoves(p) {
     const moves = [];
     S.quads.forEach((q, qi) => {
@@ -203,9 +210,7 @@
         if (!x || x.c !== p) return;
         nbrs(i).forEach(j => {
           const y = q[j];
-          if (!y || !canEat(x, y)) return;
-          if (y.c === p && !hasHole(receiverFor(p, j))) return;
-          moves.push({ q: qi, x: i, y: j });
+          if (y && canEat(x, y)) moves.push({ q: qi, x: i, y: j });
         });
       });
     });
@@ -217,7 +222,6 @@
     S.quads[r][empties[Math.floor(Math.random() * empties.length)]] = card;
   }
 
-  // Ejecuta el movimiento. Devuelve la carta comida y a quién pasa (si es propia).
   function doMove(p, m) {
     const q = S.quads[m.q];
     const target = q[m.y];
@@ -229,10 +233,12 @@
     return { card: target, to: receiverFor(p, m.y) };
   }
 
+  // Pasa la carta propia comida. Si el receptor está lleno, la carta sale del juego.
   function afterMove(p, res, next) {
     if (!res.card) { render(); next(); return; }
     const R = res.to;
-    if (R === 0) {                                  // el jugador elige el hueco
+    if (!hasHole(R)) { render(); next(); return; }
+    if (R === 0) {
       S.pending = { card: res.card, eater: p };
       render();
       return;
@@ -241,7 +247,7 @@
     setTimeout(() => { placeRandom(R, res.card); render(); next(); }, BOT_STEP);
   }
 
-  function endAt() { return (S.start + N - 1) % N; }   // jugador a la derecha del que empezó
+  function endAt() { return (S.start + N - 1) % N; }
 
   function advance(p) {
     if (S.stuck && p === endAt()) { endRound(); return; }
@@ -270,20 +276,15 @@
     }
   }
 
-  // Estrategia de bots: los puntos son cantidades, no valores.
-  // Cada movimiento quita una carta del cuadrado donde ocurre.
-  //  1) Comer en el propio cuadrado (baja mi cuenta).
-  //  2) Si además es carta propia, mejor: la pasa al vecino y no sale del juego.
-  //  3) Evitar comer en cuadrados ajenos (les baja la cuenta).
-  // El valor de la carta no influye en el puntaje; solo se usa para desempatar al azar.
+  // Bots: cada movimiento quita una carta del cuadrado donde ocurre, así que
+  // prefieren comer en su propio cuadrado y pasar su carta propia al vecino.
   function botScore(p, m) {
     const y = S.quads[m.q][m.y];
     let s = (m.q === p ? 100 : 0);
-    if (m.q === p && y.c === p) s += 20;
+    if (m.q === p && y.c === p && hasHole(receiverFor(p, m.y))) s += 20;
     return s + Math.random();
   }
 
-  // Bot en 4 pasos de 1 segundo: elegir, mover, pasar, colocar.
   function botTurn() {
     S.busy = false;
     const p = S.turn;
@@ -294,12 +295,12 @@
       const s = botScore(p, m);
       if (s > bestScore) { bestScore = s; best = m; }
     });
-    S.selected = { q: best.q, x: best.x };                 // 1. elegir
+    S.selected = { q: best.q, x: best.x };
     render();
     setTimeout(() => {
-      const res = doMove(p, best);                         // 2. mover
+      const res = doMove(p, best);
       render();
-      afterMove(p, res, () => advance(p));                 // 3. pasar, 4. colocar
+      afterMove(p, res, () => advance(p));
     }, BOT_STEP);
   }
 
@@ -361,29 +362,46 @@
     render();
   }
 
+  // Marca sobre la carta comida: ◀ / ▶ si pasa, ✕ si sale del juego
+  function passMark(eater, targetIdx, targetCard) {
+    if (targetCard.c !== eater) return '✕';
+    const R = receiverFor(eater, targetIdx);
+    if (!hasHole(R)) return '✕';
+    return (targetIdx % SIZE) < 2 ? '◀' : '▶';
+  }
+
   function render() {
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
     const legal = S.turn === 0 && !S.pending && !S.roundOver && !S.gameOver ? legalMoves(0) : [];
+    const sel = S.selected;
     const qEl = document.getElementById('quads');
     qEl.innerHTML = '';
     for (let p = 0; p < N; p++) {
+      const L = (p + 1) % N, R = (p - 1 + N) % N;
       const box = document.createElement('div');
       box.className = 'quad' + (p === 0 ? ' mine' : '') +
         (!S.roundOver && !S.gameOver && S.turn === p ? ' active' : '');
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>`;
+        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>` +
+        `<div class="qpass">Cols 1–2 → ◀ ${NAMES[L]} · Cols 3–4 → ▶ ${NAMES[R]}</div>`;
       const grid = document.createElement('div');
       grid.className = 'grid';
       S.quads[p].forEach((c, i) => {
         const d = document.createElement('div');
         d.className = 'cell ' + (c ? 'card' : 'empty');
         if (c) { d.style.background = COLORS[c.c]; d.textContent = c.v; }
-        const sel = S.selected;
         if (sel && sel.q === p && sel.x === i) d.classList.add('selected');
-        if (sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i)) d.classList.add('target');
+        const isTarget = sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i);
+        if (isTarget) {
+          d.classList.add('target');
+          const mk = document.createElement('span');
+          mk.className = 'mark';
+          mk.textContent = passMark(0, i, c);
+          d.appendChild(mk);
+        }
         if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
         if (S.pending && p === 0 && !c) d.classList.add('place');
         d.addEventListener('click', () => onCell(p, i));
@@ -392,6 +410,11 @@
       box.appendChild(grid);
       qEl.appendChild(box);
     }
+
+    document.getElementById('legend').innerHTML = S.quads.map((_, p) => {
+      const L = (p + 1) % N, R = (p - 1 + N) % N;
+      return `<div><span class="sw" style="background:${COLORS[p]}"></span><b>${NAMES[p]}</b>: ◀ ${NAMES[L]} · ▶ ${NAMES[R]}</div>`;
+    }).join('');
 
     let msg;
     if (S.gameOver) {
@@ -404,7 +427,7 @@
       msg = `Elegí un espacio vacío de tu cuadrado para la carta ${S.pending.card.v} que recibiste.`;
     } else if (S.turn !== 0) {
       msg = `Turno de ${NAMES[S.turn]}…`;
-    } else if (S.selected) {
+    } else if (sel) {
       msg = 'Movela un espacio ortogonal sobre una carta que pueda comer (resaltadas en amarillo). Tocá la misma para cancelar.';
     } else if (legal.length === 0) {
       msg = 'No tenés movimientos válidos para comer.';

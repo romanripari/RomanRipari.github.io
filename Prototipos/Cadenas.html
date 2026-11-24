@@ -697,7 +697,7 @@
         l.style.left = `${(c + 0.5) * 25}%`;
         l.style.top = '-13px';
         l.style.transform = `translate(-50%, -50%) rotate(${-rot}deg)`;
-        l.textContent = LETTERS[c];
+        l.textContent = side ? LETTERS[COLS - 1 - c] : LETTERS[c];   // laterales: letras espejadas
         grid.appendChild(l);
       }
       for (let r = 0; r < ROWS; r++) {

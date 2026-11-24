@@ -33,8 +33,6 @@
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
   .badge { color:#fff; background:var(--red); border-radius:4px; padding:1px 6px; font-size:0.75rem; font-weight:700; }
-  .picks { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
-  .pick { display:flex; align-items:center; gap:6px; padding:3px 8px 3px 3px; border:2px solid var(--gold); background:#fffbea; font-size:0.82rem; cursor:pointer; }
   .grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
   .cell { aspect-ratio:1/1; border:1px solid #c9c3b6; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:clamp(0.8rem,2.2vw,1.1rem); color:#fff; user-select:none; cursor:pointer; }
   .cell.sr { border-right:3px solid #222; }
@@ -48,7 +46,6 @@
   .cell.can { box-shadow: inset 0 0 0 3px var(--green); background-image: linear-gradient(rgba(46,158,72,.22), rgba(46,158,72,.22)); }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
   .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
-  .cell.remove { box-shadow: inset 0 0 0 3px var(--red); background-image: linear-gradient(rgba(192,57,43,.18), rgba(192,57,43,.18)); }
 
   .centerBox { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:8px; min-height:120px; }
   .msgText { font-size:0.98rem; line-height:1.4; }
@@ -84,21 +81,8 @@
       </select>
     </label>
     <label>Rondas <input type="number" id="rounds" min="1" max="10" value="4"></label>
-    <label>Comer
-      <select id="eatMode">
-        <option value="upTo3" selected>hasta 3 menos</option>
-        <option value="anyLower">cualquier número menor o igual</option>
-      </select>
-    </label>
-    <label>Sin movimientos
-      <select id="mode">
-        <option value="pass" selected>a) Pasa (todos pasan seguidos terminan la ronda)</option>
-        <option value="give_remove">b) Quita su carta más grande y se la da al siguiente</option>
-        <option value="give_move">c) Mueve una carta y se la da al siguiente</option>
-      </select>
-    </label>
     <button class="primary" id="newGame">Nueva partida</button>
-    <span class="muted">Puntos: 1 por carta ajena, 2 por carta propia visible. Menos es mejor.</span>
+    <span class="muted">Comida ajena: +1. Al final: −2 por propia visible, −1 por ajena visible. Gana el que más tiene.</span>
   </div>
 
   <div class="layout">
@@ -121,46 +105,41 @@
   <section class="rules">
     <details open>
       <summary>Objetivo</summary>
-      <p>Terminar con la menor cantidad de puntos. Al final de la ronda, cada cuadrado suma 1 punto por cada carta ajena visible y 2 puntos por cada carta propia visible. Una carta tapada por otra no cuenta.</p>
+      <p>Sumar la mayor cantidad de puntos. Sumás 1 punto por cada carta ajena que comés. Al final de la ronda, restás 2 por cada carta propia que quedó visible en tu cuadrado y 1 por cada carta ajena visible en tu cuadrado. Gana el que más puntos tiene.</p>
     </details>
     <details>
       <summary>Preparación</summary>
       <ul>
-        <li>Cada jugador tiene 16 cartas, numeradas del 1 al 16, en su color.</li>
-        <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4, sin huecos. La casilla inicial, A1 (arriba a la izquierda de cada cuadrado antes de girarlo), va marcada levemente.</li>
+        <li>Cada jugador tiene 16 cartas de su color, numeradas del 1 al 16, sin huecos, en un cuadrado de 4 × 4.</li>
+        <li>La casilla inicial, A1 (arriba a la izquierda antes de girar el cuadrado), va marcada levemente.</li>
         <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores no hay cuadrado arriba.</li>
       </ul>
     </details>
     <details>
       <summary>Cómo se come</summary>
       <ul>
-        <li>Según la opción "Comer": hasta 3 menos (inclusive), o cualquier número menor o igual.</li>
-        <li>Para comer, elegís una carta propia visible de TU cuadrado (en verde) y la movés UN espacio ortogonal sobre la carta que come (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
-        <li>La carta que se mueve deja su lugar; si había una carta tapada debajo, esa queda visible. La carta comida sale de su lugar.</li>
-        <li>Si hay un movimiento para comer, hay que hacerlo.</li>
+        <li>Para comer, elegís una carta visible de TU cuadrado (en verde) y la movés UN espacio ortogonal sobre una carta más chica que ella (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
+        <li>Si hay alguna comida legal, tenés que comer.</li>
+        <li>La carta que se mueve deja su lugar; si había una carta debajo, esa queda visible. La carta comida sale del juego.</li>
+        <li>Si la carta comida es AJENA, sumás 1 punto.</li>
+        <li>Si la carta comida es PROPIA, al final del turno pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna) de donde salió. Si ahí hay una carta, la nueva queda encima y tapa la anterior. Si comiste varias propias en el mismo turno, pasan todas.</li>
         <li><b>★ Estrellas:</b> las cartas múltiplos de 3 (3, 6, 9, 12, 15) tienen una estrella. Si comés CON una de ellas, esa misma carta puede seguir comiendo en el mismo turno, encadenando. No vale usar otra carta.</li>
         <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino: ← al de la izquierda, → al de la derecha.</li>
-        <li>Si la carta comida es PROPIA, al final del turno se pasa a ese vecino, y se coloca en la MISMA posición (fila y columna) de donde salió. Si la posición tiene una carta, la nueva queda encima y tapa la anterior.</li>
-        <li>Si la carta comida es AJENA, sale del juego (✕).</li>
-        <li>Si comiste varias propias en el mismo turno, solo pasás UNA: elegís cuál. Las demás propias comidas salen del juego.</li>
-        <li>Después pasa el turno al siguiente jugador.</li>
       </ul>
     </details>
     <details>
-      <summary>Cuando no hay movimientos (una sola opción)</summary>
+      <summary>Cuando no hay comidas</summary>
       <ul>
-        <li><b>a) Pasa:</b> el jugador pasa y se marca "Pasó" en rojo. En su próximo turno puede volver a jugar si tiene movimientos válidos. La ronda termina solo si todos pasan seguidos y nadie tiene movimientos.</li>
-        <li><b>b) Quita y da:</b> quita su carta propia visible más grande de su cuadrado; si no tiene, la ajena más grande. Esa carta se la da al siguiente jugador, en la misma posición de donde salió.</li>
-        <li><b>c) Mueve y da:</b> elige una carta propia visible de su cuadrado y se la da al siguiente jugador, en la misma posición de donde salió.</li>
-        <li>En b) y c), la ronda termina cuando un jugador tiene 3 cartas visibles en su cuadrado.</li>
+        <li>Si tenés una carta encima de otra, podés moverla a un espacio vacío adyacente de tu cuadrado, o pasar.</li>
+        <li>Si no tenés ninguna de las dos cosas, pasás obligado.</li>
       </ul>
     </details>
     <details>
       <summary>Fin de ronda</summary>
       <ul>
-        <li>Según la opción elegida, la ronda termina cuando todos pasan seguidos (a) o cuando un jugador tiene 3 cartas visibles en su cuadrado (b y c).</li>
-        <li>Se anotan los puntos de cada cuadrado (1 por carta ajena visible, 2 por carta propia visible).</li>
-        <li>Se juegan tantas rondas como jugadores (opcional en esta demo). Cada ronda se rearma desde cero. Gana el de menos puntos.</li>
+        <li>La ronda termina si en una vuelta entera todos pasaron seguidos, o si a un jugador le queda una sola carta propia visible en su cuadrado.</li>
+        <li>Puntaje de la ronda: + comidas ajenas, − 2 por cada carta propia visible, − 1 por cada carta ajena visible.</li>
+        <li>Se juegan tantas rondas como jugadores (opcional en esta demo). Cada ronda se rearma desde cero. Gana el que más puntos suma.</li>
       </ul>
     </details>
   </section>
@@ -198,9 +177,6 @@
     return a;
   }
 
-  function getMode() { return document.getElementById('mode').value; }
-  function getEatMode() { return document.getElementById('eatMode').value; }
-
   function newGame() {
     GEN++;
     N = +document.getElementById('bots').value + 1;
@@ -208,8 +184,7 @@
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], selected: null, chain: null,
           roundOver: false, gameOver: false, busy: false, moves: 0,
-          lastNote: '', forced: null, streak: 0, passed: [],
-          queue: [], choosing: false };
+          lastNote: '', streak: 0, passed: [], eaten: [], queue: [] };
     buildRound();
     render();
     runTurn();
@@ -223,10 +198,11 @@
       S.quads.push(vals.map(v => [{ v, c: p }]));   // 1 al 16, sin huecos
     }
     S.turn = S.start;
-    S.selected = null; S.chain = null; S.forced = null;
+    S.selected = null; S.chain = null;
     S.roundOver = false; S.busy = false; S.moves = 0; S.lastNote = ''; S.streak = 0;
     S.passed = Array(N).fill(false);
-    S.queue = []; S.choosing = false;
+    S.eaten = Array(N).fill(0);
+    S.queue = [];
   }
 
   function topOf(p, i) {
@@ -234,8 +210,19 @@
     return a.length ? a[a.length - 1] : null;
   }
 
-  function visibleCount(p) {
-    return S.quads[p].filter(a => a.length).length;
+  // Cartas propias visibles en el propio cuadrado
+  function ownVisible(p) {
+    return S.quads[p].filter(a => a.length && a[a.length - 1].c === p).length;
+  }
+
+  // Cartas ajenas visibles en el propio cuadrado
+  function foreignVisible(p) {
+    return S.quads[p].filter(a => a.length && a[a.length - 1].c !== p).length;
+  }
+
+  // Puntaje de la ronda: comidas ajenas (+1), propias visibles (−2), ajenas visibles (−1)
+  function roundPts(p) {
+    return S.eaten[p] - 2 * ownVisible(p) - foreignVisible(p);
   }
 
   function nbrs(i) {
@@ -247,10 +234,9 @@
     return out;
   }
 
+  // Come solo una carta estrictamente más chica
   function canEat(a, b) {
-    const d = a.v - b.v;
-    if (getEatMode() === 'anyLower') return d >= 0;
-    return d >= 0 && d <= 3;
+    return a.v > b.v;
   }
 
   // Vecino que recibe la carta propia comida: mitad cols 1-2 → p+1, cols 3-4 → p-1
@@ -258,7 +244,7 @@
     return (targetIdx % SIZE) < 2 ? (p + 1) % N : (p - 1 + N) % N;
   }
 
-  // Movimientos: solo cartas visibles propias, dentro del propio cuadrado.
+  // Comidas: visible propia sobre visible más chica, adyacente, dentro del propio cuadrado.
   function legalMoves(p) {
     const moves = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
@@ -266,21 +252,33 @@
       if (!x || x.c !== p) continue;
       nbrs(i).forEach(j => {
         const y = topOf(p, j);
-        if (y && canEat(x, y)) moves.push({ q: p, x: i, y: j });
+        if (y && canEat(x, y)) moves.push({ t: 'eat', q: p, x: i, y: j });
       });
     }
     return moves;
   }
 
-  // Si hay cadena activa (★), solo se puede seguir con la misma carta.
-  function currentMoves(p) {
-    const all = legalMoves(p);
-    if (!S.chain) return all;
-    return all.filter(m => m.x === S.chain.x && m.q === S.chain.q);
+  // Mover sin comer: carta que está encima de otra hacia un espacio vacío adyacente del propio cuadrado.
+  function stackMoves(p) {
+    const moves = [];
+    for (let i = 0; i < SIZE * SIZE; i++) {
+      if (S.quads[p][i].length < 2) continue;
+      nbrs(i).forEach(j => {
+        if (S.quads[p][j].length === 0) moves.push({ t: 'stack', q: p, x: i, y: j });
+      });
+    }
+    return moves;
   }
 
-  // Ejecuta el movimiento. La carta comida propia queda en cola para pasarla al final del turno.
-  function doMove(p, m) {
+  // Lo que puede hacer el jugador ahora: si hay comidas, tiene que comer; si no, mover sin comer.
+  function legalFor(p) {
+    if (S.chain) return legalMoves(p).filter(m => m.x === S.chain.x && m.q === S.chain.q);
+    const eats = legalMoves(p);
+    return eats.length ? eats : stackMoves(p);
+  }
+
+  // Come una carta. La propia comida queda en cola para pasarla al final del turno.
+  function doEat(p, m) {
     const from = S.quads[m.q][m.x];
     const to = S.quads[m.q][m.y];
     const mover = from.pop();
@@ -292,11 +290,26 @@
     S.passed[p] = false;
     if (target.c === p) {
       S.queue.push({ card: target, idx: m.y, to: receiverFor(p, m.y) });
+    } else {
+      S.eaten[p]++;
     }
     return { star: mover.v % 3 === 0, pos: { q: m.q, x: m.y } };
   }
 
-  // Si la carta fue ★ y tiene movimientos, la misma carta sigue comiendo.
+  // Mueve una carta que estaba encima de otra a un espacio vacío.
+  function doStack(p, m) {
+    const card = S.quads[m.q][m.x].pop();
+    S.quads[m.q][m.y].push(card);
+    S.selected = null;
+    S.moves++;
+    S.streak = 0;
+    S.passed[p] = false;
+    S.lastNote = p === 0
+      ? `Moviste el ${card.v} a un espacio vacío.`
+      : `${NAMES[p]} movió una carta a un espacio vacío.`;
+  }
+
+  // Si la carta fue ★ y tiene comidas, la misma carta sigue comiendo.
   function afterEat(p, res) {
     const cont = legalMoves(p).filter(m => m.q === res.pos.q && m.x === res.pos.x);
     if (res.star && cont.length > 0) {
@@ -313,72 +326,31 @@
     passNext(p);
   }
 
+  // Al final del turno pasan todas las propias comidas, cada una a su vecino y misma coordenada.
   function passNext(p) {
     if (S.queue.length === 0) { advance(p); return; }
-    if (p === 0 && S.queue.length > 1) {
-      S.choosing = true;
-      S.lastNote = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero). Las demás salen del juego.';
-      S.busy = false;
-      render();
-      return;
-    }
-    const idx = p === 0 ? 0 : Math.floor(Math.random() * S.queue.length);
-    const item = S.queue[idx];
-    S.queue = [];   // las demás propias comidas salen del juego
-    giveItem(p, item);
-  }
-
-  function giveItem(p, item) {
-    S.choosing = false;
-    S.quads[item.to][item.idx].push(item.card);   // misma posición donde salió
-    S.lastNote = p === 0
-      ? `Pasaste el ${item.card.v} a ${NAMES[item.to]}, en la misma posición.`
-      : `${NAMES[p]} pasó el ${item.card.v} a ${NAMES[item.to]}.`;
+    const detail = S.queue.map(it => `${it.card.v} a ${NAMES[it.to]}`).join(', ');
+    S.queue.forEach(it => S.quads[it.to][it.idx].push(it.card));
+    S.queue = [];
+    S.lastNote = (p === 0 ? 'Pasaste' : `${NAMES[p]} pasó`) + ` las propias comidas: ${detail}.`;
     render();
     later(() => advance(p));
   }
 
-  function chooseItem(i) {
-    if (!S.choosing) return;
-    const item = S.queue[i];
-    S.queue = [];
-    giveItem(0, item);
-  }
-
-  // Cartas que puede dar cuando no tiene movimientos (modo b o c).
-  function giveCandidates(p) {
-    const mode = getMode();
-    const tops = [];
-    for (let i = 0; i < SIZE * SIZE; i++) {
-      const c = topOf(p, i);
-      if (c) tops.push({ i, c });
-    }
-    if (mode === 'give_move') return tops.filter(t => t.c.c === p).map(t => t.i);
-    const own = tops.filter(t => t.c.c === p);
-    const pool = own.length ? own : tops;
-    if (!pool.length) return [];
-    const best = Math.max(...pool.map(t => t.c.v));
-    return pool.filter(t => t.c.v === best).map(t => t.i);
-  }
-
-  function executeGive(p, i) {
-    const card = S.quads[p][i].pop();
-    S.forced = null;
-    S.streak = 0;
-    S.passed[p] = false;
-    const to = (p + 1) % N;
-    S.quads[to][i].push(card);
-    S.lastNote = p === 0
-      ? `Le diste el ${card.v} a ${NAMES[to]}, en la misma posición.`
-      : `${NAMES[p]} no tenía movimientos y le dio el ${card.v} a ${NAMES[to]}.`;
+  // Pasar: se marca, cuenta para la vuelta y pasa el turno.
+  function passTurn(p, msg) {
+    S.passed[p] = true;
+    S.streak++;
+    S.selected = null;
+    S.lastNote = msg;
+    S.busy = true;
     render();
     later(() => advance(p));
   }
 
   function endCheck() {
-    if (S.streak >= N) return true;   // todos pasaron seguidos (modo a, o sin cartas en b/c)
-    if (getMode() === 'pass') return false;
-    return S.quads.some((_, p) => visibleCount(p) === 3);
+    if (S.streak >= N) return true;                       // una vuelta entera pasaron todos
+    return S.quads.some((_, p) => ownVisible(p) <= 1);    // a alguien le queda una sola propia visible
   }
 
   function advance(p) {
@@ -389,99 +361,95 @@
   }
 
   function runTurn() {
-    if (S.choosing) { render(); return; }
     if (S.moves >= MAX_MOVES) { endRound(); return; }
     const t = S.turn;
+    const L = legalFor(t);
 
-    if (legalMoves(t).length > 0) {
-      render();
-      if (t !== 0) {
-        S.busy = true;
-        later(botTurn);
-      } else {
-        S.busy = false;
-      }
+    if (L.length === 0) {
+      passTurn(t, t === 0 ? 'No tenés movimientos: pasás.' : `${NAMES[t]} no tenía movimientos y pasó.`);
       return;
     }
-
-    // Sin movimientos
-    const mode = getMode();
-    if (mode === 'pass') {
-      S.passed[t] = true;
-      S.streak++;
-      S.lastNote = t === 0 ? 'No tenés movimientos: pasás.' : `${NAMES[t]} no tenía movimientos y pasó.`;
+    render();
+    if (t !== 0) {
       S.busy = true;
-      render();
-      later(() => advance(t));
-      return;
-    }
-
-    const cands = giveCandidates(t);
-    if (cands.length === 0) {
-      S.passed[t] = true;
-      S.streak++;
-      S.lastNote = `${NAMES[t]} no tenía cartas visibles y pasó.`;
-      S.busy = true;
-      render();
-      later(() => advance(t));
-      return;
-    }
-    if (t === 0) {
-      S.forced = cands;
+      later(botTurn);
+    } else {
       S.busy = false;
-      S.lastNote = mode === 'give_move'
-        ? 'No tenés movimientos. Elegí una carta tuya para dársela al siguiente jugador.'
-        : 'No tenés movimientos. Elegí tu carta más grande para dársela al siguiente jugador.';
-      render();
-      return;
     }
-    S.busy = true;
-    const i = cands[Math.floor(Math.random() * cands.length)];
-    executeGive(t, i);
   }
 
-  // Bots: prefieren comer su propia carta y pasar la propia al vecino.
+  // Bots: prefieren comer una carta ajena (+1); luego comer una propia; si no comen, mueven sin comer.
   function botScore(p, m) {
     const y = topOf(m.q, m.y);
-    return (y.c === p ? 20 : 0) + Math.random();
+    return (y.c === p ? 10 : 20) + Math.random();
+  }
+
+  // Cuántas comidas tendría la carta movida, desde su nueva casilla.
+  function eatsAfterStack(p, m) {
+    const card = topOf(p, m.x);
+    const from = S.quads[p][m.x];
+    const beneath = from.length > 2 ? from[from.length - 2] : null;   // lo que queda visible en el origen
+    let count = 0;
+    nbrs(m.y).forEach(j => {
+      const y = j === m.x ? beneath : topOf(p, j);
+      if (y && canEat(card, y)) count++;
+    });
+    return count;
+  }
+
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Bot sin comidas: mueve si la carta quedaría con 2+ comidas; si tendría 1, mueve el 50%; si no, pasa.
+  function botStackChoice(p, L) {
+    const scored = L.map(m => ({ m, n: eatsAfterStack(p, m) }));
+    const two = scored.filter(s => s.n >= 2);
+    if (two.length) return pickRandom(two).m;
+    const one = scored.filter(s => s.n === 1);
+    if (one.length && Math.random() < 0.5) return pickRandom(one).m;
+    return null;
   }
 
   function botTurn() {
     const p = S.turn;
-    if (S.gameOver || S.roundOver || S.choosing || p === 0) return;   // solo juega el bot de turno
+    if (S.gameOver || S.roundOver || p === 0) return;   // solo juega el bot de turno
     S.busy = false;
-    const moves = currentMoves(p);
-    if (!moves.length) { S.chain = null; runTurn(); return; }
-    let best = null, bestScore = -Infinity;
-    moves.forEach(m => {
-      const s = botScore(p, m);
-      if (s > bestScore) { bestScore = s; best = m; }
-    });
+    const L = legalFor(p);
+    if (!L.length) { S.chain = null; runTurn(); return; }
+
+    let best = null;
+    if (L[0].t === 'stack') {
+      best = botStackChoice(p, L);
+      if (!best) { passTurn(p, `${NAMES[p]} pasó.`); return; }
+    } else {
+      let bestScore = -Infinity;
+      L.forEach(m => {
+        const s = botScore(p, m);
+        if (s > bestScore) { bestScore = s; best = m; }
+      });
+    }
     S.lastNote = '';
     S.selected = { q: best.q, x: best.x };
     render();
     later(() => {
-      const res = doMove(p, best);
-      render();
-      afterEat(p, res);
+      if (best.t === 'eat') {
+        const res = doEat(p, best);
+        render();
+        afterEat(p, res);
+      } else {
+        doStack(p, best);
+        passNext(p);
+      }
     });
   }
 
-  // Puntos: solo cartas visibles. 1 por ajena, 2 por propia.
-  function pointsOf(p) {
-    return S.quads[p].reduce((a, arr) => {
-      if (!arr.length) return a;
-      const c = arr[arr.length - 1];
-      return a + (c.c === p ? 2 : 1);
-    }, 0);
-  }
-
   function endRound() {
-    const pts = Array.from({ length: N }, (_, p) => pointsOf(p));
+    const pts = Array.from({ length: N }, (_, p) => roundPts(p));
     S.history.push(pts);
     pts.forEach((v, p) => { S.totals[p] += v; });
-    S.roundOver = true; S.busy = false; S.selected = null; S.forced = null;
-    S.chain = null; S.queue = []; S.choosing = false;
+    S.roundOver = true; S.busy = false; S.selected = null;
+    S.chain = null; S.queue = [];
     render();
   }
 
@@ -494,45 +462,47 @@
     runTurn();
   }
 
+  // El jugador toca un cuadrado o un destino. Se usa la misma lógica para comer y para mover.
   function onCell(q, i) {
-    if (S.gameOver || S.roundOver || S.choosing) return;
-
-    if (S.forced) {
-      if (q === 0 && S.forced.includes(i)) executeGive(0, i);
-      return;
-    }
+    if (S.gameOver || S.roundOver) return;
     if (S.turn !== 0 || S.busy) return;
 
-    const legal = currentMoves(0);
+    const legal = legalFor(0);
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
 
     if (sel) {
       const ok = legal.find(m => m.q === sel.q && m.x === sel.x && m.y === i);
       if (ok) {
         S.lastNote = '';
-        const res = doMove(0, ok);
-        render();
-        afterEat(0, res);
+        if (ok.t === 'eat') {
+          const res = doEat(0, ok);
+          render();
+          afterEat(0, res);
+        } else {
+          doStack(0, ok);
+          passNext(0);
+        }
         return;
       }
       if (S.chain) return;   // con cadena, la misma carta sigue sola
-      const cell = topOf(q, i);
-      if (cell && cell.c === 0 && !(q === sel.q && i === sel.x) && legal.some(m => m.q === q && m.x === i)) {
-        S.selected = { q, x: i };
-      } else {
-        S.selected = null;
-      }
+      if (q === sel.q && i === sel.x) { S.selected = null; render(); return; }
+      S.selected = legal.some(m => m.q === q && m.x === i) ? { q, x: i } : null;
     } else {
-      const cell = topOf(q, i);
-      if (cell && cell.c === 0 && legal.some(m => m.q === q && m.x === i)) {
-        S.selected = { q, x: i };
-      }
+      if (legal.some(m => m.q === q && m.x === i)) S.selected = { q, x: i };
     }
     render();
   }
 
-  // ← vecino de la izquierda, → vecino de la derecha, ✕ sale del juego
+  function humanPass() {
+    if (S.turn !== 0 || S.busy || S.roundOver || S.gameOver || S.chain) return;
+    const L = legalFor(0);
+    if (!L.length || L[0].t !== 'stack') return;   // solo se puede pasar si no hay comidas
+    passTurn(0, 'Pasaste tu turno.');
+  }
+
+  // ← vecino de la izquierda, → vecino de la derecha, ✕ sale del juego, ▫ espacio vacío
   function passMark(targetIdx, targetCard) {
+    if (!targetCard) return '▫';
     if (targetCard.c !== 0) return '✕';
     return (targetIdx % SIZE) < 2 ? '←' : '→';
   }
@@ -541,8 +511,7 @@
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
-    const legal = S.turn === 0 && !S.roundOver && !S.gameOver && !S.forced && !S.choosing
-      ? currentMoves(0) : [];
+    const legal = S.turn === 0 && !S.roundOver && !S.gameOver ? legalFor(0) : [];
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
     const seats = seatsFor(N);
     const tableEl = document.getElementById('table');
@@ -556,23 +525,10 @@
       box.style.gridRow = seats.pos[p][0];
       box.style.gridColumn = seats.pos[p][1];
       const badge = S.passed[p] ? '<span class="badge">Pasó</span>' : '';
+      const pts = roundPts(p);
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span>${badge}<span class="qpts">${pointsOf(p)} pts</span></div>`;
-
-      if (S.choosing && p === 0) {
-        const row = document.createElement('div');
-        row.className = 'picks';
-        S.queue.forEach((it, i) => {
-          const b = document.createElement('button');
-          b.className = 'pick';
-          const arrow = it.to === (p + 1) % N ? '←' : '→';
-          b.innerHTML = `<span class="chip" style="background:${COLORS[it.card.c]};min-width:26px;height:26px;font-size:0.85rem">${it.card.v}</span>${arrow} ${NAMES[it.to]}`;
-          b.addEventListener('click', () => chooseItem(i));
-          row.appendChild(b);
-        });
-        box.appendChild(row);
-      }
+        `<span class="qname">${NAMES[p]}</span>${badge}<span class="qpts">${pts > 0 ? '+' : ''}${pts} pts</span></div>`;
 
       const grid = document.createElement('div');
       grid.className = 'grid';
@@ -614,7 +570,7 @@
           d.appendChild(a1);
         }
         if (sel && sel.q === p && sel.x === i) d.classList.add('selected');
-        const isTarget = sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i);
+        const isTarget = sel && sel.q === p && legal.some(m => m.q === p && m.x === sel.x && m.y === i);
         if (isTarget) {
           d.classList.add('target');
           const mk = document.createElement('span');
@@ -624,7 +580,6 @@
           d.appendChild(mk);
         }
         if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
-        if (S.forced && p === 0 && S.forced.includes(i)) d.classList.add('remove');
         d.addEventListener('click', () => onCell(p, i));
         grid.appendChild(d);
       }
@@ -633,36 +588,40 @@
     }
 
     // Texto de estado, en el centro de la cruz
+    const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain &&
+      legal.length > 0 && legal[0].t === 'stack';
+
     let text;
     if (S.gameOver) {
-      const min = Math.min(...S.totals);
-      const winners = S.totals.map((t, i) => (t === min ? NAMES[i] : null)).filter(Boolean);
-      text = `Juego terminado. Gana ${winners.join(' y ')} con ${min} pts.`;
+      const max = Math.max(...S.totals);
+      const winners = S.totals.map((t, i) => (t === max ? NAMES[i] : null)).filter(Boolean);
+      text = `Juego terminado. Gana ${winners.join(' y ')} con ${max} pts.`;
     } else if (S.roundOver) {
       text = `Ronda ${S.round + 1} terminada.`;
-    } else if (S.forced) {
-      text = (S.lastNote ? S.lastNote + ' ' : '') + 'Elegí la carta (en rojo):';
-    } else if (S.choosing) {
-      text = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero). Las demás salen del juego.';
     } else if (S.turn !== 0) {
       text = `Turno de ${NAMES[S.turn]}…`;
     } else if (S.chain) {
       text = 'Seguís con la misma carta ★: movela sobre una naranja.';
     } else if (sel) {
-      text = 'Movela un espacio ortogonal sobre una carta naranja. Tocá la misma para cancelar.';
+      const kind = legal.find(m => m.q === sel.q && m.x === sel.x);
+      text = kind && kind.t === 'stack'
+        ? 'Movela a un espacio vacío (▫) de tu cuadrado. Tocá la misma para cancelar.'
+        : 'Comela moviéndola un espacio sobre una carta naranja. Tocá la misma para cancelar.';
     } else if (legal.length === 0) {
-      text = 'No tenés movimientos válidos para comer.';
+      text = 'No tenés movimientos válidos.';
+    } else if (legal[0].t === 'stack') {
+      text = 'No tenés comidas. Podés mover una carta que está encima de otra a un espacio vacío, o pasar.';
     } else {
-      text = 'Tu turno: elegí una carta verde (tiene movimiento válido).';
+      text = 'Tu turno: elegí una carta verde para comer.';
     }
-    if (S.lastNote && !S.gameOver && !S.forced && !S.choosing) text = S.lastNote + ' ' + text;
+    if (S.lastNote && !S.gameOver && !S.roundOver) text = S.lastNote + ' ' + text;
 
     const tag = (!S.gameOver && !S.roundOver)
       ? `<span class="turnTag" style="background:${COLORS[S.turn]}"><span class="pulse">●</span> Turno: ${NAMES[S.turn]}</span>`
       : '';
-    const btn = (S.roundOver && !S.gameOver)
-      ? '<button id="nextRound" class="primary">Siguiente ronda</button>'
-      : '';
+    let btn = '';
+    if (S.roundOver && !S.gameOver) btn = '<button id="nextRound" class="primary">Siguiente ronda</button>';
+    else if (canPass) btn = '<button id="passBtn">Pasar</button>';
 
     const center = document.createElement('div');
     center.className = 'centerBox';
@@ -681,17 +640,17 @@
     ).join('');
   }
 
-  // El botón "Siguiente ronda" se crea en cada render: se escucha desde el contenedor.
+  // Los botones del centro se crean en cada render: se escucha desde el contenedor.
   document.getElementById('table').addEventListener('click', e => {
-    if (e.target && e.target.id === 'nextRound') nextRound();
+    if (!e.target) return;
+    if (e.target.id === 'nextRound') nextRound();
+    if (e.target.id === 'passBtn') humanPass();
   });
   document.getElementById('newGame').addEventListener('click', newGame);
   document.getElementById('bots').addEventListener('change', () => {
     document.getElementById('rounds').value = +document.getElementById('bots').value + 1;
     newGame();
   });
-  document.getElementById('mode').addEventListener('change', newGame);
-  document.getElementById('eatMode').addEventListener('change', newGame);
 
   newGame();
 </script>

@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego nuevo — prototipo v9</title>
+<title>Cadenas — prototipo</title>
 <style>
-  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; }
+  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; --gold:#e0a800; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -24,23 +24,26 @@
   .layout { display:grid; grid-template-columns:1fr 260px; gap:18px; align-items:start; }
   @media (max-width:860px) { .layout { grid-template-columns:1fr; } }
   .status { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; min-height:52px; }
-  .status .msg { font-size:0.98rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .chip { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 6px; border-radius:6px; color:#fff; font-weight:700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
+  .status .msg { font-size:0.98rem; }
 
   #table { display:grid; grid-template-columns:repeat(3, minmax(210px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
   .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; }
   .quad.active { border-color:var(--accent); }
   .quad.mine { border-color:var(--mine); }
-  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; }
+  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; flex-wrap:wrap; }
   .qhead .dot { width:13px; height:13px; border-radius:50%; }
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
   .badge { color:#fff; background:var(--red); border-radius:4px; padding:1px 6px; font-size:0.75rem; font-weight:700; }
+  .chip { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 6px; border-radius:6px; color:#fff; font-weight:700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
+  .picks { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .pick { display:flex; align-items:center; gap:6px; padding:3px 8px 3px 3px; border:2px solid var(--gold); background:#fffbea; font-size:0.82rem; }
   .grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
   .cell { aspect-ratio:1/1; border:1px solid #c9c3b6; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:clamp(0.8rem,2.2vw,1.1rem); color:#fff; user-select:none; cursor:pointer; }
   .cell.sr { border-right:3px solid #222; }
   .cell.empty { background:#fbfaf6; cursor:default; }
   .cell .num { display:inline-block; }
+  .cell .star { position:absolute; top:1px; right:3px; font-size:0.75rem; color:var(--gold); text-shadow:0 0 2px #000; }
   .cell .mark { position:absolute; right:3px; bottom:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
   .cell.can { box-shadow: inset 0 0 0 3px var(--green); background-image: linear-gradient(rgba(46,158,72,.22), rgba(46,158,72,.22)); }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
@@ -64,7 +67,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Juego nuevo — prototipo v9</h1>
+    <h1>Cadenas — prototipo</h1>
     <div class="roundinfo" id="roundInfo"></div>
   </header>
 
@@ -127,8 +130,10 @@
         <li>Una carta puede comer a otra si su número es igual al de la comida o hasta 3 menos (inclusive). Por ejemplo, el 20 come al 20, 19, 18 y 17.</li>
         <li>Para comer, primero elegís una carta propia de TU cuadrado (en verde) y después la movés UN espacio ortogonal sobre la carta que come (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Si hay un movimiento para comer, hay que hacerlo.</li>
-        <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino. Si la carta propia come en una mitad, la carta comida pasa a ese vecino: ← al de la izquierda, → al de la derecha. Así cada par de vecinos se pasa cartas en los dos sentidos.</li>
-        <li>Si el jugador que tiene que recibir la carta no tiene espacio vacío, la carta sale del juego.</li>
+        <li><b>★ Estrellas:</b> las cartas múltiplos de 3 (3, 6, 9, 12, 15) tienen una estrella. Si comés CON una de ellas, podés volver a comer en el mismo turno.</li>
+        <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino: ← al de la izquierda, → al de la derecha.</li>
+        <li>Si la carta comida es PROPIA, la pasa a ese vecino al final del turno. Si comiste varias propias en el mismo turno, elegís en qué orden las pasás, y cada una va al vecino que le corresponde según su mitad.</li>
+        <li>Si el vecino que debe recibir la carta no tiene espacio vacío, la carta sale del juego.</li>
         <li>Si la carta comida es AJENA, sale del juego (✕).</li>
         <li>Después pasa el turno al siguiente jugador.</li>
       </ul>
@@ -140,7 +145,6 @@
         <li><b>b) Quita y da:</b> quita su carta propia más grande de su cuadrado; si no tiene, la ajena más grande. Esa carta se la da al siguiente jugador, que la pone en un espacio vacío.</li>
         <li><b>c) Mueve y da:</b> elige una carta propia de su cuadrado y se la da al siguiente jugador, que la pone en un espacio vacío.</li>
         <li>En b) y c), la ronda termina cuando un jugador tiene 3 cartas en su cuadrado.</li>
-        <li>Aunque la elección sea trivial, tenés que elegirla, para que quede claro qué pasó.</li>
       </ul>
     </details>
     <details>
@@ -185,7 +189,8 @@
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], pending: null, selected: null,
           roundOver: false, gameOver: false, busy: false, moves: 0,
-          lastNote: '', forced: null, streak: 0, passed: [] };
+          lastNote: '', forced: null, streak: 0, passed: [],
+          passQueue: [], choosing: false };
     buildRound();
     render();
     runTurn();
@@ -201,6 +206,7 @@
     S.pending = null; S.selected = null; S.forced = null;
     S.roundOver = false; S.busy = false; S.moves = 0; S.lastNote = ''; S.streak = 0;
     S.passed = Array(N).fill(false);
+    S.passQueue = []; S.choosing = false;
   }
 
   function nbrs(i) {
@@ -243,30 +249,79 @@
     S.quads[r][empties[Math.floor(Math.random() * empties.length)]] = card;
   }
 
+  // Ejecuta el movimiento. Las propias comidas quedan en la cola para pasarlas al final del turno.
   function doMove(p, m) {
     const q = S.quads[m.q];
+    const mover = q[m.x];
     const target = q[m.y];
-    q[m.y] = q[m.x];
+    q[m.y] = mover;
     q[m.x] = null;
     S.selected = null;
     S.moves++;
     S.streak = 0;
     S.passed[p] = false;
-    if (target.c !== p) return { card: null };
-    return { card: target, to: receiverFor(p, m.y) };
+    if (target.c === p) S.passQueue.push({ card: target, to: receiverFor(p, m.y) });
+    return { star: mover.v % 3 === 0 };
   }
 
-  // Entrega una carta al jugador R. Si R no tiene hueco, sale del juego.
-  // Si R es el humano, espera a que elija el hueco.
+  // Después de comer: si fue con ★ y hay movimientos, puede volver a comer.
+  function afterEat(p, star) {
+    if (star && legalMoves(p).length > 0) {
+      S.lastNote = p === 0 ? '¡Comiste con una ★! Podés volver a comer.' : `${NAMES[p]} comió con una ★ y vuelve a comer.`;
+      S.selected = null;
+      S.busy = p !== 0;
+      render();
+      if (p !== 0) setTimeout(botTurn, BOT_STEP);
+      return;
+    }
+    S.busy = false;
+    finishTurn(p);
+  }
+
+  // Al final del turno: pasa las propias comidas, una por una.
+  function finishTurn(p) {
+    passNext(p);
+  }
+
+  function passNext(p) {
+    if (S.passQueue.length === 0) { advance(p); return; }
+    if (p === 0 && S.passQueue.length > 1) {
+      S.choosing = true;
+      S.lastNote = 'Elegí cuál de tus cartas comidas pasás primero.';
+      S.busy = false;
+      render();
+      return;
+    }
+    const idx = p === 0 ? 0 : Math.floor(Math.random() * S.passQueue.length);
+    const item = S.passQueue.splice(idx, 1)[0];
+    giveItem(p, item);
+  }
+
+  function giveItem(p, item) {
+    S.choosing = false;
+    S.lastNote = p === 0
+      ? `Pasaste el ${item.card.v} a ${NAMES[item.to]}.`
+      : `${NAMES[p]} pasó el ${item.card.v} a ${NAMES[item.to]}.`;
+    render();
+    afterMove(p, { card: item.card, to: item.to }, () => passNext(p));
+  }
+
+  function chooseItem(i) {
+    if (!S.choosing) return;
+    const item = S.passQueue.splice(i, 1)[0];
+    giveItem(0, item);
+  }
+
+  // Entrega una carta al vecino R. Si R no tiene hueco, sale del juego.
+  // Si R es el humano, espera a que elija el hueco y luego llama a next().
   function afterMove(p, res, next) {
-    if (!res.card) { render(); next(); return; }
     const R = res.to;
     if (!hasHole(R)) {
       S.lastNote = `La carta ${res.card.v} no tenía lugar en ${NAMES[R]} y salió del juego.`;
       render(); next(); return;
     }
     if (R === 0) {
-      S.pending = { card: res.card, eater: p };
+      S.pending = { card: res.card, next };
       render();
       return;
     }
@@ -319,7 +374,7 @@
   }
 
   function runTurn() {
-    if (S.pending) { render(); return; }
+    if (S.pending || S.choosing) { render(); return; }
     if (S.moves >= MAX_MOVES) { endRound(); return; }
     const t = S.turn;
 
@@ -394,7 +449,7 @@
     setTimeout(() => {
       const res = doMove(p, best);
       render();
-      afterMove(p, res, () => advance(p));
+      afterEat(p, res.star);
     }, BOT_STEP);
   }
 
@@ -408,6 +463,7 @@
     S.history.push(pts);
     pts.forEach((v, p) => { S.totals[p] += v; });
     S.roundOver = true; S.busy = false; S.selected = null; S.forced = null;
+    S.passQueue = []; S.choosing = false;
     render();
   }
 
@@ -421,7 +477,7 @@
   }
 
   function onCell(q, i) {
-    if (S.gameOver || S.roundOver) return;
+    if (S.gameOver || S.roundOver || S.choosing) return;
 
     if (S.forced) {
       if (q === 0 && S.forced.includes(i)) executeGive(0, i);
@@ -434,7 +490,7 @@
         S.pending = null;
         S.quads[0][i] = pe.card;
         S.lastNote = '';
-        advance(pe.eater);
+        pe.next();
       }
       return;
     }
@@ -450,7 +506,7 @@
         S.lastNote = '';
         const res = doMove(0, ok);
         render();
-        afterMove(0, res, () => advance(0));
+        afterEat(0, res.star);
         return;
       }
       if (cell && cell.c === 0 && !(q === sel.q && i === sel.x) && legal.some(m => m.q === q && m.x === i)) {
@@ -475,7 +531,8 @@
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
-    const legal = S.turn === 0 && !S.pending && !S.roundOver && !S.gameOver && !S.forced ? legalMoves(0) : [];
+    const legal = S.turn === 0 && !S.pending && !S.roundOver && !S.gameOver && !S.forced && !S.choosing
+      ? legalMoves(0) : [];
     const sel = S.selected;
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
@@ -488,12 +545,26 @@
       box.style.gridRow = SEAT_POS[p][0];
       box.style.gridColumn = SEAT_POS[p][1];
       const badge = S.passed[p] ? '<span class="badge">Pasó</span>' : '';
-      // La carta recibida que hay que ubicar aparece en el encabezado de TU tablero
       const incoming = (S.pending && p === 0)
         ? `<span class="chip" style="background:${COLORS[S.pending.card.c]}">${S.pending.card.v}</span>` : '';
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
         `<span class="qname">${NAMES[p]}</span>${badge}${incoming}<span class="qpts">${pointsOf(p)} pts</span></div>`;
+
+      // Cartas comidas esperando para pasar: se elige cuál (solo en tu tablero)
+      if (S.choosing && p === 0) {
+        const row = document.createElement('div');
+        row.className = 'picks';
+        S.passQueue.forEach((it, i) => {
+          const b = document.createElement('button');
+          b.className = 'pick';
+          const arrow = it.to === (p + 1) % N ? '←' : '→';
+          b.innerHTML = `<span class="chip" style="background:${COLORS[it.card.c]};min-width:26px;height:26px;font-size:0.85rem">${it.card.v}</span>${arrow} ${NAMES[it.to]}`;
+          b.addEventListener('click', () => chooseItem(i));
+          row.appendChild(b);
+        });
+        box.appendChild(row);
+      }
 
       const grid = document.createElement('div');
       grid.className = 'grid';
@@ -510,6 +581,13 @@
           num.style.transform = `rotate(${-rot}deg)`;
           num.textContent = c.v;
           d.appendChild(num);
+          if (c.v % 3 === 0) {
+            const st = document.createElement('span');
+            st.className = 'star';
+            st.style.transform = `rotate(${-rot}deg)`;
+            st.textContent = '★';
+            d.appendChild(st);
+          }
         }
         if (sel && sel.q === p && sel.x === i) d.classList.add('selected');
         const isTarget = sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i);
@@ -531,8 +609,13 @@
       tableEl.appendChild(box);
     }
 
+    const center = document.createElement('div');
+    center.style.gridRow = 2;
+    center.style.gridColumn = 2;
+    tableEl.appendChild(center);
+
     const msgEl = document.getElementById('msg');
-    let text, chip = '';
+    let text;
     if (S.gameOver) {
       const min = Math.min(...S.totals);
       const winners = S.totals.map((t, i) => (t === min ? NAMES[i] : null)).filter(Boolean);
@@ -543,6 +626,8 @@
       text = S.lastNote + ' Elegí la carta (en rojo):';
     } else if (S.pending) {
       text = 'Te llegó una carta (arriba de tu tablero). Elegí un hueco vacío de tu tablero (en azul) para ponerla.';
+    } else if (S.choosing) {
+      text = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero).';
     } else if (S.turn !== 0) {
       text = `Turno de ${NAMES[S.turn]}…`;
     } else if (sel) {
@@ -552,8 +637,8 @@
     } else {
       text = 'Tu turno: elegí una carta verde (tiene movimiento válido).';
     }
-    if (S.lastNote && !S.gameOver && !S.forced) text = S.lastNote + ' ' + text;
-    msgEl.innerHTML = `<span>${text}</span>${chip}`;
+    if (S.lastNote && !S.gameOver && !S.forced && !S.choosing) text = S.lastNote + ' ' + text;
+    msgEl.innerHTML = `<span>${text}</span>`;
     document.getElementById('nextRound').style.display = (S.roundOver && !S.gameOver) ? '' : 'none';
 
     document.getElementById('totals').innerHTML = S.totals.map((t, p) =>

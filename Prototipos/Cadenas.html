@@ -120,13 +120,13 @@
       <summary>Cómo se come</summary>
       <ul>
         <li>Para comer, elegís una carta visible de TU cuadrado (en verde) y la movés UN espacio ortogonal sobre una carta más chica que ella (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
-        <li>Una carta puede comer a cualquier carta más chica. El 16 come a todas menos a otro 16.</li>
+        <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
         <li>Si hay alguna comida legal, tenés que comer.</li>
         <li>La carta que se mueve deja su lugar; si había una carta debajo, esa queda visible.</li>
         <li>Al comer, se come TODA la pila de la casilla: cada carta ajena de esa pila sale del juego (−1 cada una) y cada carta propia pasa al vecino.</li>
         <li>Si la carta comida es AJENA, te resta 1 punto.</li>
         <li>Si la carta comida es PROPIA, al final del turno pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna) de donde salió. Si ahí hay una carta, la nueva queda encima y tapa la anterior. Si comiste varias propias en el mismo turno, pasan todas. Si ese vecino ya salió de la ronda, la carta se va del juego.</li>
-        <li><b>★ Estrellas:</b> las cartas 5, 8 y 10 tienen una estrella. Si comés CON una de ellas, esa misma carta puede seguir comiendo en el mismo turno, encadenando. No vale usar otra carta.</li>
+        <li><b>Encadenar:</b> todas las cartas pueden encadenar. Si después de comer, la misma carta puede volver a comer, sigue comiendo en el mismo turno. No vale usar otra carta.</li>
         <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino: ← al de la izquierda, → al de la derecha.</li>
       </ul>
     </details>
@@ -244,7 +244,7 @@
 
   // Come a cualquier carta estrictamente más chica
   function canEat(a, b) {
-    return a.v > b.v;
+    return a.v > b.v && a.v - b.v <= 4;
   }
 
   // Vecino que recibe la carta propia comida: mitad cols 1-2 → p+1, cols 3-4 → p-1
@@ -334,11 +334,11 @@
   // Si la carta fue ★ y tiene comidas, la misma carta sigue comiendo.
   function afterEat(p, res) {
     const cont = legalMoves(p).filter(m => m.q === res.pos.q && m.x === res.pos.x);
-    if (res.star && cont.length > 0) {
+    if (cont.length > 0) {
       S.chain = res.pos;
       S.chainMove = false;
       S.selected = null;
-      S.lastNote = p === 0 ? '¡Estrella ★! Seguís comiendo con la misma carta.' : `${NAMES[p]} sigue comiendo con la misma carta ★.`;
+      S.lastNote = p === 0 ? 'Seguís comiendo con la misma carta.' : `${NAMES[p]} sigue comiendo con la misma carta.`;
       S.busy = p !== 0;
       render();
       if (p !== 0) later(botTurn);
@@ -577,13 +577,6 @@
           num.style.transform = `rotate(${-rot}deg)`;
           num.textContent = c.v;
           d.appendChild(num);
-          if (isStar(c.v)) {
-            const st = document.createElement('span');
-            st.className = 'star';
-            st.style.transform = `rotate(${-rot}deg)`;
-            st.textContent = '★';
-            d.appendChild(st);
-          }
           if (arr.length > 1) {
             const cv = document.createElement('span');
             cv.className = 'cover';
@@ -633,7 +626,7 @@
     } else if (S.chain) {
       text = S.chainMove
         ? 'Ahora tenés que comer con la carta que moviste (en naranja).'
-        : 'Seguís con la misma carta ★: movela sobre una naranja.';
+        : 'Seguís con la misma carta: movela sobre una naranja.';
     } else if (sel) {
       const kind = legal.find(m => m.q === sel.q && m.x === sel.x);
       text = kind && kind.t === 'stack'

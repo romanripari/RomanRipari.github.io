@@ -132,7 +132,7 @@
         <li>Si hay un movimiento para comer, hay que hacerlo.</li>
         <li><b>★ Estrellas:</b> las cartas múltiplos de 3 (3, 6, 9, 12, 15) tienen una estrella. Si comés CON una de ellas, podés volver a comer en el mismo turno.</li>
         <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino: ← al de la izquierda, → al de la derecha.</li>
-        <li>Si la carta comida es PROPIA, la pasa a ese vecino al final del turno. Si comiste varias propias en el mismo turno, elegís en qué orden las pasás, y cada una va al vecino que le corresponde según su mitad.</li>
+        <li>Si la carta comida es PROPIA, la pasa a ese vecino al final del turno. Si comiste varias propias en el mismo turno, solo pasás UNA: elegís cuál, y va al vecino que le corresponde según su mitad. Las demás propias comidas salen del juego.</li>
         <li>Si el vecino que debe recibir la carta no tiene espacio vacío, la carta sale del juego.</li>
         <li>Si la carta comida es AJENA, sale del juego (✕).</li>
         <li>Después pasa el turno al siguiente jugador.</li>
@@ -292,8 +292,10 @@
       render();
       return;
     }
+    // Solo se pasa UNA carta; las demás propias comidas en el turno salen del juego.
     const idx = p === 0 ? 0 : Math.floor(Math.random() * S.passQueue.length);
-    const item = S.passQueue.splice(idx, 1)[0];
+    const item = S.passQueue[idx];
+    S.passQueue = [];
     giveItem(p, item);
   }
 
@@ -308,7 +310,8 @@
 
   function chooseItem(i) {
     if (!S.choosing) return;
-    const item = S.passQueue.splice(i, 1)[0];
+    const item = S.passQueue[i];
+    S.passQueue = [];   // las demás salen del juego
     giveItem(0, item);
   }
 
@@ -627,7 +630,7 @@
     } else if (S.pending) {
       text = 'Te llegó una carta (arriba de tu tablero). Elegí un hueco vacío de tu tablero (en azul) para ponerla.';
     } else if (S.choosing) {
-      text = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero).';
+      text = 'Elegí cuál de tus cartas comidas pasás (botones arriba de tu tablero). Las demás salen del juego.';
     } else if (S.turn !== 0) {
       text = `Turno de ${NAMES[S.turn]}…`;
     } else if (sel) {

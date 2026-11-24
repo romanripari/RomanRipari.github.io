@@ -85,6 +85,19 @@
       </select>
     </label>
     <label>Rondas <input type="number" id="rounds" min="1" max="10" value="4"></label>
+    <label>Sin movimientos
+      <select id="noMove">
+        <option value="pass">Paso</option>
+        <option value="ownHigh" selected>Quito mi carta más alta (si no tengo, la ajena más alta)</option>
+        <option value="lowForeign">Quito la ajena más baja (si no hay, la mía más baja)</option>
+      </select>
+    </label>
+    <label>Fin de ronda
+      <select id="endMode">
+        <option value="lap" selected>Cuando la vuelta completa termina</option>
+        <option value="streak">Cuando todos seguidos no tienen movimientos</option>
+      </select>
+    </label>
     <button class="primary" id="newGame">Nueva partida</button>
     <span class="muted">Puntos: cartas visibles en tu cuadrado al final. Menos es mejor.</span>
   </div>
@@ -104,7 +117,7 @@
         <table><tbody id="totals"></tbody></table>
       </div>
       <div class="box">
-        <h2>Cartas por ronda</h2>
+        <h2>Puntos por ronda</h2>
         <table><thead id="histHead"></thead><tbody id="hist"></tbody></table>
       </div>
     </aside>
@@ -113,7 +126,7 @@
   <section class="rules">
     <details open>
       <summary>Objetivo</summary>
-      <p>Terminar con la menor cantidad de puntos. Los puntos son las cartas que quedan visibles en tu cuadrado al final de la ronda, propias y ajenas (se cuentan cantidades, no números).</p>
+      <p>Terminar con la menor cantidad de puntos. Al final de la ronda, cada cuadrado suma 1 punto por cada carta ajena que quedó visible y 2 puntos por cada carta propia.</p>
     </details>
     <details>
       <summary>Preparación</summary>
@@ -138,7 +151,7 @@
     <details>
       <summary>Si no tenés nada para comer</summary>
       <ul>
-        <li>Quitás el número más bajo ajeno de tu cuadrado. Si no hay ajenas, quitás el número más bajo propio. La carta se va de la partida.</li>
+        <li>Según la opción elegida en "Sin movimientos": pasás, quitás tu carta más alta (si no tenés, la ajena más alta), o quitás la ajena más baja (si no hay, la tuya más baja). La carta se va de la partida.</li>
         <li>Aunque la elección sea trivial, tenés que elegirla, para que quede claro qué pasó.</li>
         <li>Eso cuenta como tu turno. Igual que cuando alguien no puede mover, los demás completan la vuelta.</li>
       </ul>
@@ -147,7 +160,8 @@
       <summary>Fin de ronda</summary>
       <ul>
         <li>Cuando un jugador no puede mover más, los demás completan la vuelta. La ronda termina con el jugador que está a la derecha del que empezó.</li>
-        <li>Se cuentan las cartas visibles de cada cuadrado y se anotan.</li>
+        <li>Se anotan los puntos de cada cuadrado (1 por carta ajena, 2 por carta propia).</li>
+        <li>Según "Fin de ronda": termina cuando la vuelta completa pasa desde que alguien no pudo mover, o cuando todos seguidos no tienen movimientos.</li>
         <li>Se juegan tantas rondas como jugadores (opcional en esta demo). Cada ronda se rearma desde cero. Gana el de menos puntos.</li>
       </ul>
     </details>
@@ -183,7 +197,7 @@
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], pending: null, selected: null,
           roundOver: false, gameOver: false, busy: false, stuck: false, moves: 0,
-          lastNote: '', forced: null };
+          lastNote: '', forced: null, streak: 0 };
     buildRound();
     render();
     runTurn();
@@ -197,7 +211,7 @@
     }
     S.turn = S.start;
     S.pending = null; S.selected = null; S.forced = null;
-    S.roundOver = false; S.busy = false; S.stuck = false; S.moves = 0; S.lastNote = '';
+    S.roundOver = false; S.busy = false; S.stuck = false; S.moves = 0; S.lastNote = ''; S.streak = 0;
   }
 
   function nbrs(i) {
@@ -248,6 +262,7 @@
     q[m.x] = null;
     S.selected = null;
     S.moves++;
+    S.streak = 0;
     if (target.c !== p) return { card: null };
     return { card: target, to: receiverFor(p, m.y) };
   }
@@ -268,16 +283,23 @@
     setTimeout(() => { placeRandom(R, res.card); render(); next(); }, BOT_STEP);
   }
 
-  // Candidatas a quitar: la ajena más baja del propio cuadrado; si no hay, la propia más baja.
+  // Candidatas a quitar según la opción elegida en "Sin movimientos".
   function removalCandidates(p) {
     const q = S.quads[p];
-    const pick = (pred) => {
-      let best = Infinity;
-      q.forEach((c) => { if (c && pred(c) && c.v < best) best = c.v; });
-      return best === Infinity ? [] : q.map((c, i) => (c && pred(c) && c.v === best ? i : -1)).filter(i => i >= 0);
+    const mode = document.getElementById('noMove').value;
+    const isOwn = c => c.c === p, isForeign = c => c.c !== p;
+    const pick = (pred, wantHigh) => {
+      let best = wantHigh ? -Infinity : Infinity;
+      q.forEach(c => { if (c && pred(c)) best = wantHigh ? Math.max(best, c.v) : Math.min(best, c.v); });
+      if (best === Infinity || best === -Infinity) return [];
+      return q.map((c, i) => (c && pred(c) && c.v === best ? i : -1)).filter(i => i >= 0);
     };
-    const foreign = pick(c => c.c !== p);
-    return foreign.length ? foreign : pick(c => c.c === p);
+    if (mode === 'ownHigh') {
+      const o = pick(isOwn, true);
+      return o.length ? o : pick(isForeign, true);
+    }
+    const f = pick(isForeign, false);
+    return f.length ? f : pick(isOwn, false);
   }
 
   function removeAt(p, i) {
@@ -289,7 +311,9 @@
   function endAt() { return (S.start + N - 1) % N; }
 
   function advance(p) {
-    if (S.stuck && p === endAt()) { endRound(); return; }
+    const endMode = document.getElementById('endMode').value;
+    const ends = endMode === 'lap' ? (S.stuck && p === endAt()) : (S.streak >= N);
+    if (ends) { endRound(); return; }
     S.turn = (p + 1) % N;
     render();
     runTurn();
@@ -312,6 +336,15 @@
     }
 
     S.stuck = true;
+    S.streak++;
+    const mode = document.getElementById('noMove').value;
+    if (mode === 'pass') {
+      S.lastNote = t === 0 ? 'No tenés movimientos: pasás.' : `${NAMES[t]} no tenía movimientos y pasó.`;
+      S.busy = true;
+      render();
+      setTimeout(() => advance(t), BOT_STEP);
+      return;
+    }
     const cands = removalCandidates(t);
     if (cands.length === 0) {
       S.lastNote = `${NAMES[t]} no tenía cartas en su cuadrado.`;
@@ -323,7 +356,7 @@
     if (t === 0) {
       S.forced = cands;
       S.busy = false;
-      S.lastNote = 'No tenés movimientos para comer.';
+      S.lastNote = 'No tenés movimientos para comer. Elegí la carta a quitar.';
       render();
       return;
     }
@@ -363,8 +396,9 @@
     }, BOT_STEP);
   }
 
+  // Puntos en contra: 1 por cada carta ajena y 2 por cada carta propia visible en tu cuadrado.
   function pointsOf(p) {
-    return S.quads[p].reduce((a, c) => a + (c ? 1 : 0), 0);
+    return S.quads[p].reduce((a, c) => a + (c ? (c.c === p ? 2 : 1) : 0), 0);
   }
 
   function endRound() {
@@ -463,7 +497,7 @@
       box.style.gridColumn = SEAT_POS[p][1];
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>`;
+        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} pts</span></div>`;
       SIDES.forEach(s => {
         const cap = document.createElement('div');
         cap.className = `cap ${s === 'left' || s === 'right' ? 'side' : 'tb'} ${s}`;
@@ -522,7 +556,7 @@
     if (S.gameOver) {
       const min = Math.min(...S.totals);
       const winners = S.totals.map((t, i) => (t === min ? NAMES[i] : null)).filter(Boolean);
-      text = `Juego terminado. Gana ${winners.join(' y ')} con ${min} cartas.`;
+      text = `Juego terminado. Gana ${winners.join(' y ')} con ${min} pts.`;
     } else if (S.roundOver) {
       text = `Ronda ${S.round + 1} terminada.`;
     } else if (S.forced) {

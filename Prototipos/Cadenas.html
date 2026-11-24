@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego nuevo — prototipo v5</title>
+<title>Juego nuevo — prototipo v7</title>
 <style>
-  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; }
+  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -21,29 +21,34 @@
   button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
   .muted { color:var(--muted); font-size:0.85rem; }
 
-  .layout { display:grid; grid-template-columns:1fr 280px; gap:18px; align-items:start; }
-  @media (max-width:840px) { .layout { grid-template-columns:1fr; } }
+  .layout { display:grid; grid-template-columns:1fr 260px; gap:18px; align-items:start; }
+  @media (max-width:860px) { .layout { grid-template-columns:1fr; } }
   .status { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; min-height:52px; }
-  .status .msg { font-size:0.98rem; }
+  .status .msg { font-size:0.98rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .chip { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 6px; border-radius:6px; color:#fff; font-weight:700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
 
-  #quads { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
-  .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px; }
+  #table { display:grid; grid-template-columns:repeat(3, minmax(190px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
+  .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; }
   .quad.active { border-color:var(--accent); }
   .quad.mine { border-color:var(--mine); }
-  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:0.92rem; }
-  .qhead .dot { width:14px; height:14px; border-radius:50%; }
+  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; }
+  .qhead .dot { width:13px; height:13px; border-radius:50%; }
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
-  .qpass { font-size:0.76rem; color:var(--muted); margin-bottom:8px; }
-  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-  .cell { aspect-ratio:1/1; border-radius:6px; position:relative; display:flex; align-items:flex-start; justify-content:flex-start; padding:4px 6px; font-weight:700; font-size:clamp(0.85rem,2.4vw,1.2rem); color:#fff; user-select:none; cursor:pointer; }
-  .cell.empty { border:2px dashed var(--line); background:transparent; cursor:default; }
-  .cell.card { box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
-  .cell.can { outline:2px solid #5a9e5a; outline-offset:1px; }
-  .cell.selected { outline:3px solid #222; outline-offset:1px; }
-  .cell.target { outline:3px solid #e8b84a; outline-offset:1px; }
-  .cell.place { border:2px dashed var(--accent); background:#eef6fb; }
-  .cell .mark { position:absolute; right:4px; bottom:2px; font-size:0.9rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.6); }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
+  .cell { aspect-ratio:1/1; border:1px solid #c9c3b6; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:clamp(0.8rem,2.2vw,1.1rem); color:#fff; user-select:none; cursor:pointer; }
+  .cell.sr { border-right:3px solid #222; }   /* separación de mitades: cols 1-2 | 3-4 */
+  .cell.sb { border-bottom:3px solid #222; }  /* separación de sectores 2×2 */
+  .cell.empty { background:#fbfaf6; cursor:default; }
+  .cell .num { display:inline-block; }
+  .cell .mark { position:absolute; right:3px; bottom:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
+  .cell.can { box-shadow: inset 0 0 0 3px var(--green); background-image: linear-gradient(rgba(46,158,72,.22), rgba(46,158,72,.22)); }
+  .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
+  .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
+  .cell.place { background:#eef6fb; box-shadow: inset 0 0 0 3px var(--accent); }
+  .cell.remove { box-shadow: inset 0 0 0 3px var(--red); background-image: linear-gradient(rgba(192,57,43,.18), rgba(192,57,43,.18)); }
+  .center { display:flex; align-items:center; justify-content:center; text-align:center; font-size:0.84rem; color:var(--muted); line-height:1.7; padding:10px; border:2px dashed var(--line); border-radius:10px; }
+  .center b { color:var(--ink); }
 
   aside .box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
   aside h2 { font-size:0.95rem; margin:0 0 8px; }
@@ -51,8 +56,6 @@
   th, td { text-align:right; padding:4px 6px; border-bottom:1px solid #eee; font-variant-numeric:tabular-nums; }
   th:first-child, td:first-child { text-align:left; }
   .sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
-  .legend { font-size:0.85rem; line-height:1.7; }
-  .legend .sw { margin-right:4px; }
 
   .rules { margin-top:22px; }
   .rules details { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 16px; margin-bottom:10px; }
@@ -63,7 +66,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Juego nuevo — prototipo v5</h1>
+    <h1>Juego nuevo — prototipo v7</h1>
     <div class="roundinfo" id="roundInfo"></div>
   </header>
 
@@ -85,15 +88,10 @@
         <span class="msg" id="msg"></span>
         <button id="nextRound" class="primary" style="display:none">Siguiente ronda</button>
       </div>
-      <div id="quads"></div>
+      <div id="table"></div>
     </section>
 
     <aside>
-      <div class="box">
-        <h2>Pases</h2>
-        <div class="legend" id="legend"></div>
-        <div class="muted" style="margin-top:6px">◀ pasa a la izquierda · ▶ pasa a la derecha · ✕ sale del juego</div>
-      </div>
       <div class="box">
         <h2>Total acumulado</h2>
         <table><tbody id="totals"></tbody></table>
@@ -115,19 +113,27 @@
       <ul>
         <li>Cada jugador tiene 16 cartas, numeradas del 1 al 16, en su color.</li>
         <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4. La carta de la fila 2, columna 2 se quita, así que ese espacio queda vacío.</li>
-        <li>Todos los cuadrados están a la vista.</li>
+        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Cada cuadrado está girado según su lugar en la mesa.</li>
       </ul>
     </details>
     <details>
       <summary>Cómo se come</summary>
       <ul>
         <li>Una carta puede comer a otra si su número es igual al de la comida o hasta 3 menos (inclusive). Por ejemplo, el 20 come al 20, 19, 18 y 17.</li>
-        <li>Para comer, primero elegís la carta propia y después la movés UN espacio ortogonal (arriba, abajo, izquierda o derecha) sobre la carta que come.</li>
+        <li>Para comer, primero elegís la carta propia (en verde) y después la movés UN espacio ortogonal sobre la carta que come (en naranja).</li>
         <li>Solo podés elegir una carta si tiene al menos un movimiento válido. Si hay un movimiento para comer, hay que hacerlo.</li>
-        <li>Si la carta comida es PROPIA: si se comió en columnas 1 y 2 pasa al jugador de la izquierda (◀); si se comió en columnas 3 y 4 pasa al jugador de la derecha (▶). Ese jugador pone la carta en un espacio vacío de su cuadrado.</li>
-        <li>Si el jugador que tiene que recibir la carta no tiene espacio vacío, la carta sale del juego (✕).</li>
-        <li>Si la carta comida es AJENA, sale del juego (✕).</li>
+        <li>Cada cuadrado tiene dos mitades (2 columnas cada una), y cada mitad mira a uno de sus vecinos. Si la carta propia come en una mitad, la carta comida pasa a ese vecino. Así, cada par de vecinos se pasa cartas en los dos sentidos (ida y vuelta).</li>
+        <li>Si el jugador que tiene que recibir la carta no tiene espacio vacío, la carta sale del juego.</li>
+        <li>Si la carta comida es AJENA, sale del juego.</li>
         <li>Después pasa el turno al siguiente jugador.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Si no tenés nada para comer</summary>
+      <ul>
+        <li>Quitás el número más bajo ajeno de tu cuadrado. Si no hay ajenas, quitás el número más bajo propio. La carta se va de la partida.</li>
+        <li>Aunque la elección sea trivial, tenés que elegirla, para que quede claro qué pasó.</li>
+        <li>Eso cuenta como tu turno. Igual que cuando alguien no puede mover, los demás completan la vuelta.</li>
       </ul>
     </details>
     <details>
@@ -144,6 +150,10 @@
 <script>
   const COLORS = ['#d9644a', '#3b6e8f', '#5a9e5a', '#8a6cb8'];
   const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
+  // Posición en la cruz [fila, columna]: abajo (jugador), izquierda, arriba, derecha.
+  const SEAT_POS = [[3, 2], [2, 1], [1, 2], [2, 3]];
+  // Giro de cada tablero para que su mitad "de la izquierda" (cols 1-2) mire al vecino siguiente (p+1).
+  const SEAT_ROT = [0, 90, 180, -90];
   const SIZE = 4;
   const LOST = 1 * SIZE + 1;          // fila 2, columna 2 (índice 5)
   const BOT_STEP = 1000;
@@ -164,7 +174,8 @@
     ROUNDS = Math.min(10, Math.max(1, +document.getElementById('rounds').value || N));
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], pending: null, selected: null,
-          roundOver: false, gameOver: false, busy: false, stuck: false, moves: 0 };
+          roundOver: false, gameOver: false, busy: false, stuck: false, moves: 0,
+          lastNote: '', forced: null };
     buildRound();
     render();
     runTurn();
@@ -177,8 +188,8 @@
       S.quads.push(vals.map((v, i) => (i === LOST ? null : { v, c: p })));
     }
     S.turn = S.start;
-    S.pending = null; S.selected = null;
-    S.roundOver = false; S.busy = false; S.stuck = false; S.moves = 0;
+    S.pending = null; S.selected = null; S.forced = null;
+    S.roundOver = false; S.busy = false; S.stuck = false; S.moves = 0; S.lastNote = '';
   }
 
   function nbrs(i) {
@@ -190,13 +201,12 @@
     return out;
   }
 
-  // Puede comer si su número es igual o hasta 3 más bajo (inclusive)
   function canEat(a, b) {
     const d = a.v - b.v;
     return d >= 0 && d <= 3;
   }
 
-  // Jugador al que pasa una carta propia comida en esa columna
+  // Vecino que recibe la carta propia comida según la mitad: cols 1-2 → p+1, cols 3-4 → p-1
   function receiverFor(p, targetIdx) {
     return (targetIdx % SIZE) < 2 ? (p + 1) % N : (p - 1 + N) % N;
   }
@@ -233,11 +243,13 @@
     return { card: target, to: receiverFor(p, m.y) };
   }
 
-  // Pasa la carta propia comida. Si el receptor está lleno, la carta sale del juego.
   function afterMove(p, res, next) {
     if (!res.card) { render(); next(); return; }
     const R = res.to;
-    if (!hasHole(R)) { render(); next(); return; }
+    if (!hasHole(R)) {
+      S.lastNote = `La carta ${res.card.v} no tenía lugar en ${NAMES[R]} y salió del juego.`;
+      render(); next(); return;
+    }
     if (R === 0) {
       S.pending = { card: res.card, eater: p };
       render();
@@ -245,6 +257,24 @@
     }
     render();
     setTimeout(() => { placeRandom(R, res.card); render(); next(); }, BOT_STEP);
+  }
+
+  // Candidatas a quitar: la ajena más baja del propio cuadrado; si no hay, la propia más baja.
+  function removalCandidates(p) {
+    const q = S.quads[p];
+    const pick = (pred) => {
+      let best = Infinity;
+      q.forEach((c) => { if (c && pred(c) && c.v < best) best = c.v; });
+      return best === Infinity ? [] : q.map((c, i) => (c && pred(c) && c.v === best ? i : -1)).filter(i => i >= 0);
+    };
+    const foreign = pick(c => c.c !== p);
+    return foreign.length ? foreign : pick(c => c.c === p);
+  }
+
+  function removeAt(p, i) {
+    const removed = S.quads[p][i];
+    S.quads[p][i] = null;
+    return removed;
   }
 
   function endAt() { return (S.start + N - 1) % N; }
@@ -259,25 +289,46 @@
   function runTurn() {
     if (S.pending) { render(); return; }
     if (S.moves >= MAX_MOVES) { endRound(); return; }
-    const moves = legalMoves(S.turn);
-    if (moves.length === 0) {
-      S.stuck = true;
-      if (S.turn === endAt()) { endRound(); return; }
-      S.turn = (S.turn + 1) % N;
-      runTurn();
+    const t = S.turn;
+    const moves = legalMoves(t);
+    if (moves.length > 0) {
+      render();
+      if (t !== 0) {
+        S.busy = true;
+        setTimeout(botTurn, BOT_STEP);
+      } else {
+        S.busy = false;
+      }
       return;
     }
-    render();
-    if (S.turn !== 0) {
+
+    // Sin movimientos: hay que quitar una carta de su propio cuadrado.
+    S.stuck = true;
+    const cands = removalCandidates(t);
+    if (cands.length === 0) {
+      S.lastNote = `${NAMES[t]} no tenía cartas en su cuadrado.`;
       S.busy = true;
-      setTimeout(botTurn, BOT_STEP);
-    } else {
-      S.busy = false;
+      render();
+      setTimeout(() => advance(t), BOT_STEP);
+      return;
     }
+    if (t === 0) {
+      S.forced = cands;
+      S.busy = false;
+      S.lastNote = 'No tenés movimientos para comer.';
+      render();
+      return;
+    }
+    S.busy = true;
+    const i = cands[Math.floor(Math.random() * cands.length)];
+    const removed = removeAt(t, i);
+    S.lastNote = `${NAMES[t]} no tenía movimientos y quitó el ${removed.v} ${removed.c === t ? 'propio' : 'ajeno'}.`;
+    render();
+    setTimeout(() => advance(t), BOT_STEP);
   }
 
-  // Bots: cada movimiento quita una carta del cuadrado donde ocurre, así que
-  // prefieren comer en su propio cuadrado y pasar su carta propia al vecino.
+  // Bots: cada movimiento quita una carta del cuadrado donde ocurre.
+  // Prefieren comer en su propio cuadrado y pasar su carta propia al vecino.
   function botScore(p, m) {
     const y = S.quads[m.q][m.y];
     let s = (m.q === p ? 100 : 0);
@@ -295,6 +346,7 @@
       const s = botScore(p, m);
       if (s > bestScore) { bestScore = s; best = m; }
     });
+    S.lastNote = '';
     S.selected = { q: best.q, x: best.x };
     render();
     setTimeout(() => {
@@ -312,7 +364,7 @@
     const pts = Array.from({ length: N }, (_, p) => pointsOf(p));
     S.history.push(pts);
     pts.forEach((v, p) => { S.totals[p] += v; });
-    S.roundOver = true; S.busy = false; S.selected = null;
+    S.roundOver = true; S.busy = false; S.selected = null; S.forced = null;
     render();
   }
 
@@ -328,11 +380,22 @@
   function onCell(q, i) {
     if (S.gameOver || S.roundOver) return;
 
+    if (S.forced) {                                        // elegir la carta a quitar
+      if (q === 0 && S.forced.includes(i)) {
+        const removed = removeAt(0, i);
+        S.lastNote = `Quitaste el ${removed.v} ${removed.c === 0 ? 'propio' : 'ajeno'} de tu cuadrado.`;
+        S.forced = null;
+        advance(0);
+      }
+      return;
+    }
+
     if (S.pending) {
       if (q === 0 && S.quads[0][i] === null) {
         const pe = S.pending;
         S.pending = null;
         S.quads[0][i] = pe.card;
+        S.lastNote = '';
         advance(pe.eater);
       }
       return;
@@ -346,6 +409,7 @@
     if (sel) {
       const ok = legal.find(m => m.q === sel.q && m.x === sel.x && m.y === i);
       if (ok) {
+        S.lastNote = '';
         const res = doMove(0, ok);
         render();
         afterMove(0, res, () => advance(0));
@@ -362,79 +426,103 @@
     render();
   }
 
-  // Marca sobre la carta comida: ◀ / ▶ si pasa, ✕ si sale del juego
+  // Marca sobre la carta comida: ← va al vecino de la izquierda, → al de la derecha, ✕ sale del juego
   function passMark(eater, targetIdx, targetCard) {
     if (targetCard.c !== eater) return '✕';
-    const R = receiverFor(eater, targetIdx);
-    if (!hasHole(R)) return '✕';
-    return (targetIdx % SIZE) < 2 ? '◀' : '▶';
+    if (!hasHole(receiverFor(eater, targetIdx))) return '✕';
+    return (targetIdx % SIZE) < 2 ? '←' : '→';
   }
 
   function render() {
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
-    const legal = S.turn === 0 && !S.pending && !S.roundOver && !S.gameOver ? legalMoves(0) : [];
+    const legal = S.turn === 0 && !S.pending && !S.roundOver && !S.gameOver && !S.forced ? legalMoves(0) : [];
     const sel = S.selected;
-    const qEl = document.getElementById('quads');
-    qEl.innerHTML = '';
+    const tableEl = document.getElementById('table');
+    tableEl.innerHTML = '';
+
     for (let p = 0; p < N; p++) {
-      const L = (p + 1) % N, R = (p - 1 + N) % N;
+      const rot = SEAT_ROT[p];
       const box = document.createElement('div');
       box.className = 'quad' + (p === 0 ? ' mine' : '') +
         (!S.roundOver && !S.gameOver && S.turn === p ? ' active' : '');
+      box.style.gridRow = SEAT_POS[p][0];
+      box.style.gridColumn = SEAT_POS[p][1];
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>` +
-        `<div class="qpass">Cols 1–2 → ◀ ${NAMES[L]} · Cols 3–4 → ▶ ${NAMES[R]}</div>`;
+        `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>`;
       const grid = document.createElement('div');
       grid.className = 'grid';
+      grid.style.transform = `rotate(${rot}deg)`;
       S.quads[p].forEach((c, i) => {
         const d = document.createElement('div');
-        d.className = 'cell ' + (c ? 'card' : 'empty');
-        if (c) { d.style.background = COLORS[c.c]; d.textContent = c.v; }
+        const col = i % SIZE, row = Math.floor(i / SIZE);
+        d.className = 'cell ' + (c ? '' : 'empty');
+        if (col === 1) d.classList.add('sr');
+        if (row === 1) d.classList.add('sb');
+        if (c) {
+          d.style.background = COLORS[c.c];
+          const num = document.createElement('span');
+          num.className = 'num';
+          num.style.transform = `rotate(${-rot}deg)`;
+          num.textContent = c.v;
+          d.appendChild(num);
+        }
         if (sel && sel.q === p && sel.x === i) d.classList.add('selected');
         const isTarget = sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i);
         if (isTarget) {
           d.classList.add('target');
           const mk = document.createElement('span');
           mk.className = 'mark';
+          mk.style.transform = `rotate(${-rot}deg)`;
           mk.textContent = passMark(0, i, c);
           d.appendChild(mk);
         }
         if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
         if (S.pending && p === 0 && !c) d.classList.add('place');
+        if (S.forced && p === 0 && S.forced.includes(i)) d.classList.add('remove');
         d.addEventListener('click', () => onCell(p, i));
         grid.appendChild(d);
       });
       box.appendChild(grid);
-      qEl.appendChild(box);
+      tableEl.appendChild(box);
     }
 
-    document.getElementById('legend').innerHTML = S.quads.map((_, p) => {
-      const L = (p + 1) % N, R = (p - 1 + N) % N;
-      return `<div><span class="sw" style="background:${COLORS[p]}"></span><b>${NAMES[p]}</b>: ◀ ${NAMES[L]} · ▶ ${NAMES[R]}</div>`;
-    }).join('');
+    const center = document.createElement('div');
+    center.className = 'center';
+    center.style.gridRow = 2;
+    center.style.gridColumn = 2;
+    center.innerHTML =
+      '<div><b>←</b> mitad que mira al vecino de la izquierda<br>' +
+      '<b>→</b> mitad que mira al vecino de la derecha<br>' +
+      '<b>✕</b> sale del juego</div>';
+    tableEl.appendChild(center);
 
-    let msg;
+    const msgEl = document.getElementById('msg');
+    let text, chip = '';
     if (S.gameOver) {
       const min = Math.min(...S.totals);
       const winners = S.totals.map((t, i) => (t === min ? NAMES[i] : null)).filter(Boolean);
-      msg = `Juego terminado. Gana ${winners.join(' y ')} con ${min} cartas.`;
+      text = `Juego terminado. Gana ${winners.join(' y ')} con ${min} cartas.`;
     } else if (S.roundOver) {
-      msg = `Ronda ${S.round + 1} terminada.`;
+      text = `Ronda ${S.round + 1} terminada.`;
+    } else if (S.forced) {
+      text = 'Elegí la carta a quitar (en rojo). Se quita del tablero y sale de la partida:';
     } else if (S.pending) {
-      msg = `Elegí un espacio vacío de tu cuadrado para la carta ${S.pending.card.v} que recibiste.`;
+      text = 'Elegí un espacio vacío de tu cuadrado para la carta que recibiste:';
+      chip = `<span class="chip" style="background:${COLORS[S.pending.card.c]}">${S.pending.card.v}</span>`;
     } else if (S.turn !== 0) {
-      msg = `Turno de ${NAMES[S.turn]}…`;
+      text = `Turno de ${NAMES[S.turn]}…`;
     } else if (sel) {
-      msg = 'Movela un espacio ortogonal sobre una carta que pueda comer (resaltadas en amarillo). Tocá la misma para cancelar.';
+      text = 'Movela un espacio ortogonal sobre una carta naranja. Tocá la misma para cancelar.';
     } else if (legal.length === 0) {
-      msg = 'No tenés movimientos válidos para comer.';
+      text = 'No tenés movimientos válidos para comer.';
     } else {
-      msg = 'Tu turno: elegí una carta verde (tiene movimiento válido para comer).';
+      text = 'Tu turno: elegí una carta verde (tiene movimiento válido).';
     }
-    document.getElementById('msg').textContent = msg;
+    if (S.lastNote && !S.gameOver) text = S.lastNote + ' ' + text;
+    msgEl.innerHTML = `<span>${text}</span>${chip}`;
     document.getElementById('nextRound').style.display = (S.roundOver && !S.gameOver) ? '' : 'none';
 
     document.getElementById('totals').innerHTML = S.totals.map((t, p) =>

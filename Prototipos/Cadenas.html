@@ -488,9 +488,12 @@
       box.style.gridRow = SEAT_POS[p][0];
       box.style.gridColumn = SEAT_POS[p][1];
       const badge = S.passed[p] ? '<span class="badge">Pasó</span>' : '';
+      // La carta recibida que hay que ubicar aparece en el encabezado de TU tablero
+      const incoming = (S.pending && p === 0)
+        ? `<span class="chip" style="background:${COLORS[S.pending.card.c]}">${S.pending.card.v}</span>` : '';
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span>${badge}<span class="qpts">${pointsOf(p)} pts</span></div>`;
+        `<span class="qname">${NAMES[p]}</span>${badge}${incoming}<span class="qpts">${pointsOf(p)} pts</span></div>`;
 
       const grid = document.createElement('div');
       grid.className = 'grid';
@@ -539,8 +542,7 @@
     } else if (S.forced) {
       text = S.lastNote + ' Elegí la carta (en rojo):';
     } else if (S.pending) {
-      text = 'Elegí un espacio vacío de tu cuadrado para la carta que recibiste:';
-      chip = `<span class="chip" style="background:${COLORS[S.pending.card.c]}">${S.pending.card.v}</span>`;
+      text = 'Te llegó una carta (arriba de tu tablero). Elegí un hueco vacío de tu tablero (en azul) para ponerla.';
     } else if (S.turn !== 0) {
       text = `Turno de ${NAMES[S.turn]}…`;
     } else if (sel) {

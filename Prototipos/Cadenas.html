@@ -224,7 +224,7 @@
     S.queue = []; S.choosing = false;
   }
 
-  function top(p, i) {
+  function topOf(p, i) {
     const a = S.quads[p][i];
     return a.length ? a[a.length - 1] : null;
   }
@@ -257,10 +257,10 @@
   function legalMoves(p) {
     const moves = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
-      const x = top(p, i);
+      const x = topOf(p, i);
       if (!x || x.c !== p) continue;
       nbrs(i).forEach(j => {
-        const y = top(p, j);
+        const y = topOf(p, j);
         if (y && canEat(x, y)) moves.push({ q: p, x: i, y: j });
       });
     }
@@ -345,7 +345,7 @@
     const mode = getMode();
     const tops = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
-      const c = top(p, i);
+      const c = topOf(p, i);
       if (c) tops.push({ i, c });
     }
     if (mode === 'give_move') return tops.filter(t => t.c.c === p).map(t => t.i);
@@ -437,7 +437,7 @@
 
   // Bots: prefieren comer su propia carta y pasar la propia al vecino.
   function botScore(p, m) {
-    const y = top(m.q, m.y);
+    const y = topOf(m.q, m.y);
     return (y.c === p ? 20 : 0) + Math.random();
   }
 
@@ -511,14 +511,14 @@
         return;
       }
       if (S.chain) return;   // con cadena, la misma carta sigue sola
-      const cell = top(q, i);
+      const cell = topOf(q, i);
       if (cell && cell.c === 0 && !(q === sel.q && i === sel.x) && legal.some(m => m.q === q && m.x === i)) {
         S.selected = { q, x: i };
       } else {
         S.selected = null;
       }
     } else {
-      const cell = top(q, i);
+      const cell = topOf(q, i);
       if (cell && cell.c === 0 && legal.some(m => m.q === q && m.x === i)) {
         S.selected = { q, x: i };
       }

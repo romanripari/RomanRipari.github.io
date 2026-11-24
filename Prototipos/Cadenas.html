@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego nuevo — prototipo v7</title>
+<title>Juego nuevo — prototipo v8</title>
 <style>
   :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; }
   * { box-sizing: border-box; }
@@ -27,18 +27,25 @@
   .status .msg { font-size:0.98rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
   .chip { display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:34px; padding:0 6px; border-radius:6px; color:#fff; font-weight:700; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
 
-  #table { display:grid; grid-template-columns:repeat(3, minmax(190px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
-  .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; }
+  #table { display:grid; grid-template-columns:repeat(3, minmax(210px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
+  /* Cada tablero: encabezado arriba, 4x4 en el medio y las leyendas de cada mitad alrededor */
+  .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; display:grid; grid-template-columns:auto 1fr auto; grid-template-rows:auto auto 1fr auto; align-items:center; }
   .quad.active { border-color:var(--accent); }
   .quad.mine { border-color:var(--mine); }
-  .qhead { display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; }
+  .qhead { grid-column:1 / 4; grid-row:1; display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:0.9rem; }
   .qhead .dot { width:13px; height:13px; border-radius:50%; }
   .qhead .qname { font-weight:700; flex:1; }
   .qhead .qpts { color:var(--muted); font-variant-numeric:tabular-nums; }
-  .grid { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
+  .cap { font-size:0.74rem; color:var(--muted); text-align:center; line-height:1.2; }
+  .cap.side { width:58px; padding:0 4px; }
+  .cap.tb { padding:3px 0; }
+  .cap.top { grid-column:2; grid-row:2; }
+  .cap.bottom { grid-column:2; grid-row:4; }
+  .cap.left { grid-column:1; grid-row:3; }
+  .cap.right { grid-column:3; grid-row:3; }
+  .grid { grid-column:2; grid-row:3; display:grid; grid-template-columns:repeat(4,1fr); border:1px solid #444; }
   .cell { aspect-ratio:1/1; border:1px solid #c9c3b6; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:clamp(0.8rem,2.2vw,1.1rem); color:#fff; user-select:none; cursor:pointer; }
-  .cell.sr { border-right:3px solid #222; }   /* separación de mitades: cols 1-2 | 3-4 */
-  .cell.sb { border-bottom:3px solid #222; }  /* separación de sectores 2×2 */
+  .cell.sr { border-right:3px solid #222; }   /* línea divisoria de las mitades */
   .cell.empty { background:#fbfaf6; cursor:default; }
   .cell .num { display:inline-block; }
   .cell .mark { position:absolute; right:3px; bottom:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
@@ -66,7 +73,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Juego nuevo — prototipo v7</h1>
+    <h1>Juego nuevo — prototipo v8</h1>
     <div class="roundinfo" id="roundInfo"></div>
   </header>
 
@@ -113,16 +120,16 @@
       <ul>
         <li>Cada jugador tiene 16 cartas, numeradas del 1 al 16, en su color.</li>
         <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4. La carta de la fila 2, columna 2 se quita, así que ese espacio queda vacío.</li>
-        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Cada cuadrado está girado según su lugar en la mesa.</li>
+        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha.</li>
       </ul>
     </details>
     <details>
       <summary>Cómo se come</summary>
       <ul>
         <li>Una carta puede comer a otra si su número es igual al de la comida o hasta 3 menos (inclusive). Por ejemplo, el 20 come al 20, 19, 18 y 17.</li>
-        <li>Para comer, primero elegís la carta propia (en verde) y después la movés UN espacio ortogonal sobre la carta que come (en naranja).</li>
+        <li>Para comer, primero elegís una carta propia de TU cuadrado (en verde) y después la movés UN espacio ortogonal sobre la carta que come (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Solo podés elegir una carta si tiene al menos un movimiento válido. Si hay un movimiento para comer, hay que hacerlo.</li>
-        <li>Cada cuadrado tiene dos mitades (2 columnas cada una), y cada mitad mira a uno de sus vecinos. Si la carta propia come en una mitad, la carta comida pasa a ese vecino. Así, cada par de vecinos se pasa cartas en los dos sentidos (ida y vuelta).</li>
+        <li>Cada cuadrado tiene dos mitades (columnas 1–2 y 3–4), y cada mitad va a un vecino, según lo indica la leyenda del tablero. Si la carta propia come en una mitad, la carta comida pasa a ese vecino. Así, cada par de vecinos se pasa cartas en los dos sentidos.</li>
         <li>Si el jugador que tiene que recibir la carta no tiene espacio vacío, la carta sale del juego.</li>
         <li>Si la carta comida es AJENA, sale del juego.</li>
         <li>Después pasa el turno al siguiente jugador.</li>
@@ -152,8 +159,9 @@
   const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
   // Posición en la cruz [fila, columna]: abajo (jugador), izquierda, arriba, derecha.
   const SEAT_POS = [[3, 2], [2, 1], [1, 2], [2, 3]];
-  // Giro de cada tablero para que su mitad "de la izquierda" (cols 1-2) mire al vecino siguiente (p+1).
+  // Giro de cada tablero: su mitad cols 1-2 mira al vecino siguiente (p+1).
   const SEAT_ROT = [0, 90, 180, -90];
+  const SIDES = ['left', 'top', 'right', 'bottom'];   // lado visible según el giro
   const SIZE = 4;
   const LOST = 1 * SIZE + 1;          // fila 2, columna 2 (índice 5)
   const BOT_STEP = 1000;
@@ -206,22 +214,23 @@
     return d >= 0 && d <= 3;
   }
 
-  // Vecino que recibe la carta propia comida según la mitad: cols 1-2 → p+1, cols 3-4 → p-1
+  // Vecino que recibe la carta propia comida: mitad cols 1-2 → p+1, cols 3-4 → p-1
   function receiverFor(p, targetIdx) {
     return (targetIdx % SIZE) < 2 ? (p + 1) % N : (p - 1 + N) % N;
   }
 
   function hasHole(r) { return S.quads[r].includes(null); }
 
+  // Movimientos legales: solo en el PROPIO cuadrado. La carta propia (que esté ahí)
+  // come a un vecino ortogonal del mismo cuadrado. No se puede comer en otro sector.
   function legalMoves(p) {
     const moves = [];
-    S.quads.forEach((q, qi) => {
-      q.forEach((x, i) => {
-        if (!x || x.c !== p) return;
-        nbrs(i).forEach(j => {
-          const y = q[j];
-          if (y && canEat(x, y)) moves.push({ q: qi, x: i, y: j });
-        });
+    const q = S.quads[p];
+    q.forEach((x, i) => {
+      if (!x || x.c !== p) return;
+      nbrs(i).forEach(j => {
+        const y = q[j];
+        if (y && canEat(x, y)) moves.push({ q: p, x: i, y: j });
       });
     });
     return moves;
@@ -302,7 +311,6 @@
       return;
     }
 
-    // Sin movimientos: hay que quitar una carta de su propio cuadrado.
     S.stuck = true;
     const cands = removalCandidates(t);
     if (cands.length === 0) {
@@ -327,8 +335,7 @@
     setTimeout(() => advance(t), BOT_STEP);
   }
 
-  // Bots: cada movimiento quita una carta del cuadrado donde ocurre.
-  // Prefieren comer en su propio cuadrado y pasar su carta propia al vecino.
+  // Bots: prefieren comer en su propio cuadrado y pasar su carta propia al vecino.
   function botScore(p, m) {
     const y = S.quads[m.q][m.y];
     let s = (m.q === p ? 100 : 0);
@@ -380,7 +387,7 @@
   function onCell(q, i) {
     if (S.gameOver || S.roundOver) return;
 
-    if (S.forced) {                                        // elegir la carta a quitar
+    if (S.forced) {
       if (q === 0 && S.forced.includes(i)) {
         const removed = removeAt(0, i);
         S.lastNote = `Quitaste el ${removed.v} ${removed.c === 0 ? 'propio' : 'ajeno'} de tu cuadrado.`;
@@ -426,7 +433,7 @@
     render();
   }
 
-  // Marca sobre la carta comida: ← va al vecino de la izquierda, → al de la derecha, ✕ sale del juego
+  // ← vecino de la izquierda, → vecino de la derecha, ✕ sale del juego
   function passMark(eater, targetIdx, targetCard) {
     if (targetCard.c !== eater) return '✕';
     if (!hasHole(receiverFor(eater, targetIdx))) return '✕';
@@ -444,6 +451,11 @@
 
     for (let p = 0; p < N; p++) {
       const rot = SEAT_ROT[p];
+      // Lado visible de la mitad A (cols 1-2) y de la mitad B (cols 3-4)
+      const sideA = SIDES[((rot / 90) + 4) % 4];
+      const sideB = SIDES[(((rot / 90) + 4) % 4 + 2) % 4];
+      const capText = { [sideA]: `va al ${NAMES[(p + 1) % N]}`, [sideB]: `va al ${NAMES[(p - 1 + N) % N]}` };
+
       const box = document.createElement('div');
       box.className = 'quad' + (p === 0 ? ' mine' : '') +
         (!S.roundOver && !S.gameOver && S.turn === p ? ' active' : '');
@@ -452,15 +464,21 @@
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
         `<span class="qname">${NAMES[p]}</span><span class="qpts">${pointsOf(p)} cartas</span></div>`;
+      SIDES.forEach(s => {
+        const cap = document.createElement('div');
+        cap.className = `cap ${s === 'left' || s === 'right' ? 'side' : 'tb'} ${s}`;
+        cap.textContent = capText[s] || '';
+        box.appendChild(cap);
+      });
+
       const grid = document.createElement('div');
       grid.className = 'grid';
       grid.style.transform = `rotate(${rot}deg)`;
       S.quads[p].forEach((c, i) => {
         const d = document.createElement('div');
-        const col = i % SIZE, row = Math.floor(i / SIZE);
+        const col = i % SIZE;
         d.className = 'cell ' + (c ? '' : 'empty');
         if (col === 1) d.classList.add('sr');
-        if (row === 1) d.classList.add('sb');
         if (c) {
           d.style.background = COLORS[c.c];
           const num = document.createElement('span');
@@ -494,8 +512,8 @@
     center.style.gridRow = 2;
     center.style.gridColumn = 2;
     center.innerHTML =
-      '<div><b>←</b> mitad que mira al vecino de la izquierda<br>' +
-      '<b>→</b> mitad que mira al vecino de la derecha<br>' +
+      '<div><b>←</b> mitad que va al vecino de la izquierda<br>' +
+      '<b>→</b> mitad que va al vecino de la derecha<br>' +
       '<b>✕</b> sale del juego</div>';
     tableEl.appendChild(center);
 

@@ -23,8 +23,6 @@
 
   .layout { display:grid; grid-template-columns:1fr 260px; gap:18px; align-items:start; }
   @media (max-width:860px) { .layout { grid-template-columns:1fr; } }
-  .status { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; min-height:52px; }
-  .status .msg { font-size:0.98rem; }
 
   #table { display:grid; grid-template-columns:repeat(3, minmax(210px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
   .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; }
@@ -49,6 +47,12 @@
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
   .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
   .cell.remove { box-shadow: inset 0 0 0 3px var(--red); background-image: linear-gradient(rgba(192,57,43,.18), rgba(192,57,43,.18)); }
+
+  .centerBox { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:8px; min-height:120px; }
+  .msgText { font-size:0.98rem; line-height:1.4; }
+  .turnTag { display:inline-flex; align-items:center; gap:8px; padding:4px 14px; border-radius:999px; color:#fff; font-weight:700; font-size:0.95rem; }
+  .pulse { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.25; } }
 
   aside .box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
   aside h2 { font-size:0.95rem; margin:0 0 8px; }
@@ -97,10 +101,6 @@
 
   <div class="layout">
     <section>
-      <div class="status">
-        <span class="msg" id="msg"></span>
-        <button id="nextRound" class="primary" style="display:none">Siguiente ronda</button>
-      </div>
       <div id="table"></div>
     </section>
 
@@ -126,7 +126,7 @@
       <ul>
         <li>Cada jugador tiene 16 cartas, numeradas del 1 al 16, en su color.</li>
         <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4. La carta de la fila 2, columna 2 se quita, así que ese espacio queda vacío.</li>
-        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha.</li>
+        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores no hay cuadrado arriba.</li>
       </ul>
     </details>
     <details>
@@ -167,14 +167,18 @@
 <script>
   const COLORS = ['#d9644a', '#3b6e8f', '#5a9e5a', '#8a6cb8'];
   const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
-  // Posición en la cruz [fila, columna]: abajo (jugador), izquierda, arriba, derecha.
-  const SEAT_POS = [[3, 2], [2, 1], [1, 2], [2, 3]];
-  // Giro de cada tablero: su mitad cols 1-2 mira al vecino siguiente (p+1).
-  const SEAT_ROT = [0, 90, 180, -90];
   const SIZE = 4;
   const LOST = 1 * SIZE + 1;          // fila 2, columna 2 (índice 5)
   const BOT_STEP = 1000;
   const MAX_MOVES = 800;
+
+  // Disposición en la cruz según la cantidad de jugadores.
+  // Jugador 0 siempre abajo. Con 4: izquierda, arriba, derecha.
+  // Con 3: izquierda y derecha (sin cuadrado arriba).
+  function seatsFor(n) {
+    if (n === 3) return { pos: [[3, 2], [2, 1], [2, 3]], rot: [0, 180, -90] };
+    return { pos: [[3, 2], [2, 1], [1, 2], [2, 3]], rot: [0, 90, 180, -90] };
+  }
 
   let N, ROUNDS, S;
   // Generación de partida: los timers de una partida vieja se ignoran.
@@ -443,7 +447,7 @@
 
   function botTurn() {
     const p = S.turn;
-    if (S.gameOver || S.roundOver || S.choosing || p === 0) return;   // guarda: solo juega el bot de turno
+    if (S.gameOver || S.roundOver || S.choosing || p === 0) return;   // solo juega el bot de turno
     S.busy = false;
     const moves = currentMoves(p);
     if (!moves.length) { S.chain = null; runTurn(); return; }
@@ -539,16 +543,17 @@
     const legal = S.turn === 0 && !S.roundOver && !S.gameOver && !S.forced && !S.choosing
       ? currentMoves(0) : [];
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
+    const seats = seatsFor(N);
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
 
     for (let p = 0; p < N; p++) {
-      const rot = SEAT_ROT[p];
+      const rot = seats.rot[p];
       const box = document.createElement('div');
       box.className = 'quad' + (p === 0 ? ' mine' : '') +
         (!S.roundOver && !S.gameOver && S.turn === p ? ' active' : '');
-      box.style.gridRow = SEAT_POS[p][0];
-      box.style.gridColumn = SEAT_POS[p][1];
+      box.style.gridRow = seats.pos[p][0];
+      box.style.gridColumn = seats.pos[p][1];
       const badge = S.passed[p] ? '<span class="badge">Pasó</span>' : '';
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
@@ -619,12 +624,7 @@
       tableEl.appendChild(box);
     }
 
-    const center = document.createElement('div');
-    center.style.gridRow = 2;
-    center.style.gridColumn = 2;
-    tableEl.appendChild(center);
-
-    const msgEl = document.getElementById('msg');
+    // Texto de estado, en el centro de la cruz
     let text;
     if (S.gameOver) {
       const min = Math.min(...S.totals);
@@ -648,8 +648,20 @@
       text = 'Tu turno: elegí una carta verde (tiene movimiento válido).';
     }
     if (S.lastNote && !S.gameOver && !S.forced && !S.choosing) text = S.lastNote + ' ' + text;
-    msgEl.innerHTML = `<span>${text}</span>`;
-    document.getElementById('nextRound').style.display = (S.roundOver && !S.gameOver) ? '' : 'none';
+
+    const tag = (!S.gameOver && !S.roundOver)
+      ? `<span class="turnTag" style="background:${COLORS[S.turn]}"><span class="pulse">●</span> Turno: ${NAMES[S.turn]}</span>`
+      : '';
+    const btn = (S.roundOver && !S.gameOver)
+      ? '<button id="nextRound" class="primary">Siguiente ronda</button>'
+      : '';
+
+    const center = document.createElement('div');
+    center.className = 'centerBox';
+    center.style.gridRow = 2;
+    center.style.gridColumn = 2;
+    center.innerHTML = `${tag}<span class="msgText">${text}</span>${btn}`;
+    tableEl.appendChild(center);
 
     document.getElementById('totals').innerHTML = S.totals.map((t, p) =>
       `<tr><td><span class="sw" style="background:${COLORS[p]}"></span>${NAMES[p]}</td><td><b>${t}</b></td></tr>`
@@ -661,8 +673,11 @@
     ).join('');
   }
 
+  // El botón "Siguiente ronda" se crea en cada render: se escucha desde el contenedor.
+  document.getElementById('table').addEventListener('click', e => {
+    if (e.target && e.target.id === 'nextRound') nextRound();
+  });
   document.getElementById('newGame').addEventListener('click', newGame);
-  document.getElementById('nextRound').addEventListener('click', nextRound);
   document.getElementById('bots').addEventListener('change', () => {
     document.getElementById('rounds').value = +document.getElementById('bots').value + 1;
     newGame();

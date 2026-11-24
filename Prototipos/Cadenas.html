@@ -42,6 +42,8 @@
   .cell .num { display:inline-block; }
   .cell .star { position:absolute; top:1px; right:3px; font-size:0.75rem; color:var(--gold); text-shadow:0 0 2px #000; }
   .cell .cover { position:absolute; left:2px; bottom:1px; font-size:0.62rem; color:#fff; opacity:.85; text-shadow:0 0 2px #000; }
+  .cell .a1 { position:absolute; left:2px; top:1px; font-size:0.5rem; font-weight:400; color:rgba(255,255,255,.6); text-shadow:0 0 2px #000; }
+  .cell.empty .a1 { color:#aaa; text-shadow:none; }
   .cell .mark { position:absolute; right:3px; bottom:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
   .cell.can { box-shadow: inset 0 0 0 3px var(--green); background-image: linear-gradient(rgba(46,158,72,.22), rgba(46,158,72,.22)); }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
@@ -125,7 +127,7 @@
       <summary>Preparación</summary>
       <ul>
         <li>Cada jugador tiene 16 cartas, numeradas del 1 al 16, en su color.</li>
-        <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4. La carta de la fila 2, columna 2 se quita, así que ese espacio queda vacío.</li>
+        <li>Cada jugador las pone boca arriba en un cuadrado de 4 × 4, sin huecos. La casilla inicial, A1 (arriba a la izquierda de cada cuadrado antes de girarlo), va marcada levemente.</li>
         <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores no hay cuadrado arriba.</li>
       </ul>
     </details>
@@ -168,7 +170,6 @@
   const COLORS = ['#d9644a', '#3b6e8f', '#5a9e5a', '#8a6cb8'];
   const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
   const SIZE = 4;
-  const LOST = 1 * SIZE + 1;          // fila 2, columna 2 (índice 5)
   const BOT_STEP = 1000;
   const MAX_MOVES = 800;
 
@@ -219,7 +220,7 @@
     S.quads = [];
     for (let p = 0; p < N; p++) {
       const vals = shuffle(Array.from({ length: 16 }, (_, i) => i + 1));
-      S.quads.push(vals.map((v, i) => (i === LOST ? [] : [{ v, c: p }])));
+      S.quads.push(vals.map(v => [{ v, c: p }]));   // 1 al 16, sin huecos
     }
     S.turn = S.start;
     S.selected = null; S.chain = null; S.forced = null;
@@ -604,6 +605,13 @@
             cv.textContent = `+${arr.length - 1}`;
             d.appendChild(cv);
           }
+        }
+        if (i === 0) {   // casilla inicial A1, marcada levemente
+          const a1 = document.createElement('span');
+          a1.className = 'a1';
+          a1.style.transform = `rotate(${-rot}deg)`;
+          a1.textContent = 'A1';
+          d.appendChild(a1);
         }
         if (sel && sel.q === p && sel.x === i) d.classList.add('selected');
         const isTarget = sel && sel.q === p && c && legal.some(m => m.q === p && m.x === sel.x && m.y === i);

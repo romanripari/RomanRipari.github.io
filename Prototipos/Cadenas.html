@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego nuevo (sin temática) — prototipo</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --ink: #2a2a2a;
+    --muted: #7a766d;
+    --accent: #3b6e8f;
+    --p1: #d9644a;
+    --p2: #3b6e8f;
+    --cell: #fffdf8;
+    --line: #d6d0c4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+  }
+  .wrap { width: 100%; max-width: 980px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  h1 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+  .status { font-size: 1rem; color: var(--muted); }
+  .layout { display: grid; grid-template-columns: 1fr 260px; gap: 20px; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  .board-card, .side-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; font-size: 0.9rem; }
+  .controls label { color: var(--muted); }
+  .controls input[type=number] { width: 60px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; }
+  button {
+    font: inherit; font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #fafafa;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  #board {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 70vh;
+  }
+  .cell {
+    background: var(--cell);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    min-height: 0;
+  }
+  .cell:hover:not(.taken) { border-color: var(--accent); background: #f1f7fb; }
+  .cell.taken { cursor: default; }
+  .token {
+    width: 62%; height: 62%;
+    border-radius: 50%;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.15);
+  }
+  .token.p1 { background: var(--p1); }
+  .token.p2 { background: var(--p2); }
+  .cell .idx { position: absolute; top: 3px; left: 5px; font-size: 0.65rem; color: var(--muted); }
+
+  .side-card h2 { font-size: 1rem; margin: 0 0 8px; }
+  .side-card + .side-card { margin-top: 16px; }
+  .player {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; border-radius: 8px; border: 1px solid transparent;
+    margin-bottom: 8px;
+  }
+  .player.active { border-color: var(--accent); background: #f1f7fb; }
+  .player .dot { width: 16px; height: 16px; border-radius: 50%; }
+  .player .name { flex: 1; font-weight: 600; }
+  .player .score { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9rem; }
+  .stats div { background: #faf8f3; border-radius: 6px; padding: 8px; }
+  .stats b { display: block; font-size: 1.2rem; }
+
+  .rules { margin-top: 20px; }
+  .rules details { background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+  .rules summary { cursor: pointer; font-weight: 600; }
+  .rules p { color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+  .pending { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: #efe9dc; color: #7a5c1e; margin-left: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Juego nuevo <span class="pending">sin temática</span></h1>
+    <div class="status" id="status">Turno de Jugador 1</div>
+  </header>
+
+  <div class="layout">
+    <section class="board-card">
+      <div class="controls">
+        <label>Filas <input type="number" id="rows" min="2" max="12" value="4"></label>
+        <label>Columnas <input type="number" id="cols" min="2" max="12" value="6"></label>
+        <button id="resize">Aplicar tamaño</button>
+        <button id="undo">Deshacer</button>
+        <button id="reset" class="primary">Reiniciar</button>
+      </div>
+      <div id="board"></div>
+    </section>
+
+    <aside>
+      <div class="side-card">
+        <h2>Jugadores</h2>
+        <div class="player" id="pl1"><span class="dot" style="background:var(--p1)"></span><span class="name">Jugador 1</span><span class="score" id="s1">0</span></div>
+        <div class="player" id="pl2"><span class="dot" style="background:var(--p2)"></span><span class="name">Jugador 2</span><span class="score" id="s2">0</span></div>
+      </div>
+      <div class="side-card">
+        <h2>Estado</h2>
+        <div class="stats">
+          <div>Turno<b id="turn">1</b></div>
+          <div>Libres<b id="free">24</b></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="rules">
+    <details open>
+      <summary>Objetivo <span class="pending">pendiente</span></summary>
+      <p>Por definir. Esta sección se completará cuando estén las reglas.</p>
+    </details>
+    <details>
+      <summary>Preparación <span class="pending">pendiente</span></summary>
+      <p>Por definir.</p>
+    </details>
+    <details>
+      <summary>Turno de juego <span class="pending">pendiente</span></summary>
+      <p>Por definir.</p>
+    </details>
+    <details>
+      <summary>Fin de partida y puntuación <span class="pending">pendiente</span></summary>
+      <p>Por definir.</p>
+    </details>
+  </section>
+</div>
+
+<script>
+  // Prototipo genérico: tablero de celdas, dos jugadores que alternan colocando fichas.
+  // La lógica de puntuación y de fin de partida son placeholders hasta definir reglas.
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  let rows = 4, cols = 6;
+  let state, history;
+
+  function newState() {
+    return {
+      cells: Array(rows * cols).fill(null), // null | 1 | 2
+      player: 1,
+      turn: 1,
+      scores: { 1: 0, 2: 0 }
+    };
+  }
+
+  function render() {
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    boardEl.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    boardEl.innerHTML = '';
+    state.cells.forEach((v, i) => {
+      const c = document.createElement('div');
+      c.className = 'cell' + (v ? ' taken' : '');
+      c.dataset.i = i;
+      const idx = document.createElement('span');
+      idx.className = 'idx';
+      idx.textContent = i + 1;
+      c.appendChild(idx);
+      if (v) {
+        const t = document.createElement('div');
+        t.className = 'token p' + v;
+        c.appendChild(t);
+      }
+      c.addEventListener('click', () => play(i));
+      boardEl.appendChild(c);
+    });
+
+    document.getElementById('pl1').classList.toggle('active', state.player === 1);
+    document.getElementById('pl2').classList.toggle('active', state.player === 2);
+    document.getElementById('s1').textContent = state.scores[1];
+    document.getElementById('s2').textContent = state.scores[2];
+    document.getElementById('turn').textContent = state.turn;
+    document.getElementById('free').textContent = state.cells.filter(x => !x).length;
+    statusEl.textContent = `Turno de Jugador ${state.player}`;
+  }
+
+  function play(i) {
+    if (state.cells[i]) return;
+    history.push(JSON.parse(JSON.stringify(state)));
+    state.cells[i] = state.player;
+    state.scores[state.player] += 1; // placeholder: puntuar una ficha
+    if (state.cells.every(Boolean)) {
+      statusEl.textContent = 'Fin de partida (placeholder)';
+    } else {
+      state.player = state.player === 1 ? 2 : 1;
+      state.turn += 1;
+    }
+    render();
+  }
+
+  document.getElementById('resize').addEventListener('click', () => {
+    rows = Math.min(12, Math.max(2, +document.getElementById('rows').value || 4));
+    cols = Math.min(12, Math.max(2, +document.getElementById('cols').value || 6));
+    history = [];
+    state = newState();
+    render();
+  });
+  document.getElementById('undo').addEventListener('click', () => {
+    if (history.length) { state = history.pop(); render(); }
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    history = [];
+    state = newState();
+    render();
+  });
+
+  history = [];
+  state = newState();
+  render();
+</script>
+</body>
+</html>

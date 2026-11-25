@@ -148,9 +148,6 @@
       </select>
     </label>
     <button class="primary" id="newGame">Nueva partida</button>
-    <label class="muted" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--ink)">
-      <input type="checkbox" id="animal" checked> Modo animales
-    </label>
     <span class="muted" id="scoreText"></span>
   </div>
 
@@ -308,7 +305,7 @@
   function newGame() {
     GEN++;
     N = +document.getElementById('bots').value + 1;
-    ANIMAL = document.getElementById('animal').checked;
+    ANIMAL = true;   // siempre modo animales
     document.body.classList.toggle('animal', ANIMAL);
     NAMES = ['Vos', ...shuffle(PLAYER_NAMES.slice()).slice(0, N - 1)];
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
@@ -1056,8 +1053,6 @@
 
   function updateScoreUI() {
     document.getElementById('scoreText').textContent = SCORE_TEXT;
-    // El modo animales no se puede cambiar durante la partida; se libera al terminar.
-    document.getElementById('animal').disabled = S.started && !S.gameOver;
   }
 
   // Resalta solo el número de la carta (no el borde de la casilla)
@@ -1143,7 +1138,7 @@
         `<span class="qname">${NAMES[p]}</span>${badge}<span class="qtot">${roundPts(p)} pts</span></div>` +
         `<div class="score">` +
           `<span>Comidas <b>+${zoneSum(p)}</b></span>` +
-          `<span>Visibles <span class="ic ic-vis"><i></i></span> <b>-${visibleCount(p)}</b></span>` +
+          `<span>Visibles <b>-${visibleCount(p)}</b></span>` +
         `</div>`;
 
       // Caja del tablero: laterales con ancho y alto invertidos
@@ -1264,7 +1259,7 @@
         const l = document.createElement('span');
         l.className = 'coord';
         l.style.left = `${(c + 0.5) * 25}%`;
-        l.style.top = '-13px';
+        l.style.top = '-8px';
         l.style.transform = `translate(-50%, -50%) rotate(${-rot}deg)`;
         l.textContent = LETTERS[c];
         grid.appendChild(l);
@@ -1272,7 +1267,7 @@
       for (let r = 0; r < ROWS; r++) {
         const l = document.createElement('span');
         l.className = 'coord';
-        l.style.left = '-13px';
+        l.style.left = '-8px';
         l.style.top = `${(r + 0.5) * 100 / ROWS}%`;
         l.style.transform = `translate(-50%, -50%) rotate(${-rot}deg)`;
         l.textContent = r + 1;
@@ -1308,7 +1303,7 @@
     impL.style.justifySelf = 'end';
     impL.textContent = '↖impares';
     tableEl.appendChild(impL);
-    // Columna derecha, fuera de mi cuadrado: los poderes en fila, y abajo "▶ pares"
+    // Columna derecha, fuera de mi cuadrado: "pares" y "Poderes:", y los poderes en fila
     const rightCol = document.createElement('div');
     rightCol.className = 'sideRight';
     rightCol.style.gridRow = sidePos[0];
@@ -1325,7 +1320,6 @@
     rightCol.appendChild(tPoderes);
     if (ANIMAL) rightCol.appendChild(powerColumn());
     tableEl.appendChild(rightCol);
-
 
     // Texto de estado, en el centro de la cruz
     // Salir solo al empezar el turno: después de comer o mover, el turno sigue hasta terminar (o con Listo)
@@ -1410,7 +1404,6 @@
   });
   document.getElementById('newGame').addEventListener('click', newGame);
   document.getElementById('bots').addEventListener('change', newGame);
-  document.getElementById('animal').addEventListener('change', newGame);
 
   newGame();
 </script>

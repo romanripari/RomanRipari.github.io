@@ -5,10 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CADENA TRÓFICA - prototipo</title>
 <style>
-  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; 
-      --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b;
+  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b;
     /* Colores de los jugadores: vos, bot 1, bot 2, bot 3 */
-    --c-vos:#d48c7c; --c-azul:#628196; --c-verde:#8ab18a; --c-lila:#c1a4df; }
+    --c-vos:#d9644a; --c-azul:#3b6e8f; --c-verde:#5a9e5a; --c-lila:#CF9FFF; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -60,6 +59,11 @@
   .under span { display:block; }
   .cell .mark { position:absolute; right:3px; top:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
   .cell.can { box-shadow: inset 0 0 0 3px var(--magenta); background-image: linear-gradient(rgba(214,0,214,.22), rgba(214,0,214,.22)); }
+  /* Cartas que pueden comer: se resalta solo el número, y flechitas hacia donde comerían */
+  .numHL { background:var(--magenta); color:#fff; border-radius:4px; padding:0 3px; box-shadow:0 0 0 2px #fff; }
+  /* Hormiga y escarabajo: se rodea el dibujo con magenta */
+  .iconHL { box-shadow:0 0 0 3px var(--magenta); border-radius:6px; }
+  .dirArrow { position:absolute; font-size:0.6rem; line-height:1; color:#fff; text-shadow:0 0 2px #000; pointer-events:none; z-index:1; }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
   .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
   .coord { position:absolute; font-size:0.7rem; color:#555; line-height:1; pointer-events:none; white-space:nowrap; font-weight:600; }
@@ -1037,6 +1041,36 @@
     document.getElementById('animal').disabled = S.started && !S.gameOver;
   }
 
+  // Resalta solo el número de la carta (no el borde de la casilla)
+  function hiNum(d) {
+    const n = d.querySelector('.aNum, .num');
+    if (n) n.classList.add('numHL');
+  }
+
+  // Hormiga / escarabajo: rodea el dibujo (en modo números, cae al número)
+  function hiIcon(d) {
+    const n = d.querySelector('.aIcon');
+    if (n) n.classList.add('iconHL'); else hiNum(d);
+  }
+
+  // Flechitas pequeñas hacia cada casilla donde esa carta podría comer
+  function dirArrows(d, i, rot, targets) {
+    const r0 = Math.floor(i / COLS), c0 = i % COLS;
+    targets.forEach(y => {
+      const r = Math.floor(y / COLS), c = y % COLS;
+      let ch, pos;
+      if (r < r0)      { ch = '▲'; pos = 'top:1px;left:50%'; }
+      else if (r > r0) { ch = '▼'; pos = 'bottom:1px;left:50%'; }
+      else if (c < c0) { ch = '◀'; pos = 'left:1px;top:50%'; }
+      else             { ch = '▶'; pos = 'right:1px;top:50%'; }
+      const s = document.createElement('span');
+      s.className = 'dirArrow';
+      s.style.cssText = `${pos};transform:translate(-50%,-50%) rotate(${-rot}deg)`;
+      s.textContent = ch;
+      d.appendChild(s);
+    });
+  }
+
   function render() {
     updateScoreUI();
     document.getElementById('roundInfo').textContent =
@@ -1142,7 +1176,10 @@
           mk.textContent = passMark(i, c);
           d.appendChild(mk);
         }
-        if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
+        if (!sel && legal.some(m => m.q === p && m.x === i)) {
+          hiNum(d);
+          dirArrows(d, i, rot, legal.filter(m => m.q === p && m.x === i && m.t === 'eat').map(m => m.y));
+        }
         if (ANT && p === 0 && !S.roundOver && !S.gameOver) {
           const srcs = antMoves(0);
           if (ANTSEL === i) d.classList.add('selected');
@@ -1152,7 +1189,7 @@
             mk.className = 'mark';
             mk.textContent = '▫';
             d.appendChild(mk);
-          } else if (ANTSEL === null && srcs.some(m => m.x === i)) d.classList.add('can');
+          } else if (ANTSEL === null && srcs.some(m => m.x === i)) hiIcon(d);
         }
         if (PUSH && p === 0 && !S.roundOver && !S.gameOver) {
           if (S.pushSel === i) d.classList.add('selected');
@@ -1162,7 +1199,7 @@
             mk.className = 'mark';
             mk.textContent = '▫';
             d.appendChild(mk);
-          } else if (S.pushSel === null && c) d.classList.add('can');
+          } else if (S.pushSel === null && c) hiIcon(d);
         }
         d.addEventListener('click', () => onCell(p, i));
         grid.appendChild(d);

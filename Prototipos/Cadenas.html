@@ -82,7 +82,7 @@
   .zone { display:flex; align-items:center; gap:3px; margin-top:8px; padding:4px 6px; border:1px dashed var(--line); border-radius:6px; min-height:30px; overflow-x:auto; }
   .ztag { font-size:0.72rem; color:var(--muted); flex:0 0 auto; margin-right:4px; }
   .zoneRow { display:flex; align-items:center; gap:6px; margin-top:8px; }
-  .zside { font-size:0.75rem; font-weight:700; color:var(--ink); flex:0 0 auto; white-space:nowrap; padding:0 4px; }
+  .sideLbl { align-self:center; font-size:0.85rem; font-weight:700; color:var(--ink); white-space:nowrap; }
   .zchip { min-width:24px; height:22px; padding:0 4px; border-radius:4px; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.72rem; flex:0 0 auto; font-variant-numeric:tabular-nums; }
   .zown { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #555; }
   .zfor { box-shadow: 0 0 0 2px #222; }
@@ -890,28 +890,26 @@
       const zoneEl = document.createElement('div');
       zoneEl.className = 'zone';
       const strip = `<span class="ztag" style="${N === 3 ? `transform:rotate(${-rot}deg)` : ''}">Comidas (${zone.length})</span>${chips}`;
-      if (p === 0) {
-        // Tu zona: las etiquetas quedan AFUERA del contenedor, a cada lado (impares a la izquierda, pares a la derecha)
-        const row = document.createElement('div');
-        row.className = 'zoneRow';
-        zoneEl.innerHTML = strip;
-        zoneEl.style.flex = '1';
-        zoneEl.style.minWidth = '0';
-        zoneEl.style.marginTop = '0';
-        row.innerHTML = '<span class="zside">◀ impares</span>';
-        row.appendChild(zoneEl);
-        row.insertAdjacentHTML('beforeend', '<span class="zside">▶ pares</span>');
-        box.appendChild(row);
-      } else {
-        zoneEl.innerHTML = strip;
-        box.appendChild(zoneEl);
-      }
+      zoneEl.innerHTML = strip;
+      box.appendChild(zoneEl);
 
       tableEl.appendChild(box);
       if (N === 3) fitTurn3(box, rot);
       if (N === 4 && p === 2) box.style.marginBottom = '-120px';   // Bot 2 baja
       if (N === 4 && p === 0) box.style.marginTop = '-120px';      // Vos sube
     }
+
+    // Indicación de lados para tu zona: afuera de tu cuadrado, a la altura del medio, hacia donde van las pilas
+    const sidePos = seats.pos[0];
+    [[1, 'end', '◀ impares'], [3, 'start', '▶ pares']].forEach(([col, justify, txt]) => {
+      const l = document.createElement('div');
+      l.className = 'sideLbl';
+      l.style.gridRow = sidePos[0];
+      l.style.gridColumn = col;
+      l.style.justifySelf = justify;
+      l.textContent = txt;
+      tableEl.appendChild(l);
+    });
 
     // Texto de estado, en el centro de la cruz
     const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain && eatsH.length === 0 && stacksH.length > 0;

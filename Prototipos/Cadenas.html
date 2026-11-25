@@ -52,16 +52,37 @@
   .cell.start { box-shadow: inset 0 0 0 1px #9a9385; }
   .cell .num { display:inline-block; }
   .uwrap { position:absolute; inset:0; display:flex; pointer-events:none; }
-  .under { font-size:0.55rem; font-weight:600; color:#fff; text-shadow:0 0 2px #000; white-space:nowrap; overflow:hidden; padding:1px 2px; line-height:1.1; max-width:100%; }
+  /* Números tapados: blancos, sin bordes, uno abajo del otro */
+  .under { font-weight:700; color:#fff; line-height:1; white-space:nowrap; padding:0 2px; }
+  .under span { display:block; }
   .cell .mark { position:absolute; right:3px; top:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
   .cell.can { box-shadow: inset 0 0 0 3px var(--magenta); background-image: linear-gradient(rgba(214,0,214,.22), rgba(214,0,214,.22)); }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
   .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
   .coord { position:absolute; font-size:0.7rem; color:#555; line-height:1; pointer-events:none; white-space:nowrap; font-weight:600; }
 
+  /* Modo animales: cada carta es un organismo con 4 renglones (número, ícono, nombre, datos).
+     Las cartas tienen proporción 5:7 y el texto escala con cqmin (el lado menor de la carta). */
+  body.animal .wrap { max-width:1240px; }
+  body.animal #table { grid-template-columns:minmax(260px,1fr) 240px minmax(260px,1fr); }
+  body.animal .layout { grid-template-columns:1fr 230px; }
+  /* La carta del modo animales mide todo en cqw respecto de su propio ancho (container en .cell).
+     .aIn es la capa que se contrarrota para que el texto quede derecho; sus tamaños son proporcionales a la carta. */
+  /* Fondo de la carta = color del dueño. El cuadro cremoso del centro lleva el ícono y el nombre. */
+  .cell.animal { container-type:inline-size; color:#fff; }
+  .aIn { position:absolute; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:4cqw; text-align:center; }
+  .aNum { font-size:26cqw; font-weight:800; line-height:1; color:#fff; text-shadow:0 0 3px rgba(0,0,0,.6); }
+  .aBox { width:80cqw; padding:4cqw 3cqw; background:#fbf7ee; border-radius:4cqw; color:#1d1d1b; display:flex; flex-direction:column; align-items:center; gap:2cqw; }
+  .aIcon { flex:none; width:38cqw; height:38cqw; display:flex; align-items:center; justify-content:center; }
+  .aIcon svg { width:100%; height:100%; }
+  .aName { font-size:11.5cqw; font-weight:700; line-height:1.05; }
+  .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#fff; }
+
   /* Zona de cartas comidas: tira horizontal debajo del tablero */
   .zone { display:flex; align-items:center; gap:3px; margin-top:8px; padding:4px 6px; border:1px dashed var(--line); border-radius:6px; min-height:30px; overflow-x:auto; }
   .ztag { font-size:0.72rem; color:var(--muted); flex:0 0 auto; margin-right:4px; }
+  .zoneRow { display:flex; align-items:center; gap:6px; margin-top:8px; }
+  .zside { font-size:0.75rem; font-weight:700; color:var(--ink); flex:0 0 auto; white-space:nowrap; padding:0 4px; }
   .zchip { min-width:24px; height:22px; padding:0 4px; border-radius:4px; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.72rem; flex:0 0 auto; font-variant-numeric:tabular-nums; }
   .zown { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #555; }
   .zfor { box-shadow: 0 0 0 2px #222; }
@@ -106,7 +127,11 @@
       </select>
     </label>
     <button class="primary" id="newGame">Nueva partida</button>
-    <span class="muted">Puntos: 3 por carta visible en tu zona · -1 por cada carta en tus comidas. Gana el que menos tiene.</span>
+    <label class="muted" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--ink)">
+      <input type="checkbox" id="animal"> Modo animales
+    </label>
+    <button id="scoreMode">Modo: Cantidades</button>
+    <span class="muted" id="scoreText"></span>
   </div>
 
   <div class="layout">
@@ -147,6 +172,9 @@
       <ul>
         <li>Para comer, elegís una carta visible de tu cuadrado (en magenta), sea tuya o ajena, y la movés UN espacio ortogonal sobre una carta más chica (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
+        <li><b>Modo animales:</b> cada número es un organismo (1 Pasto, 2 Hongo, 3 Hormiga, 4 Escarabajo, 5 Araña, 6 Lagartija, 7 Benteveo, 8 Halcón), con 2 cartas de cada uno. Cada carta come solo a los números que indica su renglón "Come a", y no se usa la regla de distancia.</li>
+        <li><b>Hongo en tu zona de comidas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de restarte 1. No es una acción: es solo la ampliación.</li>
+        <li><b>Pasto propio comido:</b> nunca pasa a otro jugador. Se pierde (sale del juego). <i>En revisión.</i></li>
         <li>Si hay alguna comida legal, tenés que comer. Solo podés mover si no tenés ninguna comida.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
         <li><b>Si comés una carta propia visible:</b> toda su pila (con lo que tenga debajo) pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna). Al final del turno. No te resta puntos.</li>
@@ -194,6 +222,25 @@
   // false: mover solo si no hay comidas. true: mover también con comidas disponibles.
   const MOVE_ALWAYS = false;
   const ROUNDS = 3;
+  // Modo animales (toggle): 8 organismos, 2 cartas de cada uno. Quién come a quién:
+  const ANIMAL_NAMES = { 1:'Pasto', 2:'Hongo', 3:'Hormiga', 4:'Escarabajo', 5:'Araña', 6:'Lagartija', 7:'Benteveo', 8:'Halcón' };
+  // Cada número come a los dos menores más cercanos (el 1 no come a nadie y el 2 solo puede comer al 1)
+  const COME = { 1:[], 2:[1], 3:[1,2], 4:[2,3], 5:[3,4], 6:[4,5], 7:[5,6], 8:[6,7] };
+  const LO_COMEN = {};
+  for (const n in COME) for (const p of COME[n]) (LO_COMEN[p] ??= []).push(+n);
+  let ANIMAL = false;
+  // Puntaje: 'cantidades' = 3 por carta visible - 1 por carta comida. 'suma' = suma de los números visibles - 1 por carta comida.
+  let SCORE_MODE = 'cantidades';
+  const ICONS = {
+    1: `<svg viewBox="0 0 100 100"><path d="M28 92 Q24 50 12 22 Q40 46 42 92Z" fill="#4a9b3c"/><path d="M50 92 Q48 40 50 8 Q62 44 58 92Z" fill="#6cbf4a"/><path d="M72 92 Q74 52 88 26 Q76 58 78 92Z" fill="#3c8a33"/></svg>`,
+    2: `<svg viewBox="0 0 100 100"><rect x="41" y="48" width="18" height="42" rx="7" fill="#efe3c2" stroke="#8a7650" stroke-width="2"/><path d="M8 52 Q50 -6 92 52 Z" fill="#d9523c" stroke="#7a2d20" stroke-width="2"/><circle cx="30" cy="36" r="5" fill="#fbf7ee"/><circle cx="62" cy="30" r="4" fill="#fbf7ee"/><circle cx="72" cy="44" r="3" fill="#fbf7ee"/></svg>`,
+    3: `<svg viewBox="0 0 100 100"><g stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"><path d="M42 56 L30 42 M42 58 L28 62 M42 60 L30 78"/><path d="M56 56 L68 40 M56 58 L70 62 M56 60 L68 78"/></g><circle cx="20" cy="50" r="9" fill="#222"/><circle cx="45" cy="50" r="9" fill="#222"/><ellipse cx="72" cy="50" rx="14" ry="11" fill="#222"/></svg>`,
+    4: `<svg viewBox="0 0 100 100"><g stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"><path d="M30 50 L12 40 M30 60 L10 66 M32 68 L20 84"/><path d="M70 50 L88 40 M70 60 L90 66 M68 68 L80 84"/></g><ellipse cx="50" cy="56" rx="26" ry="22" fill="#2f3e8f" stroke="#15204a" stroke-width="2"/><path d="M50 35 L50 77" stroke="#8ea2e8" stroke-width="2"/><circle cx="50" cy="28" r="9" fill="#222"/></svg>`,
+    5: `<svg viewBox="0 0 100 100"><g stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"><path d="M42 36 L22 22 L10 34 M42 40 L16 46 L6 60 M44 46 L24 66 L18 86"/><path d="M58 36 L78 22 L90 34 M58 40 L84 46 L94 60 M56 46 L76 66 L82 86"/></g><circle cx="50" cy="66" r="19" fill="#4b2e1f"/><circle cx="50" cy="38" r="11" fill="#4b2e1f"/><circle cx="46" cy="36" r="2.5" fill="#f2c94c"/><circle cx="54" cy="36" r="2.5" fill="#f2c94c"/></svg>`,
+    6: `<svg viewBox="0 0 100 100"><g stroke="#2f6b2a" stroke-width="4" fill="none" stroke-linecap="round"><path d="M34 58 L26 78 M34 58 L42 74"/><path d="M68 56 L62 76 M68 56 L76 72"/></g><path d="M18 60 Q50 42 80 56" stroke="#5aa84a" stroke-width="13" fill="none" stroke-linecap="round"/><path d="M18 60 Q6 70 6 82" stroke="#5aa84a" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="84" cy="54" r="9" fill="#5aa84a"/><circle cx="87" cy="52" r="2" fill="#222"/></svg>`,
+    7: `<svg viewBox="0 0 100 100"><polygon points="26,64 8,76 18,80 32,70" fill="#8a5a2b"/><ellipse cx="46" cy="60" rx="24" ry="17" fill="#f4c430" stroke="#b08a10" stroke-width="2"/><ellipse cx="38" cy="60" rx="14" ry="9" fill="#8a5a2b"/><circle cx="68" cy="34" r="14" fill="#f4c430" stroke="#b08a10" stroke-width="2"/><path d="M80 34 L93 38 L80 42Z" fill="#333"/><path d="M60 24 L74 24 L72 30 L60 30Z" fill="#222"/><circle cx="69" cy="33" r="3" fill="#222"/><path d="M42 80 L44 88 M52 78 L54 88" stroke="#333" stroke-width="2"/></svg>`,
+    8: `<svg viewBox="0 0 100 100"><polygon points="32,44 6,62 14,74 34,66" fill="#5a3a1e"/><polygon points="66,44 92,62 84,74 64,66" fill="#5a3a1e"/><ellipse cx="50" cy="60" rx="20" ry="22" fill="#7a4a2a" stroke="#3d2412" stroke-width="2"/><ellipse cx="50" cy="68" rx="11" ry="12" fill="#e8d2b0"/><circle cx="56" cy="30" r="13" fill="#7a4a2a" stroke="#3d2412" stroke-width="2"/><path d="M66 26 Q80 28 76 40 Q72 34 66 36Z" fill="#444"/><circle cx="60" cy="27" r="3.5" fill="#f2c94c"/><circle cx="60" cy="27" r="1.6" fill="#222"/></svg>`
+  };
   // Pasan por paridad: par → vecino de la derecha, impar → vecino de la izquierda. Sin mitades ni espejos.
 
   // Disposición en la cruz según la cantidad de jugadores.
@@ -225,6 +272,8 @@
   function newGame() {
     GEN++;
     N = +document.getElementById('bots').value + 1;
+    ANIMAL = document.getElementById('animal').checked;
+    document.body.classList.toggle('animal', ANIMAL);
     NAMES = ['Vos', ...shuffle(PLAYER_NAMES.slice()).slice(0, N - 1)];
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], selected: null, chain: null, chainMove: false,
@@ -237,9 +286,14 @@
 
   // Cada casilla es una pila de cartas: la de arriba (último elemento) es la visible.
   function buildRound() {
+    BOOST = 0;
     S.quads = [];
     for (let p = 0; p < N; p++) {
-      const vals = shuffle(Array.from({ length: cellCount() }, (_, i) => i + 1));
+      // Modo animales: 1..8 con 2 copias cada uno. Modo números: 1..16.
+      const deck = ANIMAL
+        ? Array.from({ length: cellCount() }, (_, i) => (i % 8) + 1)
+        : Array.from({ length: cellCount() }, (_, i) => i + 1);
+      const vals = shuffle(deck);
       S.quads.push(vals.map(v => [{ v, c: p }]));
     }
     // Antes de arrancar: cada jugador entrega su carta de B2 (fila 2, columna b) al jugador de su izquierda (p+1), en su B2
@@ -270,13 +324,19 @@
     return S.quads[p].filter(a => a.length).length;
   }
 
+  // Suma de los números visibles en el propio cuadrado
+  function visibleSum(p) {
+    return S.quads[p].reduce((s, a) => s + (a.length ? a[a.length - 1].v : 0), 0);
+  }
+
   // Cartas de la zona de cartas comidas, separadas por dueño
   function zoneOwn(p) { return S.zone[p].filter(c => c.c === p).length; }
   function zoneFor(p) { return S.zone[p].filter(c => c.c !== p).length; }
 
   // 3 por carta visible en la zona - 1 por cada carta en la zona de comidas
   function roundPts(p) {
-    return 3 * visibleCount(p) - S.zone[p].length;
+    const pos = SCORE_MODE === 'suma' ? visibleSum(p) : 3 * visibleCount(p);
+    return pos - S.zone[p].length;
   }
 
   function nbrs(i) {
@@ -289,7 +349,14 @@
   }
 
   // Come a una carta más chica, como máximo 4 números menos que ella
+  // BOOST = 1 cuando el humano gasta un hongo de su zona: amplía en 1 el rango de comida de este movimiento.
+  let BOOST = 0;
   function canEat(a, b) {
+    if (ANIMAL) {
+      if (b.v >= a.v) return false;
+      const lo = COME[a.v].length ? Math.min(...COME[a.v]) : a.v;   // el menor número que puede comer
+      return b.v >= lo - BOOST;
+    }
     return a.v > b.v && a.v - b.v <= 4;
   }
 
@@ -353,7 +420,10 @@
     S.quads[m.q][m.y].push(...mover);
     S.selected = null;
     const top = pile[pile.length - 1];
-    if (top.c === p) {
+    if (ANIMAL && top.v === 1 && top.c === p) {
+      // Pasto propio comido: nunca pasa a nadie, se pierde (sale del juego). En revisión.
+      logLine(`${NAMES[p]} comió su Pasto ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)}: se pierde.`);
+    } else if (top.c === p) {
       const to = (top.v % 2 === 0) ? (p - 1 + N) % N : (p + 1) % N;
       S.queue.push({ pile, idx: m.y, to });
       logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo pasa a ${NAMES[to]}`);
@@ -434,6 +504,7 @@
   }
 
   function advance(p) {
+    BOOST = 0;
     if (endCheck()) { endRound(); return; }
     S.turn = nextActive(p);
     render();
@@ -442,6 +513,8 @@
 
   function runTurn() {
     const t = S.turn;
+    // Bots: si tienen un hongo en su zona, el bonus se usa siempre que les permita comer
+    BOOST = (t !== 0 && ANIMAL && S.zone[t].some(c => c.v === 2)) ? 1 : 0;
     const L = legalFor(t);
 
     if (L.length === 0) {
@@ -496,7 +569,9 @@
     const p = S.turn;
     if (S.gameOver || S.roundOver || p === 0 || S.out[p]) return;   // solo juega el bot de turno
     S.busy = false;
-    const L = legalFor(p);
+    BOOST = (ANIMAL && S.zone[p].some(c => c.v === 2)) ? 1 : 0;
+    let L = legalFor(p);
+    if (BOOST && !L.some(m => m.t === 'eat')) { BOOST = 0; L = legalFor(p); }   // el bonus solo sirve si permite comer
     if (!L.length) { S.chain = null; runTurn(); return; }
     const eats = L.filter(m => m.t === 'eat');
 
@@ -510,6 +585,7 @@
       S.selected = { q: best.q, x: best.x };
       render();
       later(() => {
+        if (BOOST) spendHongo(p);
         const res = doEat(p, best);
         render();
         afterEat(p, res);
@@ -550,6 +626,14 @@
     runTurn();
   }
 
+  // Gasta un hongo de la zona de comidas del humano: el rango se amplía en 1 y la carta sale del juego (deja de restar 1).
+  function spendHongo(p = 0) {
+    const i = S.zone[p].findIndex(c => c.v === 2);
+    if (i >= 0) S.zone[p].splice(i, 1);
+    BOOST = 0;
+    logLine(`${NAMES[p]} gastó un hongo de su zona: amplió en 1 el rango de comida.`);
+  }
+
   // El jugador toca un cuadrado o un destino.
   function onCell(q, i) {
     if (S.gameOver || S.roundOver) return;
@@ -563,6 +647,7 @@
       if (ok) {
         S.lastNote = '';
         if (ok.t === 'eat') {
+          if (BOOST) spendHongo();
           const res = doEat(0, ok);
           render();
           afterEat(0, res);
@@ -592,7 +677,7 @@
   // ← vecino de la izquierda, → vecino de la derecha, ✕ va a tu zona de comidas, ▫ espacio vacío
   function passMark(targetIdx, targetCard) {
     if (!targetCard) return '▫';
-    if (targetCard.c !== 0) return '🔻';
+    if (targetCard.c !== 0) return '▼';
     return targetCard.v % 2 === 0 ? '▶' : '◀';
   }
 
@@ -626,7 +711,25 @@
   }
 
   function chipHtml(v, c) {
-    return `<span class="zchip" style="background:${COLORS[c]};display:inline-flex;vertical-align:middle;transform:none">${v}</span>`;
+    const label = v;
+    return `<span class="zchip" style="background:${COLORS[c]};display:inline-flex;vertical-align:middle;transform:none">${label}</span>`;
+  }
+
+  // Carta del modo animales: 4 renglones. El número va con marco del color del dueño.
+  // El contenido se contrarrota para verse derecho; en laterales ocupa el lado largo de la carta.
+  function animalHTML(c, rot, side) {
+    // La carta gira junto con el tablero de su dueño (sin contrarrotar el contenido)
+    const pos = 'left:0;top:0;width:100%;height:100%';
+    const eat = COME[c.v];
+    const dataLine = eat.length ? `<div class="aData">✕ ${eat.join(',')}</div>` : '<div></div>';
+    return `<div class="aIn" style="${pos}">` +
+      `<span class="aNum">${c.v}</span>` +
+      `<div class="aBox">` +
+        `<div class="aIcon">${ICONS[c.v]}</div>` +
+        `<div class="aName">${ANIMAL_NAMES[c.v]}</div>` +
+      `</div>` +
+      dataLine +
+      `</div>`;
   }
 
   function logLine(html) {
@@ -634,7 +737,15 @@
     if (S.log.length > 120) S.log.length = 120;
   }
 
+  function updateScoreUI() {
+    document.getElementById('scoreMode').textContent = SCORE_MODE === 'suma' ? 'Modo: Suma' : 'Modo: Cantidades';
+    document.getElementById('scoreText').textContent = SCORE_MODE === 'suma'
+      ? 'Suma: positivo por la suma de los números visibles en tu zona, y -1 por cada carta en tus comidas. Gana el que menos tiene.'
+      : 'Cantidades: 3 pts por cada carta visible en tu zona, y -1 por cada carta en tus comidas. Gana el que menos tiene.';
+  }
+
   function render() {
+    updateScoreUI();
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
@@ -658,25 +769,34 @@
       box.style.gridColumn = seats.pos[p][1];
       const badge = S.out[p] ? '<span class="badge">Fuera</span>' : '';
       const vis = 3 * visibleCount(p);
+      const sumVis = visibleSum(p);
       const ownZ = zoneOwn(p);
       const forZ = 2 * zoneFor(p);
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
         `<span class="qname">${NAMES[p]}</span>${badge}<span class="qtot">${roundPts(p)} pts</span></div>` +
         `<div class="score">` +
-          `<span><b>${visibleCount(p)}</b> <span class="ic ic-vis"><i></i></span> → <b>+${vis}</b></span>` +
+          (SCORE_MODE === 'suma'
+            ? `<span>Suma <b>${sumVis}</b> → <b>+${sumVis}</b></span>`
+            : `<span><b>${visibleCount(p)}</b> <span class="ic ic-vis"><i></i></span> → <b>+${vis}</b></span>`) +
           `<span><b>${S.zone[p].length}</b> <span class="ic ic-gray">↓</span> → <b>-${S.zone[p].length}</b></span>` +
         `</div>`;
 
       // Caja del tablero: laterales con ancho y alto invertidos
       const wrap = document.createElement('div');
       wrap.className = 'boardWrap';
-      wrap.style.aspectRatio = side ? `${ROWS} / 4` : `4 / ${ROWS}`;
+      // Modo animales: la carta es 5:7, así que el tablero entero también (4x4 cartas = 20:28)
+      wrap.style.aspectRatio = ANIMAL ? (side ? '5 / 4' : '4 / 5') : (side ? `${ROWS} / 4` : `4 / ${ROWS}`);
 
       const grid = document.createElement('div');
       grid.className = 'grid';
-      grid.style.width = side ? `${86 * 4 / ROWS}%` : '86%';
-      grid.style.aspectRatio = `4 / ${ROWS}`;
+      if (ANIMAL) {
+        grid.style.width = side ? '60%' : '86%';
+        grid.style.aspectRatio = '5 / 7';
+      } else {
+        grid.style.width = side ? `${86 * 4 / ROWS}%` : '86%';
+        grid.style.aspectRatio = `4 / ${ROWS}`;
+      }
       grid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
       grid.style.transform = N === 3 ? 'translate(-50%, -50%)' : `translate(-50%, -50%) rotate(${rot}deg)`;
 
@@ -688,25 +808,38 @@
         const d = document.createElement('div');
         const col = i % COLS;
         d.className = 'cell ' + (c ? '' : 'empty');
-        if (col === 1) d.classList.add('sr');
         if (i === 0) d.classList.add('start');
         if (c) {
-          d.style.background = COLORS[c.c];
-          const num = document.createElement('span');
-          num.className = 'num';
-          num.style.transform = `rotate(${-rot}deg)`;
-          num.textContent = c.v;
-          d.appendChild(num);
+          if (ANIMAL) {
+            d.classList.add('animal');
+            d.style.background = COLORS[c.c];
+            d.innerHTML = animalHTML(c, rot, side);
+          } else {
+            d.style.background = COLORS[c.c];
+            const num = document.createElement('span');
+            num.className = 'num';
+            num.style.transform = `rotate(${-rot}deg)`;
+            num.textContent = c.v;
+            d.appendChild(num);
+          }
           if (arr.length > 1) {
-            // Números tapados: siempre en la esquina inferior izquierda de la pantalla
+            // Números tapados, uno debajo del otro. Ocupan el alto del número de la carta.
+            // Modo animales: arriba a la izquierda de la carta. Modo números: esquina inferior izquierda de la pantalla.
             const uw = document.createElement('div');
             uw.className = 'uwrap';
-            uw.style.justifyContent = corner.h;
-            uw.style.alignItems = corner.v;
-            const under = document.createElement('span');
+            const under = document.createElement('div');
             under.className = 'under';
-            under.style.transform = `rotate(${-rot}deg)`;
-            under.textContent = arr.slice(0, -1).reverse().map(x => x.v).join(',');
+            const n = arr.length - 1;
+            const stackFs = ANIMAL ? '16cqw' : 'clamp(0.6rem,1.6vw,0.8rem)';
+            under.style.fontSize = `calc(${stackFs} / ${n})`;
+            if (ANIMAL) {
+              uw.style.cssText = 'left:2cqw;top:4cqw;right:auto;bottom:auto;';
+            } else {
+              uw.style.justifyContent = corner.h;
+              uw.style.alignItems = corner.v;
+              under.style.transform = `rotate(${-rot}deg)`;
+            }
+            under.innerHTML = arr.slice(0, -1).reverse().map(x => `<span>${x.v}</span>`).join('');
             uw.appendChild(under);
             d.appendChild(uw);
           }
@@ -756,8 +889,23 @@
       ).join('');
       const zoneEl = document.createElement('div');
       zoneEl.className = 'zone';
-      zoneEl.innerHTML = `<span class="ztag" style="${N === 3 ? `transform:rotate(${-rot}deg)` : ''}">Comidas (${zone.length})</span>${chips}`;
-      box.appendChild(zoneEl);
+      const strip = `<span class="ztag" style="${N === 3 ? `transform:rotate(${-rot}deg)` : ''}">Comidas (${zone.length})</span>${chips}`;
+      if (p === 0) {
+        // Tu zona: las etiquetas quedan AFUERA del contenedor, a cada lado (impares a la izquierda, pares a la derecha)
+        const row = document.createElement('div');
+        row.className = 'zoneRow';
+        zoneEl.innerHTML = strip;
+        zoneEl.style.flex = '1';
+        zoneEl.style.minWidth = '0';
+        zoneEl.style.marginTop = '0';
+        row.innerHTML = '<span class="zside">◀ impares</span>';
+        row.appendChild(zoneEl);
+        row.insertAdjacentHTML('beforeend', '<span class="zside">▶ pares</span>');
+        box.appendChild(row);
+      } else {
+        zoneEl.innerHTML = strip;
+        box.appendChild(zoneEl);
+      }
 
       tableEl.appendChild(box);
       if (N === 3) fitTurn3(box, rot);
@@ -802,6 +950,10 @@
     if (S.roundOver && !S.gameOver) btn = '<button id="nextRound" class="primary">Siguiente ronda</button>';
     else if (canPass) btn = '<button id="passBtn">Salir de la ronda</button>';
     else if (S.chain && S.turn === 0) btn = '<button id="chainEnd" class="primary">Listo</button>';
+    const canBoost = ANIMAL && S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy && S.zone[0].some(c => c.v === 2);
+    if (canBoost) btn += BOOST
+      ? '<button id="boostBtn" class="primary">Ampliar -1: activado (cancelar)</button>'
+      : '<button id="boostBtn">Gastar hongo: ampliar -1</button>';
 
     if (S.lastNote && S.lastNote !== S.loggedNote) { S.loggedNote = S.lastNote; logLine(S.lastNote); }
     document.getElementById('log').innerHTML = S.log.map(x => `<div class="logLine">${x}</div>`).join('');
@@ -831,10 +983,16 @@
     if (!e.target) return;
     if (e.target.id === 'nextRound') nextRound();
     if (e.target.id === 'passBtn') humanPass();
+    if (e.target.id === 'boostBtn') { BOOST = BOOST ? 0 : 1; render(); }
     if (e.target.id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);
   document.getElementById('bots').addEventListener('change', newGame);
+  document.getElementById('animal').addEventListener('change', newGame);
+  document.getElementById('scoreMode').addEventListener('click', () => {
+    SCORE_MODE = SCORE_MODE === 'suma' ? 'cantidades' : 'suma';
+    render();
+  });
 
   newGame();
 </script>

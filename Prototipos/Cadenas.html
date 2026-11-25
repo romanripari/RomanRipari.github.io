@@ -592,8 +592,8 @@
   // ← vecino de la izquierda, → vecino de la derecha, ✕ va a tu zona de comidas, ▫ espacio vacío
   function passMark(targetIdx, targetCard) {
     if (!targetCard) return '▫';
-    if (targetCard.c !== 0) return '✕';
-    return targetCard.v % 2 === 0 ? '→' : '←';
+    if (targetCard.c !== 0) return '🔻';
+    return targetCard.v % 2 === 0 ? '▶' : '◀';
   }
 
   // Esquina inferior izquierda de la pantalla, expresada en el sistema girado de cada tablero.

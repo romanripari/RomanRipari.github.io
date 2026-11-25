@@ -78,6 +78,13 @@
   .aName { font-size:11.5cqw; font-weight:700; line-height:1.05; }
   .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#fff; }
 
+  /* Columna de poderes a la derecha del propio tablero (solo modo animales) */
+  .boardRow { display:flex; align-items:center; gap:8px; }
+  .powCol { display:flex; flex-direction:column; gap:8px; flex:0 0 auto; }
+  .pw { width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
+  .pw svg { width:100%; height:100%; }
+  .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
+
   /* Zona de cartas comidas: tira horizontal debajo del tablero */
   .zone { display:flex; align-items:center; gap:3px; margin-top:8px; padding:4px 6px; border:1px dashed var(--line); border-radius:6px; min-height:30px; overflow-x:auto; }
   .ztag { font-size:0.72rem; color:var(--muted); flex:0 0 auto; margin-right:4px; }
@@ -231,7 +238,7 @@
   const LETTERS = ['a', 'b', 'c', 'd'];
   const COLS = 4;
   const ROWS = 4;          // siempre 4x4          // siempre 4 columnas: cols a-b y c-d son las mitades
-  const BOT_STEP = 667;   // 2/3 de segundo
+  const BOT_STEP = 333;   // 1/3 de segundo
   // false: mover solo si no hay comidas. true: mover también con comidas disponibles.
   const MOVE_ALWAYS = false;
   const ROUNDS = 3;
@@ -643,6 +650,7 @@
   function advance(p) {
     BOOST = 0;
     PUSH = 0;
+    ANT = 0; ANTSEL = null;
     if (endCheck()) { endRound(); return; }
     S.turn = nextActive(p);
     render();
@@ -804,6 +812,9 @@
   // Escarabajo (modo animales): gasta un escarabajo de tu zona de comidas para empujar una pila de tu tablero
   // a un hueco contiguo en línea recta (1, 2 o 3 espacios). Sin saltar ni empujar otras cartas. No ocupa turno.
   let PUSH = 0;
+  // Hormiga (modo del humano): elegís la hormiga y después el espacio vacío a donde moverla
+  let ANT = 0;
+  let ANTSEL = null;
   function pushTargets(p, x) {
     const r0 = Math.floor(x / COLS), c0 = x % COLS, out = [];
     [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dr, dc]) => {
@@ -829,15 +840,57 @@
 
   function togglePush() {
     PUSH = PUSH ? 0 : 1;
+    ANT = 0; ANTSEL = null;
     S.pushSel = null;
     S.selected = null;
     render();
+  }
+
+  function toggleAnt() {
+    ANT = ANT ? 0 : 1;
+    PUSH = 0; S.pushSel = null;
+    ANTSEL = null;
+    S.selected = null;
+    render();
+  }
+
+  // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
+  function powerColumn() {
+    const col = document.createElement('div');
+    col.className = 'powCol';
+    const can = S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy;
+    const btns = [];
+    if (can && antMoves(0).length) btns.push(['pwAnt', 3, ANT]);
+    if (can && S.zone[0].some(c => c.v === 4)) btns.push(['pwPush', 4, PUSH]);
+    if (can && S.zone[0].some(c => c.v === 2)) btns.push(['pwHongo', 2, BOOST]);
+    col.innerHTML = btns.map(([id, v, on]) =>
+      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${ANIMAL_NAMES[v]}">${ICONS[v]}</button>`
+    ).join('');
+    return col;
   }
 
   // El jugador toca un cuadrado o un destino.
   function onCell(q, i) {
     if (S.gameOver || S.roundOver) return;
     if (S.turn !== 0 || S.busy) return;
+
+    if (ANT) {
+      if (q !== 0) return;
+      const srcs = antMoves(0);
+      if (ANTSEL === null) {
+        if (srcs.some(m => m.x === i)) { ANTSEL = i; render(); }
+        return;
+      }
+      if (i === ANTSEL) { ANTSEL = null; render(); return; }
+      const mv = srcs.find(m => m.x === ANTSEL && m.y === i);
+      if (mv) {
+        // La hormiga reemplaza comer: termina el turno
+        doAnt(0, mv);
+        ANT = 0; ANTSEL = null;
+        passNext(0);
+      }
+      return;
+    }
 
     if (PUSH) {
       if (q !== 0) return;
@@ -1073,6 +1126,17 @@
           d.appendChild(mk);
         }
         if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
+        if (ANT && p === 0 && !S.roundOver && !S.gameOver) {
+          const srcs = antMoves(0);
+          if (ANTSEL === i) d.classList.add('selected');
+          else if (ANTSEL !== null && srcs.some(m => m.x === ANTSEL && m.y === i)) {
+            d.classList.add('target');
+            const mk = document.createElement('span');
+            mk.className = 'mark';
+            mk.textContent = '▫';
+            d.appendChild(mk);
+          } else if (ANTSEL === null && srcs.some(m => m.x === i)) d.classList.add('can');
+        }
         if (PUSH && p === 0 && !S.roundOver && !S.gameOver) {
           if (S.pushSel === i) d.classList.add('selected');
           else if (S.pushSel !== null && pushT.some(t => t.y === i)) {
@@ -1108,7 +1172,18 @@
       }
 
       wrap.appendChild(grid);
-      box.appendChild(wrap);
+      if (p === 0 && ANIMAL) {
+        // Mis poderes van a la derecha de mi tablero
+        const row = document.createElement('div');
+        row.className = 'boardRow';
+        wrap.style.flex = '1 1 0';
+        wrap.style.minWidth = '0';
+        row.appendChild(wrap);
+        row.appendChild(powerColumn());
+        box.appendChild(row);
+      } else {
+        box.appendChild(wrap);
+      }
 
       // Zona de cartas comidas: tira horizontal debajo del tablero (no gira)
       const zone = S.zone[p];
@@ -1186,14 +1261,6 @@
     if (S.roundOver && !S.gameOver) btn = '<button id="nextRound" class="primary">Siguiente ronda</button>';
     else if (canPass) btn = '<button id="passBtn">Salir de la ronda</button>';
     else if (S.chain && S.turn === 0) btn = '<button id="chainEnd" class="primary">Listo</button>';
-    const canBoost = ANIMAL && S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy && S.zone[0].some(c => c.v === 2);
-    const canPush = ANIMAL && S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy && S.zone[0].some(c => c.v === 4);
-    if (canPush) btn += PUSH
-      ? '<button id="pushBtn" class="primary">Escarabajo: cancelar</button>'
-      : '<button id="pushBtn">Usar escarabajo: empujar</button>';
-    if (canBoost) btn += BOOST
-      ? '<button id="boostBtn" class="primary">Ampliar -1: activado (cancelar)</button>'
-      : '<button id="boostBtn">Gastar hongo: ampliar -1</button>';
 
     if (S.lastNote && S.lastNote !== S.loggedNote) { S.loggedNote = S.lastNote; logLine(S.lastNote); }
     document.getElementById('log').innerHTML = S.log.map(x => `<div class="logLine">${x}</div>`).join('');
@@ -1221,12 +1288,15 @@
 
   // Los botones del centro se crean en cada render: se escucha desde el contenedor.
   document.getElementById('table').addEventListener('click', e => {
-    if (!e.target) return;
-    if (e.target.id === 'nextRound') nextRound();
-    if (e.target.id === 'passBtn') humanPass();
-    if (e.target.id === 'boostBtn') { BOOST = BOOST ? 0 : 1; render(); }
-    if (e.target.id === 'pushBtn') togglePush();
-    if (e.target.id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
+    if (!e.target || !e.target.closest) return;
+    const b = e.target.closest('button');
+    const id = b ? b.id : '';
+    if (id === 'nextRound') nextRound();
+    if (id === 'passBtn') humanPass();
+    if (id === 'pwHongo') { BOOST = BOOST ? 0 : 1; render(); }
+    if (id === 'pwPush') togglePush();
+    if (id === 'pwAnt') toggleAnt();
+    if (id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);
   document.getElementById('bots').addEventListener('change', newGame);

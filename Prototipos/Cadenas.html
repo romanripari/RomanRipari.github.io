@@ -463,7 +463,7 @@
   }
 
   function doAnt(p, m) {
-    S.started = true;
+    S.started = true; S.acted = true;
     const pile = S.quads[m.q][m.x].splice(0);
     S.quads[m.q][m.y].push(...pile);
     S.selected = null; S.chain = null; S.chainMove = false;
@@ -522,6 +522,14 @@
   // El hongo no mueve nada, así que no cuenta.
   function humanCanMove() {
     if (legalFor(0).length > 0) return true;
+    // Con el hongo (bonus de comida) también podrías comer: en ese caso no hay que salir
+    if (ANIMAL && S.zone[0].some(c => c.v === 2)) {
+      const prev = BOOST;
+      BOOST = 1;
+      const n = legalFor(0).filter(m => m.t === 'eat').length;
+      BOOST = prev;
+      if (n > 0) return true;
+    }
     if (!ANIMAL || !S.zone[0].some(c => c.v === 4)) return false;
     return S.quads[0].some((a, x) => a.length > 0 && pushTargets(0, x).length > 0);
   }
@@ -560,7 +568,7 @@
   // Pila con carta propia arriba: pasa entera al vecino al final del turno (sin penalidad).
   // Pila con carta ajena arriba: va entera a la zona de cartas comidas de quien come.
   function doEat(p, m) {
-    S.started = true;
+    S.started = true; S.acted = true;
     const mover = S.quads[m.q][m.x].splice(0);
     const pile = S.quads[m.q][m.y].splice(0);
     S.quads[m.q][m.y].push(...mover);
@@ -579,7 +587,7 @@
 
   // Mueve solo la carta de arriba a un espacio vacío. Termina el turno.
   function doStack(p, m) {
-    S.started = true;
+    S.started = true; S.acted = true;
     const card = S.quads[m.q][m.x].pop();
     S.quads[m.q][m.y].push(card);
     S.selected = null; S.chain = null; S.chainMove = false;
@@ -651,6 +659,7 @@
     BOOST = 0;
     PUSH = 0;
     ANT = 0; ANTSEL = null;
+    S.chain = null; S.chainMove = false;   // al cambiar de turno no puede quedar una cadena colgada
     if (endCheck()) { endRound(); return; }
     S.turn = nextActive(p);
     render();
@@ -660,11 +669,14 @@
   function runTurn() {
     const t = S.turn;
     S.antUsed = false;   // una hormiga por turno
+    S.chain = null; S.chainMove = false;   // cada turno empieza sin cadena
+    S.acted = false;                       // todavía no hiciste nada en este turno
     const L = t !== 0 ? botLegal(t) : legalFor(t);
 
     // Sin movimientos: antes de salir, el jugador (o el bot) prueba los poderes que le den comidas
     const canAct = t !== 0 ? (bestAnt(t) || bestPush(t)) : humanCanMove();
-    if (L.length === 0 && !canAct) {
+    // Los bots salen solos si no tienen nada. Vos decidís cuándo salir (botón), por si un bonus te habilita algo.
+    if (t !== 0 && L.length === 0 && !canAct) {
       passTurn(t, t === 0 ? 'No tenés comidas ni movimientos: salís de la ronda.' : `${NAMES[t]} no tenía movimientos y salió de la ronda.`);
       return;
     }
@@ -720,7 +732,8 @@
     const eats = L.filter(m => m.t === 'eat');
 
     // Escarabajo: el bot lo usa si el empuje le da más comidas
-    const pb = bestPush(p);
+    // Durante una cadena de comidas no se usan poderes que reemplazan comer
+    const pb = S.chain ? null : bestPush(p);
     if (pb) {
       S.lastNote = '';
       S.selected = { q: p, x: pb.x };
@@ -734,7 +747,7 @@
     }
 
     // Hormiga: una vez por turno, si después puede comer más en cadena
-    const antBest = S.antUsed ? null : bestAnt(p);
+    const antBest = (S.antUsed || S.chain) ? null : bestAnt(p);
     if (antBest && antBest.g > maxChain(p)) {
       S.lastNote = '';
       S.selected = { q: antBest.m.q, x: antBest.m.x };
@@ -830,7 +843,7 @@
   }
 
   function doPush(p, x, y) {
-    S.started = true;
+    S.started = true; S.acted = true;
     const pile = S.quads[p][x].splice(0);
     S.quads[p][y].push(...pile);
     const i = S.zone[p].findIndex(c => c.v === 4);   // 4 = Escarabajo
@@ -944,8 +957,7 @@
 
   // Solo se puede salir si no hay comidas
   function humanPass() {
-    if (S.turn !== 0 || S.busy || S.roundOver || S.gameOver || S.chain) return;
-    if (humanCanMove()) return;
+    if (S.turn !== 0 || S.busy || S.roundOver || S.gameOver || S.chain || PUSH || ANT || S.acted) return;
     passTurn(0, 'Saliste de la ronda. Tu tablero y tu zona de cartas comidas quedan como están y ya no recibís cartas.');
   }
 
@@ -1214,8 +1226,8 @@
     tableEl.appendChild(rightCol);
 
     // Texto de estado, en el centro de la cruz
-    // Salir solo si no hay ninguna comida, movimiento ni poder utilizable
-    const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain && !PUSH && legal.length === 0 && !humanCanMove();
+    // Salir solo al empezar el turno: después de comer o mover, el turno sigue hasta terminar (o con Listo)
+    const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain && !PUSH && !ANT && !S.acted;
 
     let text;
     if (S.gameOver) {

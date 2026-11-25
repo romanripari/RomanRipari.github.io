@@ -7,7 +7,7 @@
 <style>
   :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b;
     /* Colores de los jugadores: vos, bot 1, bot 2, bot 3 */
-    --c-vos:#c97866; --c-azul:#7e9caf; --c-verde:#8cb38c; --c-lila:#c4aadf; }
+    --c-vos:#d9644a; --c-azul:#3b6e8f; --c-verde:#5a9e5a; --c-lila:#CF9FFF; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -163,7 +163,7 @@
         <h2>Poderes (modo animales)</h2>
         <ul class="powerList">
           <li><b>Hongo (2):</b> en tu zona de comidas, al hacer una comida podés gastarlo para ampliar en 1 el rango de comida de ese movimiento. Sale del juego y deja de contar en tu zona.</li>
-          <li><b>Hormiga (3):</b> mientras esté visible, mueve su pila una casilla ortogonal a un espacio vacío. Reemplaza comer en tu turno.</li>
+          <li><b>Hormiga (3):</b> mientras esté visible, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno.</li>
           <li><b>Escarabajo (4):</b> en tu zona de comidas, gastalo para empujar una pila de tu tablero hasta 3 huecos en línea recta. No puede saltar ni empujar otras cartas. Reemplaza comer en tu turno.</li>
         </ul>
       </div>
@@ -201,7 +201,7 @@
         <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
         <li><b>Modo animales:</b> cada número es un organismo (1 Pasto, 2 Hongo, 3 Hormiga, 4 Escarabajo, 5 Araña, 6 Lagartija, 7 Benteveo, 8 Halcón), con 2 cartas de cada uno. Cada carta come solo a los números que indica su renglón "Come a", y no se usa la regla de distancia.</li>
         <li><b>Hongo en tu zona de comidas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de contar en tu zona de comidas. No es una acción: es solo la ampliación.</li>
-        <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, puede moverse una casilla ortogonal a un espacio vacío. Reemplaza comer en tu turno: no comés ese turno. Arrastra todo lo que tenga debajo.</li>
+        <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno: no comés ese turno. Arrastra todo lo que tenga debajo.</li>
         <li><b>Bots:</b> usan los poderes cuando les da más comidas.</li>
         <li><b>Poder del escarabajo:</b> usa un escarabajo de tu zona de comidas (botón "Usar escarabajo"). Empuja una pila de tu tablero, sea de quien sea, a un hueco contiguo en línea recta (1, 2 o 3 espacios). No se puede empujar, saltar ni poner encima de otra carta. Reemplaza comer en tu turno.</li>
         <li>Si hay alguna comida legal, tenés que comer (podés usar antes un poder de hormiga o escarabajo). Si no tenés ninguna comida, podés usar poderes, hacer el desarme de pilas, o salir de la ronda si no podés mover nada.</li>
@@ -461,13 +461,19 @@
 
   // Poder de la hormiga (modo animales): una hormiga visible en tu cuadrado mueve su pila un casillero
   // a un espacio vacío. Reemplaza comer en ese turno.
+  // La hormiga se desliza en línea recta (ortogonal) por espacios vacíos, hasta el próximo tope (carta o borde).
   function antMoves(p) {
     const moves = [];
     for (let i = 0; i < cellCount(); i++) {
       const a = S.quads[p][i];
       if (!a.length || a[a.length - 1].v !== 3) continue;   // 3 = Hormiga
-      nbrs(i).forEach(j => {
-        if (S.quads[p][j].length === 0) moves.push({ t: 'ant', q: p, x: i, y: j });
+      const r0 = Math.floor(i / COLS), c0 = i % COLS;
+      [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dr, dc]) => {
+        for (let r = r0 + dr, c = c0 + dc; r >= 0 && r < ROWS && c >= 0 && c < COLS; r += dr, c += dc) {
+          const y = r * COLS + c;
+          if (S.quads[p][y].length !== 0) break;   // tope: otra carta
+          moves.push({ t: 'ant', q: p, x: i, y });
+        }
       });
     }
     return moves;
@@ -880,7 +886,7 @@
 
   // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
   // Tooltips breves de cada poder
-  const POWER_TIP = { 3: 'Se mueve un espacio', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
+  const POWER_TIP = { 3: 'Se desliza en línea hasta el próximo tope', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
 
   // Los iconos quedan visibles siempre que el poder exista; fuera de tu turno aparecen apagados.
   function powerColumn() {
@@ -1305,7 +1311,7 @@
       text = kind && kind.t === 'stack'
         ? 'Movela (solo la de arriba) a un espacio vacío (▫).'
         : kind && kind.t === 'ant'
-          ? 'Hormiga: mové su pila un casillero a un espacio vacío (▫). Reemplaza comer en este turno.'
+          ? 'Hormiga: deslizá su pila en línea a un espacio vacío (▫), hasta el próximo tope. Reemplaza comer en este turno.'
           : 'Comela moviéndola un espacio sobre una carta naranja. Tocá la misma para cancelar.';
     } else if (legal.length === 0) {
       text = 'No tenés movimientos válidos.';

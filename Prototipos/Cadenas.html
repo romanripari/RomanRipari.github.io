@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CADENA TRÓFICA - prototipo</title>
 <style>
-  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; }
+  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -54,7 +54,7 @@
   .uwrap { position:absolute; inset:0; display:flex; pointer-events:none; }
   .under { font-size:0.55rem; font-weight:600; color:#fff; text-shadow:0 0 2px #000; white-space:nowrap; overflow:hidden; padding:1px 2px; line-height:1.1; max-width:100%; }
   .cell .mark { position:absolute; right:3px; top:1px; font-size:0.95rem; font-weight:700; text-shadow:0 0 3px rgba(0,0,0,.7); }
-  .cell.can { box-shadow: inset 0 0 0 3px var(--green); background-image: linear-gradient(rgba(46,158,72,.22), rgba(46,158,72,.22)); }
+  .cell.can { box-shadow: inset 0 0 0 3px var(--magenta); background-image: linear-gradient(rgba(214,0,214,.22), rgba(214,0,214,.22)); }
   .cell.target { box-shadow: inset 0 0 0 3px var(--orange), 0 0 0 2px var(--orange); z-index:1; }
   .cell.selected { box-shadow: inset 0 0 0 3px #111, 0 0 0 3px #111; z-index:2; }
   .coord { position:absolute; font-size:0.7rem; color:#555; line-height:1; pointer-events:none; white-space:nowrap; font-weight:600; }
@@ -145,7 +145,7 @@
     <details>
       <summary>Cómo se come</summary>
       <ul>
-        <li>Para comer, elegís una carta visible de tu cuadrado (en verde), sea tuya o ajena, y la movés UN espacio ortogonal sobre una carta más chica (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
+        <li>Para comer, elegís una carta visible de tu cuadrado (en magenta), sea tuya o ajena, y la movés UN espacio ortogonal sobre una carta más chica (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
         <li>Si hay alguna comida legal, tenés que comer. Solo podés mover si no tenés ninguna comida.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
@@ -787,11 +787,11 @@
     } else if (legal.length === 0) {
       text = 'No tenés movimientos válidos.';
     } else if (eatsH.length === 0) {
-      text = 'No tenés comidas. Podés mover la carta de arriba de una pila (en verde) a un espacio vacío, o salir de la ronda.';
+      text = 'No tenés comidas. Podés mover la carta de arriba de una pila (en magenta) a un espacio vacío, o salir de la ronda.';
     } else if (stacksH.length > 0) {
-      text = 'Elegí una carta verde para comer, o mové la de arriba de una pila (opcional).';
+      text = 'Elegí una carta magenta para comer, o mové la de arriba de una pila (opcional).';
     } else {
-      text = 'Tu turno: elegí una carta verde para comer.';
+      text = 'Tu turno: elegí una carta magenta para comer.';
     }
     if (S.lastNote && !S.gameOver && !S.roundOver) text = S.lastNote + ' ' + text;
 

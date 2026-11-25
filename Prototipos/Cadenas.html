@@ -88,7 +88,8 @@
   /* Columna de poderes a la derecha del propio tablero (solo modo animales) */
   .sideRight { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:10px; justify-self:start; }
   .powCol { display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; }
-  .pw { width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
+  .pw { position:relative; width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
+  .pwCount { position:absolute; left:2px; bottom:0; font-size:0.7rem; font-weight:800; line-height:1; color:#222; background:#fff; border-radius:3px; padding:1px 3px; box-shadow:0 0 0 1px #555; }
   .pw svg { width:100%; height:100%; }
   .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
   .pw:disabled { opacity:.4; cursor:default; }
@@ -886,12 +887,16 @@
     const col = document.createElement('div');
     col.className = 'powCol';
     const can = S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy;
+    // Cantidad: hormigas que pueden moverse, y escarabajos / hongos en la zona (se gastan al usarse)
+    const antN = new Set(antMoves(0).map(m => m.x)).size;
+    const pushN = S.zone[0].filter(c => c.v === 4).length;
+    const hongoN = S.zone[0].filter(c => c.v === 2).length;
     const items = [];
-    if (antMoves(0).length) items.push(['pwAnt', 3, ANT]);
-    if (S.zone[0].some(c => c.v === 4)) items.push(['pwPush', 4, PUSH]);
-    if (S.zone[0].some(c => c.v === 2)) items.push(['pwHongo', 2, BOOST]);
-    col.innerHTML = items.map(([id, v, on]) =>
-      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}</button>`
+    if (antN) items.push(['pwAnt', 3, ANT, antN]);
+    if (pushN) items.push(['pwPush', 4, PUSH, pushN]);
+    if (hongoN) items.push(['pwHongo', 2, BOOST, hongoN]);
+    col.innerHTML = items.map(([id, v, on, n]) =>
+      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}${n > 1 ? `<span class="pwCount">${n}</span>` : ''}</button>`
     ).join('');
     return col;
   }

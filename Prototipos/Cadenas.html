@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CADENA TRÓFICA - prototipo</title>
 <style>
-  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b; }
+  :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; 
+      --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b;
+    /* Colores de los jugadores: vos, bot 1, bot 2, bot 3 */
+    --c-vos:#d48c7c; --c-azul:#628196; --c-verde:#8ab18a; --c-lila:#c1a4df; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -232,7 +235,9 @@
 </div>
 
 <script>
-  const COLORS = ['#d9644a', '#3b6e8f', '#5a9e5a', '#8a6cb8'];
+  // Se leen de las variables --c-* definidas en :root (el CSS)
+  const COLORS = ['vos', 'azul', 'verde', 'lila'].map(n =>
+    getComputedStyle(document.documentElement).getPropertyValue('--c-' + n).trim());
   let NAMES = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
   const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
   const LETTERS = ['a', 'b', 'c', 'd'];

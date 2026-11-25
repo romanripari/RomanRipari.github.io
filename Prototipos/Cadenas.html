@@ -96,6 +96,10 @@
 
   aside .box { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
   aside h2 { font-size:0.95rem; margin:0 0 8px; }
+  .powers { display:none; }
+  body.animal .powers { display:block; }
+  .powerList { margin:0; padding-left:18px; font-size:0.85rem; line-height:1.4; color:#333; }
+  .powerList li { margin-bottom:6px; }
   table { width:100%; border-collapse:collapse; font-size:0.88rem; }
   th, td { text-align:right; padding:4px 6px; border-bottom:1px solid #eee; font-variant-numeric:tabular-nums; }
   th:first-child, td:first-child { text-align:left; }
@@ -140,6 +144,14 @@
     </section>
 
     <aside>
+      <div class="box powers">
+        <h2>Poderes (modo animales)</h2>
+        <ul class="powerList">
+          <li><b>Hongo (2):</b> en tu zona de comidas, al hacer una comida podés gastarlo para ampliar en 1 el rango de comida de ese movimiento. Sale del juego y deja de contar en tu zona.</li>
+          <li><b>Hormiga (3):</b> mientras esté visible, mueve su pila una casilla ortogonal a un espacio vacío. Reemplaza comer en tu turno.</li>
+          <li><b>Escarabajo (4):</b> en tu zona de comidas, gastalo para empujar una pila de tu tablero hasta 3 huecos en línea recta. No puede saltar ni empujar otras cartas. Reemplaza comer en tu turno.</li>
+        </ul>
+      </div>
       <div class="box">
         <h2>Total acumulado</h2>
         <table><tbody id="totals"></tbody></table>
@@ -156,7 +168,12 @@
   <section class="rules">
     <details open>
       <summary>Objetivo</summary>
-      <p>Tener la menor cantidad de puntos al final de la ronda. Cada carta visible en tu zona (tu cuadrado) suma 3 puntos, sea de quien sea. Cada carta que queda en tu zona de cartas comidas resta 1, sea propia o ajena. Gana el que menos puntos tiene.</p>
+      <p>Al final de la ronda se suma el puntaje según el modo elegido. Los modos no se pueden cambiar durante la partida.</p>
+      <ul>
+        <li><b>Modo Cantidades:</b> 3 puntos por cada carta visible en tu tablero, sea de quien sea, y -1 por cada carta en tu zona de comidas. Gana el que menos tiene.</li>
+        <li><b>Modo Suma:</b> suma de los números visibles en tu tablero (positivo), y -1 por cada carta en tu zona de comidas. Gana el que menos tiene.</li>
+        <li><b>Modo Puntos positivos:</b> suma el valor de todas las cartas de tu zona de comidas (también las que estaban abajo de cada pila), y resta el valor de tus cartas visibles en tu tablero (no las que estuvieran debajo de una pila). Gana el que MÁS tiene.</li>
+      </ul>
     </details>
     <details>
       <summary>Preparación</summary>
@@ -173,10 +190,11 @@
         <li>Para comer, elegís una carta visible de tu cuadrado (en magenta), sea tuya o ajena, y la movés UN espacio ortogonal sobre una carta más chica (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
         <li><b>Modo animales:</b> cada número es un organismo (1 Pasto, 2 Hongo, 3 Hormiga, 4 Escarabajo, 5 Araña, 6 Lagartija, 7 Benteveo, 8 Halcón), con 2 cartas de cada uno. Cada carta come solo a los números que indica su renglón "Come a", y no se usa la regla de distancia.</li>
-        <li><b>Hongo en tu zona de comidas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de restarte 1. No es una acción: es solo la ampliación.</li>
-        <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, se puede mover un casillero ortogonal a un espacio vacío, todas las veces que quieras. Cada movimiento reemplaza tu turno y arrastra todo lo que tenga debajo. Los bots lo usan solo si les permite comer más.</li>
-        <li><b>Pasto propio comido:</b> nunca pasa a otro jugador. Se pierde (sale del juego). <i>En revisión.</i></li>
-        <li>Si hay alguna comida legal, tenés que comer. Solo podés mover si no tenés ninguna comida.</li>
+        <li><b>Hongo en tu zona de comidas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de contar en tu zona de comidas. No es una acción: es solo la ampliación.</li>
+        <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, puede moverse una casilla ortogonal a un espacio vacío. Reemplaza comer en tu turno: no comés ese turno. Arrastra todo lo que tenga debajo.</li>
+        <li><b>Bots:</b> usan los poderes cuando les da más comidas (o comer números más altos en modo Puntos positivos).</li>
+        <li><b>Poder del escarabajo:</b> usa un escarabajo de tu zona de comidas (botón "Usar escarabajo"). Empuja una pila de tu tablero, sea de quien sea, a un hueco contiguo en línea recta (1, 2 o 3 espacios). No se puede empujar, saltar ni poner encima de otra carta. Reemplaza comer en tu turno.</li>
+        <li>Si hay alguna comida legal, tenés que comer (podés usar antes un poder de hormiga o escarabajo). Si no tenés ninguna comida, podés usar poderes, hacer el desarme de pilas, o salir de la ronda si no podés mover nada.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
         <li><b>Si comés una carta propia visible:</b> toda su pila (con lo que tenga debajo) pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna). Al final del turno. No te resta puntos.</li>
         <li><b>Si comés una carta ajena visible:</b> toda su pila va a tu zona de cartas comidas (la tira debajo de tu cuadrado). Ahí te resta 1 por cada carta de la pila.</li>
@@ -188,8 +206,8 @@
     <details>
       <summary>Mover</summary>
       <ul>
-        <li>Podés mover SOLO la carta de arriba de una pila de dos o más cartas, a un espacio vacío adyacente de tu cuadrado (▫). Lo que quedó debajo se queda donde está.</li>
-        <li>Solo se permite si después del movimiento hay alguna comida que involucre a esa carta: la puede comer otra, o ella puede comer.</li>
+        <li>Podés mover SOLO la carta de arriba de una pila de dos o más cartas, a un espacio vacío adyacente de tu cuadrado (▫). Lo que quedó debajo se queda donde está. Reemplaza comer en tu turno.</li>
+        <li>Si no tenés ninguna comida, podés hacer el desarme aunque no genere comidas, siempre que haya un hueco vecino vacío. Los bots solo lo hacen si después hay una comida que involucre a esa carta.</li>
         <li>El turno termina con el movimiento.</li>
         <li>Los bots comen siempre lo máximo que pueden. Si no pueden comer, mueven la carta de arriba que les dé más comidas seguidas; a igualdad, una al azar.</li>
       </ul>
@@ -204,8 +222,8 @@
       <summary>Fin de ronda</summary>
       <ul>
         <li>La ronda termina cuando ya salieron todos los jugadores, o cuando a un jugador le queda una sola carta propia visible en su cuadrado.</li>
-        <li>Puntaje de la ronda: 3 por cada carta visible en tu zona, -1 por cada carta en tu zona de cartas comidas.</li>
-        <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que menos puntos suma.</li>
+        <li>Puntaje de la ronda: según el modo elegido (ver Objetivo).</li>
+        <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que menos puntos suma (en Puntos positivos, el que más). En empate, gana el que tenga menos cartas en su zona de comidas.</li>
         <li>Íconos: <span class="ic ic-vis"><i></i></span> cartas visibles en tu zona · <span class="ic ic-gray">↓</span> carta en tu zona de comidas (resta 1).</li>
       </ul>
     </details>
@@ -278,7 +296,7 @@
     NAMES = ['Vos', ...shuffle(PLAYER_NAMES.slice()).slice(0, N - 1)];
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], selected: null, chain: null, chainMove: false,
-          roundOver: false, gameOver: false, busy: false,
+          roundOver: false, gameOver: false, busy: false, started: false, pushSel: null, antUsed: false,
           lastNote: '', loggedNote: '', log: [], out: [], zone: [], queue: [] };
     buildRound();
     render();
@@ -332,6 +350,11 @@
     return S.quads[p].filter(a => a.length).length;
   }
 
+  // Suma de los valores de todas las cartas de la zona de comidas (incluye las que estaban abajo de cada pila)
+  function zoneSum(p) {
+    return S.zone[p].reduce((s, c) => s + c.v, 0);
+  }
+
   // Suma de los números visibles en el propio cuadrado
   function visibleSum(p) {
     return S.quads[p].reduce((s, a) => s + (a.length ? a[a.length - 1].v : 0), 0);
@@ -343,8 +366,10 @@
 
   // 3 por carta visible en la zona - 1 por cada carta en la zona de comidas
   function roundPts(p) {
+    const z = S.zone[p].length;
+    if (SCORE_MODE === 'positivos') return zoneSum(p) - visibleSum(p);   // gana el que más tiene
     const pos = SCORE_MODE === 'suma' ? visibleSum(p) : 3 * visibleCount(p);
-    return pos - S.zone[p].length;
+    return pos - z;
   }
 
   function nbrs(i) {
@@ -399,13 +424,14 @@
   }
 
   // Mover: solo la carta de arriba de una pila de 2+, a un espacio vacío, si después hay una comida que la involucre.
-  function stackMoves(p) {
+  // free = true (humano): puede mover sin que la carta genere comida.
+  function stackMoves(p, free = false) {
     const moves = [];
     for (let i = 0; i < cellCount(); i++) {
       if (S.quads[p][i].length < 2) continue;
       nbrs(i).forEach(j => {
         if (S.quads[p][j].length !== 0) return;
-        if (eatsInvolving(p, i, j) > 0) moves.push({ t: 'stack', q: p, x: i, y: j });
+        if (free || eatsInvolving(p, i, j) > 0) moves.push({ t: 'stack', q: p, x: i, y: j });
       });
     }
     return moves;
@@ -415,9 +441,14 @@
   function legalFor(p) {
     if (S.chain) return legalMoves(p).filter(m => m.x === S.chain.x && m.q === S.chain.q);
     const eats = legalMoves(p);
+    if (S.antUsed) return eats;   // ya moviste una hormiga en este turno: ahora tenés que comer
     const ants = (ANIMAL && p === 0) ? antMoves(p) : [];   // poder de la hormiga: solo el humano
     if (MOVE_ALWAYS) return eats.concat(stackMoves(p), ants);
-    return eats.length ? eats.concat(ants) : stackMoves(p).concat(ants);
+    if (eats.length) return eats.concat(ants);
+    // Sin comidas. Humano: desarme de pilas y hormigas libres (sin exigir comida).
+    // Bots: desarme solo si genera comida; la hormiga la deciden con bestAnt.
+    if (p === 0) return stackMoves(0, true).concat(ants);
+    return stackMoves(p);
   }
 
   // Poder de la hormiga (modo animales): una hormiga visible en tu cuadrado mueve su pila un casillero
@@ -435,6 +466,7 @@
   }
 
   function doAnt(p, m) {
+    S.started = true;
     const pile = S.quads[m.q][m.x].splice(0);
     S.quads[m.q][m.y].push(...pile);
     S.selected = null; S.chain = null; S.chainMove = false;
@@ -445,10 +477,75 @@
   function antGain(p, m) {
     const pile = S.quads[p][m.x].splice(0);
     S.quads[p][m.y].push(...pile);
-    const n = legalMoves(p).length;
+    const n = maxChain(p);
     const back = S.quads[p][m.y].splice(0);
     S.quads[p][m.x].push(...back);
     return n;
+  }
+
+  // Máximo de comidas seguidas (en cadena, de cualquier largo) que puede hacer una carta desde la casilla x.
+  function chainFrom(p, x, depth) {
+    if (depth === 0) return 0;
+    let best = 0;
+    legalMoves(p).filter(m => m.x === x).forEach(m => {
+      const mover = S.quads[p][x].splice(0);
+      const target = S.quads[p][m.y].splice(0);
+      S.quads[p][m.y].push(...mover);
+      const r = 1 + chainFrom(p, m.y, depth - 1);
+      const back = S.quads[p][m.y].splice(0);
+      S.quads[p][x].push(...back);
+      S.quads[p][m.y].push(...target);
+      best = Math.max(best, r);
+    });
+    return best;
+  }
+
+  // Máximo de comidas en cadena que puede hacer el jugador p en su tablero, con cualquiera de sus cartas.
+  function maxChain(p) {
+    let best = 0;
+    new Set(legalMoves(p).map(m => m.x)).forEach(x => { best = Math.max(best, chainFrom(p, x, Infinity)); });
+    return best;
+  }
+
+  // Bots: legales del turno. El hongo se gasta solo si con el bonus puede comer más que sin él.
+  function botLegal(p) {
+    BOOST = 0;
+    const base = legalFor(p);
+    if (ANIMAL && S.zone[p].some(c => c.v === 2)) {
+      const nBase = base.filter(m => m.t === 'eat').length;
+      BOOST = 1;
+      const boosted = legalFor(p);
+      if (boosted.filter(m => m.t === 'eat').length > nBase) return boosted;
+      BOOST = 0;
+    }
+    return base;
+  }
+
+  // Humano: ¿puede mover algo? Movimientos normales, hormigas, o un escarabajo con un empuje posible.
+  // El hongo no mueve nada, así que no cuenta.
+  function humanCanMove() {
+    if (legalFor(0).length > 0) return true;
+    if (!ANIMAL || !S.zone[0].some(c => c.v === 4)) return false;
+    return S.quads[0].some((a, x) => a.length > 0 && pushTargets(0, x).length > 0);
+  }
+
+  // Bots: el mejor empuje del escarabajo, solo si les da más comidas.
+  function bestPush(p) {
+    if (!ANIMAL || !S.zone[p].some(c => c.v === 4)) return null;
+    const base = legalMoves(p).length;
+    let best = null;
+    for (let x = 0; x < cellCount(); x++) {
+      if (!S.quads[p][x].length) continue;
+      pushTargets(p, x).forEach(({ y }) => {
+        const pile = S.quads[p][x].splice(0);
+        S.quads[p][y].push(...pile);
+        const n = legalMoves(p).length;
+        const back = S.quads[p][y].splice(0);
+        S.quads[p][x].push(...back);
+        if (n > base && (!best || n - base > best.g)) best = { x, y, g: n - base };
+      });
+    }
+    return best;
   }
 
   // Bots: la mejor movida de hormiga, solo si después puede comer algo.
@@ -466,15 +563,13 @@
   // Pila con carta propia arriba: pasa entera al vecino al final del turno (sin penalidad).
   // Pila con carta ajena arriba: va entera a la zona de cartas comidas de quien come.
   function doEat(p, m) {
+    S.started = true;
     const mover = S.quads[m.q][m.x].splice(0);
     const pile = S.quads[m.q][m.y].splice(0);
     S.quads[m.q][m.y].push(...mover);
     S.selected = null;
     const top = pile[pile.length - 1];
-    if (ANIMAL && top.v === 1 && top.c === p) {
-      // Pasto propio comido: nunca pasa a nadie, se pierde (sale del juego). En revisión.
-      logLine(`${NAMES[p]} comió su Pasto ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)}: se pierde.`);
-    } else if (top.c === p) {
+    if (top.c === p) {
       const to = (top.v % 2 === 0) ? (p - 1 + N) % N : (p + 1) % N;
       S.queue.push({ pile, idx: m.y, to });
       logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo pasa a ${NAMES[to]}`);
@@ -487,6 +582,7 @@
 
   // Mueve solo la carta de arriba a un espacio vacío. Termina el turno.
   function doStack(p, m) {
+    S.started = true;
     const card = S.quads[m.q][m.x].pop();
     S.quads[m.q][m.y].push(card);
     S.selected = null; S.chain = null; S.chainMove = false;
@@ -556,6 +652,7 @@
 
   function advance(p) {
     BOOST = 0;
+    PUSH = 0;
     if (endCheck()) { endRound(); return; }
     S.turn = nextActive(p);
     render();
@@ -564,11 +661,12 @@
 
   function runTurn() {
     const t = S.turn;
-    // Bots: si tienen un hongo en su zona, el bonus se usa siempre que les permita comer
-    BOOST = (t !== 0 && ANIMAL && S.zone[t].some(c => c.v === 2)) ? 1 : 0;
-    const L = legalFor(t);
+    S.antUsed = false;   // una hormiga por turno
+    const L = t !== 0 ? botLegal(t) : legalFor(t);
 
-    if (L.length === 0 && !(t !== 0 && bestAnt(t))) {
+    // Sin movimientos: antes de salir, el jugador (o el bot) prueba los poderes que le den comidas
+    const canAct = t !== 0 ? (bestAnt(t) || bestPush(t)) : humanCanMove();
+    if (L.length === 0 && !canAct) {
       passTurn(t, t === 0 ? 'No tenés comidas ni movimientos: salís de la ronda.' : `${NAMES[t]} no tenía movimientos y salió de la ronda.`);
       return;
     }
@@ -596,7 +694,7 @@
 
   function eatScore(p, m) {
     const y = topOf(m.q, m.y);
-    return contEats(p, m) * 100 + (y.c === p ? 10 : 20) + Math.random();
+    return contEats(p, m) * 100 + (y.c === p ? 10 : 20) + (SCORE_MODE === 'positivos' ? y.v : 0) + Math.random();
   }
 
   // Comidas que la carta movida tendría desde su nueva casilla (incluye la carta de debajo que queda en el origen).
@@ -620,19 +718,32 @@
     const p = S.turn;
     if (S.gameOver || S.roundOver || p === 0 || S.out[p]) return;   // solo juega el bot de turno
     S.busy = false;
-    BOOST = (ANIMAL && S.zone[p].some(c => c.v === 2)) ? 1 : 0;
-    let L = legalFor(p);
-    if (BOOST && !L.some(m => m.t === 'eat')) { BOOST = 0; L = legalFor(p); }   // el bonus solo sirve si permite comer
+    let L = botLegal(p);
     const eats = L.filter(m => m.t === 'eat');
 
-    // Hormiga: el bot la usa si le permite comer más que lo que puede comer ahora
-    const antBest = bestAnt(p);
-    if (antBest && (eats.length === 0 || antBest.g > eats.length)) {
+    // Escarabajo: el bot lo usa si el empuje le da más comidas
+    const pb = bestPush(p);
+    if (pb) {
+      S.lastNote = '';
+      S.selected = { q: p, x: pb.x };
+      render();
+      later(() => {
+        doPush(p, pb.x, pb.y);
+        render();
+        passNext(p);
+      });
+      return;
+    }
+
+    // Hormiga: una vez por turno, si después puede comer más en cadena
+    const antBest = S.antUsed ? null : bestAnt(p);
+    if (antBest && antBest.g > maxChain(p)) {
       S.lastNote = '';
       S.selected = { q: antBest.m.q, x: antBest.m.x };
       render();
       later(() => {
         doAnt(p, antBest.m);
+        S.antUsed = true;
         render();
         passNext(p);
       });
@@ -700,10 +811,60 @@
     logLine(`${NAMES[p]} gastó un hongo de su zona: amplió en 1 el rango de comida.`);
   }
 
+  // Escarabajo (modo animales): gasta un escarabajo de tu zona de comidas para empujar una pila de tu tablero
+  // a un hueco contiguo en línea recta (1, 2 o 3 espacios). Sin saltar ni empujar otras cartas. No ocupa turno.
+  let PUSH = 0;
+  function pushTargets(p, x) {
+    const r0 = Math.floor(x / COLS), c0 = x % COLS, out = [];
+    [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dr, dc]) => {
+      for (let k = 1; k <= 3; k++) {
+        const r = r0 + dr * k, c = c0 + dc * k;
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) break;
+        const y = r * COLS + c;
+        if (S.quads[p][y].length !== 0) break;   // hay otra carta: no se empuja, no se pone encima ni se salta
+        out.push({ y });
+      }
+    });
+    return out;
+  }
+
+  function doPush(p, x, y) {
+    S.started = true;
+    const pile = S.quads[p][x].splice(0);
+    S.quads[p][y].push(...pile);
+    const i = S.zone[p].findIndex(c => c.v === 4);   // 4 = Escarabajo
+    if (i >= 0) S.zone[p].splice(i, 1);
+    S.lastNote = `${NAMES[p]} usó el escarabajo: empujó su pila de ${labelOf(p, x)} a ${labelOf(p, y)}.`;
+  }
+
+  function togglePush() {
+    PUSH = PUSH ? 0 : 1;
+    S.pushSel = null;
+    S.selected = null;
+    render();
+  }
+
   // El jugador toca un cuadrado o un destino.
   function onCell(q, i) {
     if (S.gameOver || S.roundOver) return;
     if (S.turn !== 0 || S.busy) return;
+
+    if (PUSH) {
+      if (q !== 0) return;
+      if (S.pushSel === null) {
+        if (S.quads[0][i].length) { S.pushSel = i; render(); }
+        return;
+      }
+      if (i === S.pushSel) { S.pushSel = null; render(); return; }
+      if (pushTargets(0, S.pushSel).some(t => t.y === i)) {
+        // El escarabajo reemplaza comer: termina el turno
+        doPush(0, S.pushSel, i);
+        PUSH = 0;
+        S.pushSel = null;
+        passNext(0);
+      }
+      return;
+    }
 
     const legal = legalFor(0);
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
@@ -718,8 +879,9 @@
           render();
           afterEat(0, res);
         } else if (ok.t === 'ant') {
+          // La hormiga reemplaza comer: termina el turno
           doAnt(0, ok);
-          render();
+          S.antUsed = true;
           passNext(0);
         } else {
           doStack(0, ok);
@@ -740,7 +902,7 @@
   // Solo se puede salir si no hay comidas
   function humanPass() {
     if (S.turn !== 0 || S.busy || S.roundOver || S.gameOver || S.chain) return;
-    if (legalMoves(0).length > 0) return;
+    if (humanCanMove()) return;
     passTurn(0, 'Saliste de la ronda. Tu tablero y tu zona de cartas comidas quedan como están y ya no recibís cartas.');
   }
 
@@ -807,11 +969,20 @@
     if (S.log.length > 120) S.log.length = 120;
   }
 
+  const SCORE_LABEL = { cantidades: 'Modo: Cantidades', suma: 'Modo: Suma', positivos: 'Modo: Puntos positivos' };
+  const SCORE_TEXT = {
+    cantidades: 'Cantidades: 3 pts por cada carta visible en tu tablero, y -1 por cada carta en tu zona de comidas. Gana el que menos tiene.',
+    suma: 'Suma: positivo por la suma de los números visibles en tu tablero, y -1 por cada carta en tu zona de comidas. Gana el que menos tiene.',
+    positivos: 'Puntos positivos: suma el valor de las cartas de tu zona de comidas (también las de abajo de cada pila) y resta el valor de tus cartas visibles. Gana el que MÁS tiene.'
+  };
+
   function updateScoreUI() {
-    document.getElementById('scoreMode').textContent = SCORE_MODE === 'suma' ? 'Modo: Suma' : 'Modo: Cantidades';
-    document.getElementById('scoreText').textContent = SCORE_MODE === 'suma'
-      ? 'Suma: positivo por la suma de los números visibles en tu zona, y -1 por cada carta en tus comidas. Gana el que menos tiene.'
-      : 'Cantidades: 3 pts por cada carta visible en tu zona, y -1 por cada carta en tus comidas. Gana el que menos tiene.';
+    document.getElementById('scoreMode').textContent = SCORE_LABEL[SCORE_MODE];
+    document.getElementById('scoreText').textContent = SCORE_TEXT[SCORE_MODE];
+    // Los modos no se pueden cambiar durante la partida; se libera al terminar.
+    const locked = S.started && !S.gameOver;
+    document.getElementById('animal').disabled = locked;
+    document.getElementById('scoreMode').disabled = locked;
   }
 
   function render() {
@@ -819,7 +990,8 @@
     document.getElementById('roundInfo').textContent =
       S.gameOver ? 'Juego terminado' : `Ronda ${S.round + 1} de ${ROUNDS}`;
 
-    const legal = S.turn === 0 && !S.roundOver && !S.gameOver ? legalFor(0) : [];
+    const legal = S.turn === 0 && !S.roundOver && !S.gameOver && !PUSH ? legalFor(0) : [];
+    const pushT = (PUSH && S.pushSel !== null) ? pushTargets(0, S.pushSel) : [];
     const eatsH = legal.filter(m => m.t === 'eat');
     const stacksH = legal.filter(m => m.t === 'stack');
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
@@ -838,8 +1010,9 @@
       box.style.gridRow = seats.pos[p][0];
       box.style.gridColumn = seats.pos[p][1];
       const badge = S.out[p] ? '<span class="badge">Fuera</span>' : '';
-      const vis = 3 * visibleCount(p);
+      const vis = SCORE_MODE === 'positivos' ? -visibleSum(p) : 3 * visibleCount(p);
       const sumVis = visibleSum(p);
+      const zoneVal = SCORE_MODE === 'positivos' ? zoneSum(p) : -S.zone[p].length;
       const ownZ = zoneOwn(p);
       const forZ = 2 * zoneFor(p);
       box.innerHTML =
@@ -848,8 +1021,8 @@
         `<div class="score">` +
           (SCORE_MODE === 'suma'
             ? `<span>Suma <b>${sumVis}</b> → <b>+${sumVis}</b></span>`
-            : `<span><b>${visibleCount(p)}</b> <span class="ic ic-vis"><i></i></span> → <b>+${vis}</b></span>`) +
-          `<span><b>${S.zone[p].length}</b> <span class="ic ic-gray">↓</span> → <b>-${S.zone[p].length}</b></span>` +
+            : `<span><b>${visibleCount(p)}</b> <span class="ic ic-vis"><i></i></span> → <b>${vis > 0 ? '+' : ''}${vis}</b></span>`) +
+          `<span><b>${S.zone[p].length}</b> <span class="ic ic-gray">↓</span> → <b>${zoneVal > 0 ? '+' : ''}${zoneVal}</b></span>` +
         `</div>`;
 
       // Caja del tablero: laterales con ancho y alto invertidos
@@ -925,6 +1098,16 @@
           d.appendChild(mk);
         }
         if (!sel && legal.some(m => m.q === p && m.x === i)) d.classList.add('can');
+        if (PUSH && p === 0 && !S.roundOver && !S.gameOver) {
+          if (S.pushSel === i) d.classList.add('selected');
+          else if (S.pushSel !== null && pushT.some(t => t.y === i)) {
+            d.classList.add('target');
+            const mk = document.createElement('span');
+            mk.className = 'mark';
+            mk.textContent = '▫';
+            d.appendChild(mk);
+          } else if (S.pushSel === null && c) d.classList.add('can');
+        }
         d.addEventListener('click', () => onCell(p, i));
         grid.appendChild(d);
       }
@@ -982,12 +1165,13 @@
     });
 
     // Texto de estado, en el centro de la cruz
-    const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain && eatsH.length === 0 && legal.length > 0;
+    // Salir solo si no hay ninguna comida, movimiento ni poder utilizable
+    const canPass = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain && !PUSH && legal.length === 0 && !humanCanMove();
 
     let text;
     if (S.gameOver) {
-      // Gana el de menos puntos; en empate, el que tenga menos cartas en su zona de comidas
-      const min = Math.min(...S.totals);
+      // Gana el de menos puntos (en modo puntos positivos, el de más); en empate, el que tenga menos cartas en su zona de comidas
+      const min = SCORE_MODE === 'positivos' ? Math.max(...S.totals) : Math.min(...S.totals);
       let tied = S.totals.map((t, i) => (t === min ? i : -1)).filter(i => i >= 0);
       let why = '';
       if (tied.length > 1) {
@@ -1028,6 +1212,10 @@
     else if (canPass) btn = '<button id="passBtn">Salir de la ronda</button>';
     else if (S.chain && S.turn === 0) btn = '<button id="chainEnd" class="primary">Listo</button>';
     const canBoost = ANIMAL && S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy && S.zone[0].some(c => c.v === 2);
+    const canPush = ANIMAL && S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy && S.zone[0].some(c => c.v === 4);
+    if (canPush) btn += PUSH
+      ? '<button id="pushBtn" class="primary">Escarabajo: cancelar</button>'
+      : '<button id="pushBtn">Usar escarabajo: empujar</button>';
     if (canBoost) btn += BOOST
       ? '<button id="boostBtn" class="primary">Ampliar -1: activado (cancelar)</button>'
       : '<button id="boostBtn">Gastar hongo: ampliar -1</button>';
@@ -1062,13 +1250,14 @@
     if (e.target.id === 'nextRound') nextRound();
     if (e.target.id === 'passBtn') humanPass();
     if (e.target.id === 'boostBtn') { BOOST = BOOST ? 0 : 1; render(); }
+    if (e.target.id === 'pushBtn') togglePush();
     if (e.target.id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);
   document.getElementById('bots').addEventListener('change', newGame);
   document.getElementById('animal').addEventListener('change', newGame);
   document.getElementById('scoreMode').addEventListener('click', () => {
-    SCORE_MODE = SCORE_MODE === 'suma' ? 'cantidades' : 'suma';
+    SCORE_MODE = SCORE_MODE === 'cantidades' ? 'suma' : SCORE_MODE === 'suma' ? 'positivos' : 'cantidades';
     render();
   });
 

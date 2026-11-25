@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cadenas — prototipo</title>
+<title>CADENA TRÓFICA - prototipo</title>
 <style>
   :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --orange:#f08c00; --red:#c0392b; }
   * { box-sizing: border-box; }
@@ -24,7 +24,7 @@
   .layout { display:grid; grid-template-columns:1fr 260px; gap:18px; align-items:start; }
   @media (max-width:860px) { .layout { grid-template-columns:1fr; } }
 
-  #table { display:grid; grid-template-columns:repeat(3, minmax(210px,1fr)); grid-template-rows:auto auto auto; gap:12px; }
+  #table { display:grid; grid-template-columns:minmax(210px,1fr) 240px minmax(210px,1fr); grid-template-rows:auto auto auto; gap:6px 12px; }
   .quad { background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px; }
   .quad.active { border-color:var(--accent); }
   .quad.mine { border-color:var(--mine); }
@@ -32,6 +32,7 @@
   .qhead { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:0.9rem; flex-wrap:wrap; }
   .qhead .dot { width:13px; height:13px; border-radius:50%; }
   .qhead .qname { font-weight:700; flex:1; }
+  .qhead .qtot { font-weight:700; font-size:1rem; font-variant-numeric:tabular-nums; }
   .badge { color:#fff; background:var(--red); border-radius:4px; padding:1px 6px; font-size:0.75rem; font-weight:700; }
   .score { display:flex; flex-wrap:wrap; gap:2px 10px; font-size:0.82rem; color:#333; margin:0 0 6px; font-variant-numeric:tabular-nums; align-items:center; }
   .score b { font-size:0.9rem; }
@@ -39,6 +40,7 @@
   .ic-own { border:2px solid #fff; box-shadow:0 0 0 1px #555; }
   .ic-for { background:#222; }
   .ic-vis { background:#222; }
+  .ic-vis i { display:block; width:7px; height:7px; background:#fff; }
   .ic-gray { background:#999; }
 
   /* Caja del tablero: para los laterales, ancho y alto invertidos */
@@ -64,7 +66,7 @@
   .zown { box-shadow: 0 0 0 2px #fff, 0 0 0 3px #555; }
   .zfor { box-shadow: 0 0 0 2px #222; }
 
-  .centerBox { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:8px; min-height:120px; }
+  .centerBox { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:8px; min-height:90px; }
   .msgText { font-size:0.98rem; line-height:1.4; }
   .turnTag { display:inline-flex; align-items:center; gap:8px; padding:4px 14px; border-radius:999px; color:#fff; font-weight:700; font-size:0.95rem; }
   .pulse { animation: pulse 1s infinite; }
@@ -77,6 +79,10 @@
   th:first-child, td:first-child { text-align:left; }
   .sw { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
 
+  .log { margin-top:18px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 14px; }
+  .log h2 { font-size:0.95rem; margin:0 0 6px; }
+  #log { max-height:220px; overflow-y:auto; }
+  .logLine { font-size:0.85rem; padding:3px 0; border-bottom:1px solid #eee; display:flex; flex-wrap:wrap; align-items:center; gap:4px; }
   .rules { margin-top:22px; }
   .rules details { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 16px; margin-bottom:10px; }
   .rules summary { cursor:pointer; font-weight:700; }
@@ -86,7 +92,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Cadenas — prototipo</h1>
+    <h1>CADENA TRÓFICA</h1>
+    <div class="roundinfo">Prototipo de Román Ripari</div>
     <div class="roundinfo" id="roundInfo"></div>
   </header>
 
@@ -97,16 +104,8 @@
         <option value="3" selected>3 bots (4 jugadores)</option>
       </select>
     </label>
-    <label>Filas
-      <select id="rows">
-        <option value="3">3 filas (12 cartas)</option>
-        <option value="4" selected>4 filas (16 cartas)</option>
-        <option value="5">5 filas (20 cartas)</option>
-      </select>
-    </label>
-    <label>Rondas <input type="number" id="rounds" min="1" max="10" value="4"></label>
     <button class="primary" id="newGame">Nueva partida</button>
-    <span class="muted">Puntos: 3 por carta visible en tu zona · −1 por propia en tus comidas · −2 por ajena en tus comidas. Gana el que menos tiene.</span>
+    <span class="muted">Puntos: 3 por carta visible en tu zona · -1 por cada carta en tus comidas. Gana el que menos tiene.</span>
   </div>
 
   <div class="layout">
@@ -126,17 +125,19 @@
     </aside>
   </div>
 
+  <section class="log"><h2>Registro</h2><div id="log"></div></section>
+
   <section class="rules">
     <details open>
       <summary>Objetivo</summary>
-      <p>Tener la menor cantidad de puntos al final de la ronda. Cada carta visible en tu zona (tu cuadrado) suma 3 puntos, sea de quien sea. Cada carta que queda en tu zona de cartas comidas resta: 1 si es propia, 2 si es ajena. Gana el que menos puntos tiene.</p>
+      <p>Tener la menor cantidad de puntos al final de la ronda. Cada carta visible en tu zona (tu cuadrado) suma 3 puntos, sea de quien sea. Cada carta que queda en tu zona de cartas comidas resta 1, sea propia o ajena. Gana el que menos puntos tiene.</p>
     </details>
     <details>
       <summary>Preparación</summary>
       <ul>
-        <li>Cada jugador tiene un cuadrado de 4 columnas (a–d) y la cantidad de filas elegida (3, 4 o 5). Sus cartas son de su color, numeradas del 1 al total de casillas, sin huecos.</li>
+        <li>Cada jugador tiene un cuadrado de 4 columnas (a-d) y 4 filas (16 cartas). Sus cartas son de su color, numeradas del 1 al total de casillas, sin huecos.</li>
         <li>La casilla a1 (arriba a la izquierda antes de girar el cuadrado) va marcada levemente.</li>
-        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores no hay cuadrado arriba.</li>
+        <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores, los otros dos cuadrados quedan arriba a la izquierda y a la derecha, formando un triángulo.</li>
         <li>Debajo de cada cuadrado hay una tira: tu zona de cartas comidas.</li>
       </ul>
     </details>
@@ -148,9 +149,9 @@
         <li>Si hay alguna comida legal, tenés que comer. Solo podés mover si no tenés ninguna comida.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
         <li><b>Si comés una carta propia visible:</b> toda su pila (con lo que tenga debajo) pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna). Al final del turno. No te resta puntos.</li>
-        <li><b>Si comés una carta ajena visible:</b> toda su pila va a tu zona de cartas comidas (la tira debajo de tu cuadrado). Ahí te resta: 2 por cada ajena y 1 por cada propia que venga debajo.</li>
+        <li><b>Si comés una carta ajena visible:</b> toda su pila va a tu zona de cartas comidas (la tira debajo de tu cuadrado). Ahí te resta 1 por cada carta de la pila.</li>
         <li><b>Encadenar:</b> si después de comer, la misma carta puede volver a comer, sigue comiendo en el mismo turno.</li>
-        <li>Cada cuadrado tiene dos mitades (columnas a–b y c–d), y cada mitad va a un vecino: ← al de la izquierda, → al de la derecha.</li>
+        <li>Una pila propia cuya carta visible tiene número PAR pasa al vecino de la derecha; si es IMPAR, al de la izquierda. Se pone en la misma casilla, con todo lo que tenga abajo, y tapa lo que hubiera.</li>
         <li>Las cartas tapadas se ven como números en la esquina inferior izquierda de la carta, separados por comas.</li>
       </ul>
     </details>
@@ -173,9 +174,9 @@
       <summary>Fin de ronda</summary>
       <ul>
         <li>La ronda termina cuando ya salieron todos los jugadores, o cuando a un jugador le queda una sola carta propia visible en su cuadrado.</li>
-        <li>Puntaje de la ronda: 3 por cada carta visible en tu zona, −1 por cada propia en tu zona de cartas comidas, −2 por cada ajena en tu zona de cartas comidas.</li>
-        <li>Se juegan tantas rondas como jugadores (opcional en esta demo). Cada ronda se rearma desde cero. Gana el que menos puntos suma.</li>
-        <li>Íconos: <span class="ic ic-vis">✕</span> cartas visibles en tu zona · <span class="ic ic-own" style="background:#999">↓</span> propia comida (en tu zona de comidas, del color propio) · <span class="ic ic-gray">↓</span> ajena comida (gris).</li>
+        <li>Puntaje de la ronda: 3 por cada carta visible en tu zona, -1 por cada carta en tu zona de cartas comidas.</li>
+        <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que menos puntos suma.</li>
+        <li>Íconos: <span class="ic ic-vis"><i></i></span> cartas visibles en tu zona · <span class="ic ic-gray">↓</span> carta en tu zona de comidas (resta 1).</li>
       </ul>
     </details>
   </section>
@@ -183,21 +184,25 @@
 
 <script>
   const COLORS = ['#d9644a', '#3b6e8f', '#5a9e5a', '#8a6cb8'];
-  const NAMES  = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
+  let NAMES = ['Vos', 'Bot 1', 'Bot 2', 'Bot 3'];
+  const PLAYER_NAMES = ['Lucía','Ana','Patri','Sofía','Carla','Laura','Julián','Bruno','Lucho','Nahuel','Augusto','Ale','Joaco','Gonza','Quimey','Facu','Pepo','Fer','Lito','Caco','Alf','Leo'];
   const LETTERS = ['a', 'b', 'c', 'd'];
-  const COLS = 4;          // siempre 4 columnas: cols a-b y c-d son las mitades
-  const BOT_STEP = 1000;
+  const COLS = 4;
+  const ROWS = 4;          // siempre 4x4          // siempre 4 columnas: cols a-b y c-d son las mitades
+  const BOT_STEP = 667;   // 2/3 de segundo
   // false: mover solo si no hay comidas. true: mover también con comidas disponibles.
   const MOVE_ALWAYS = false;
+  const ROUNDS = 3;
+  // Pasan por paridad: par → vecino de la derecha, impar → vecino de la izquierda. Sin mitades ni espejos.
 
   // Disposición en la cruz según la cantidad de jugadores.
   // Jugador 0 siempre abajo. Con 4: izquierda, arriba, derecha. Con 3: izquierda y derecha.
   function seatsFor(n) {
-    if (n === 3) return { pos: [[3, 2], [2, 1], [2, 3]], rot: [0, 180, -90] };
+    if (n === 3) return { pos: [[2, 2], [1, 1], [1, 3]], rot: [0, 120, 240] };
     return { pos: [[3, 2], [2, 1], [1, 2], [2, 3]], rot: [0, 90, 180, -90] };
   }
 
-  let N, ROUNDS, ROWS, S;
+  let N, S;
   // Generación de partida: los timers de una partida vieja se ignoran.
   let GEN = 0;
 
@@ -219,12 +224,11 @@
   function newGame() {
     GEN++;
     N = +document.getElementById('bots').value + 1;
-    ROWS = +document.getElementById('rows').value;
-    ROUNDS = Math.min(10, Math.max(1, +document.getElementById('rounds').value || N));
+    NAMES = ['Vos', ...shuffle(PLAYER_NAMES.slice()).slice(0, N - 1)];
     S = { round: 0, start: 0, totals: Array(N).fill(0), history: [],
           turn: 0, quads: [], selected: null, chain: null, chainMove: false,
           roundOver: false, gameOver: false, busy: false,
-          lastNote: '', out: [], zone: [], queue: [] };
+          lastNote: '', loggedNote: '', log: [], out: [], zone: [], queue: [] };
     buildRound();
     render();
     runTurn();
@@ -237,6 +241,11 @@
       const vals = shuffle(Array.from({ length: cellCount() }, (_, i) => i + 1));
       S.quads.push(vals.map(v => [{ v, c: p }]));
     }
+    // Antes de arrancar: cada jugador entrega su carta de B2 (fila 2, columna b) al jugador de su izquierda (p+1), en su B2
+    const B2 = COLS * 1 + 1;
+    const given = Array.from({ length: N }, (_, p) => S.quads[p][B2].pop());
+    given.forEach((card, p) => S.quads[(p + 1) % N][B2].push(card));
+    logLine(`Antes de empezar, cada jugador pasa su carta de B2 a la izquierda.`);
     S.turn = S.start;
     S.selected = null; S.chain = null; S.chainMove = false;
     S.roundOver = false; S.busy = false; S.lastNote = '';
@@ -264,9 +273,9 @@
   function zoneOwn(p) { return S.zone[p].filter(c => c.c === p).length; }
   function zoneFor(p) { return S.zone[p].filter(c => c.c !== p).length; }
 
-  // 3 por carta visible en la zona − 1 por propia en la zona de comidas − 2 por ajena en la zona de comidas
+  // 3 por carta visible en la zona - 1 por cada carta en la zona de comidas
   function roundPts(p) {
-    return 3 * visibleCount(p) - zoneOwn(p) - 2 * zoneFor(p);
+    return 3 * visibleCount(p) - S.zone[p].length;
   }
 
   function nbrs(i) {
@@ -281,11 +290,6 @@
   // Come a una carta más chica, como máximo 4 números menos que ella
   function canEat(a, b) {
     return a.v > b.v && a.v - b.v <= 4;
-  }
-
-  // Vecino que recibe la pila propia comida: mitad a-b → p+1, mitad c-d → p-1
-  function receiverFor(p, targetIdx) {
-    return (targetIdx % COLS) < 2 ? (p + 1) % N : (p - 1 + N) % N;
   }
 
   // Comidas: cualquier carta visible del propio cuadrado sobre una visible más chica, adyacente.
@@ -349,9 +353,12 @@
     S.selected = null;
     const top = pile[pile.length - 1];
     if (top.c === p) {
-      S.queue.push({ pile, idx: m.y, to: receiverFor(p, m.y) });
+      const to = (top.v % 2 === 0) ? (p - 1 + N) % N : (p + 1) % N;
+      S.queue.push({ pile, idx: m.y, to });
+      logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo pasa a ${NAMES[to]}`);
     } else {
       S.zone[p].push(...pile);
+      logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo guarda en su zona de comidas`);
     }
     return { pos: { q: m.q, x: m.y } };
   }
@@ -361,9 +368,7 @@
     const card = S.quads[m.q][m.x].pop();
     S.quads[m.q][m.y].push(card);
     S.selected = null; S.chain = null; S.chainMove = false;
-    S.lastNote = p === 0
-      ? `Moviste el ${card.v} a un espacio vacío.`
-      : `${NAMES[p]} movió una carta.`;
+    S.lastNote = `${NAMES[p]} movió el ${card.v} ${chipHtml(card.v, card.c)} a ${labelOf(p, m.y)}.`;
   }
 
   // Encadenar: si la misma carta puede volver a comer, sigue en el turno.
@@ -528,6 +533,7 @@
   function endRound() {
     const pts = Array.from({ length: N }, (_, p) => roundPts(p));
     S.history.push(pts);
+    logLine(`<b>Fin de la ronda ${S.round + 1}.</b> ${pts.map((v, p) => `${NAMES[p]} ${v}`).join(', ')}`);
     pts.forEach((v, p) => { S.totals[p] += v; });
     S.roundOver = true; S.busy = false; S.selected = null;
     S.chain = null; S.chainMove = false; S.queue = [];
@@ -586,17 +592,46 @@
   function passMark(targetIdx, targetCard) {
     if (!targetCard) return '▫';
     if (targetCard.c !== 0) return '✕';
-    return (targetIdx % COLS) < 2 ? '←' : '→';
+    return targetCard.v % 2 === 0 ? '→' : '←';
   }
 
   // Esquina inferior izquierda de la pantalla, expresada en el sistema girado de cada tablero.
-  // rot 0 → abajo-izq; 90 → abajo-der; 180 → arriba-der; −90 → arriba-izq.
-  const SCREEN_BL = {
-    '0':   { v: 'flex-end', h: 'flex-start' },
-    '90':  { v: 'flex-end', h: 'flex-end' },
-    '180': { v: 'flex-start', h: 'flex-end' },
-    '-90': { v: 'flex-start', h: 'flex-start' },
-  };
+  // rot 0 → abajo-izq; 90 → abajo-der; 180 → arriba-der; -90 → arriba-izq.
+  function screenBL(rot) {
+    const t = -rot * Math.PI / 180;
+    const bx = -Math.cos(t) - Math.sin(t);
+    const by = -Math.sin(t) + Math.cos(t);
+    return { h: bx < 0 ? 'flex-start' : 'flex-end', v: by < 0 ? 'flex-start' : 'flex-end' };
+  }
+
+  // Solo 3 jugadores: gira el recuadro completo (nombre, puntos, tablero y zona).
+  // Se achica lo justo para que el recuadro rotado no se salga demasiado.
+  function fitTurn3(el, rot) {
+    if (rot === 0) { el.style.transform = ''; return; }
+    const rad = rot * Math.PI / 180;
+    const c = Math.abs(Math.cos(rad)), s = Math.abs(Math.sin(rad));
+    const w = el.offsetWidth, h = el.offsetHeight;
+    const bw = w * c + h * s;
+    const k = Math.min(1, 1.2 * w / bw);
+    el.style.transform = `rotate(${rot}deg)`;   // mismo tamaño que el tuyo, solo girado
+  }
+
+  // Coordenada tal como se ve en pantalla en el tablero de ese jugador
+  function labelOf(p, i) {
+    const r = Math.floor(i / COLS), c = i % COLS;
+    const rot = seatsFor(N).rot[p];
+    const side = N === 4 && (rot === 90 || rot === -90);
+    return `${LETTERS[side ? COLS - 1 - c : c]}${r + 1}`;
+  }
+
+  function chipHtml(v, c) {
+    return `<span class="zchip" style="background:${COLORS[c]};display:inline-flex;vertical-align:middle;transform:none">${v}</span>`;
+  }
+
+  function logLine(html) {
+    S.log.unshift(html);
+    if (S.log.length > 120) S.log.length = 120;
+  }
 
   function render() {
     document.getElementById('roundInfo').textContent =
@@ -609,6 +644,7 @@
     const seats = seatsFor(N);
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
+    tableEl.style.gridTemplateRows = N === 3 ? 'auto auto' : 'auto auto auto';
 
     for (let p = 0; p < N; p++) {
       const rot = seats.rot[p];
@@ -625,11 +661,10 @@
       const forZ = 2 * zoneFor(p);
       box.innerHTML =
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
-        `<span class="qname">${NAMES[p]}</span>${badge}</div>` +
+        `<span class="qname">${NAMES[p]}</span>${badge}<span class="qtot">${roundPts(p)} pts</span></div>` +
         `<div class="score">` +
-          `<span><b>+${vis}</b> <span class="ic ic-vis">✕</span></span>` +
-          `<span>−${ownZ} <span class="ic ic-own" style="background:${COLORS[p]}">↓</span>propias comidas</span>` +
-          `<span>−${forZ} <span class="ic ic-gray">↓</span>ajenas comidas</span>` +
+          `<span><b>${visibleCount(p)}</b> <span class="ic ic-vis"><i></i></span> → <b>+${vis}</b></span>` +
+          `<span><b>${S.zone[p].length}</b> <span class="ic ic-gray">↓</span> → <b>-${S.zone[p].length}</b></span>` +
         `</div>`;
 
       // Caja del tablero: laterales con ancho y alto invertidos
@@ -642,9 +677,9 @@
       grid.style.width = side ? `${86 * 4 / ROWS}%` : '86%';
       grid.style.aspectRatio = `4 / ${ROWS}`;
       grid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
-      grid.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+      grid.style.transform = N === 3 ? 'translate(-50%, -50%)' : `translate(-50%, -50%) rotate(${rot}deg)`;
 
-      const corner = SCREEN_BL[String(rot)];
+      const corner = screenBL(rot);
 
       for (let i = 0; i < cellCount(); i++) {
         const arr = S.quads[p][i];
@@ -697,7 +732,7 @@
         l.style.left = `${(c + 0.5) * 25}%`;
         l.style.top = '-13px';
         l.style.transform = `translate(-50%, -50%) rotate(${-rot}deg)`;
-        l.textContent = side ? LETTERS[COLS - 1 - c] : LETTERS[c];   // laterales: letras espejadas
+        l.textContent = LETTERS[c];
         grid.appendChild(l);
       }
       for (let r = 0; r < ROWS; r++) {
@@ -716,14 +751,17 @@
       // Zona de cartas comidas: tira horizontal debajo del tablero (no gira)
       const zone = S.zone[p];
       const chips = zone.map(c =>
-        `<span class="zchip ${c.c === p ? 'zown' : 'zfor'}" style="background:${COLORS[c.c]}" title="${c.c === p ? 'propia' : 'ajena'}">${c.v}</span>`
+        `<span class="zchip ${c.c === p ? 'zown' : 'zfor'}" style="background:${COLORS[c.c]};${N === 3 ? `transform:rotate(${-rot}deg)` : ''}" title="${c.c === p ? 'propia' : 'ajena'}">${c.v}</span>`
       ).join('');
       const zoneEl = document.createElement('div');
       zoneEl.className = 'zone';
-      zoneEl.innerHTML = `<span class="ztag">Comidas (${zone.length})</span>${chips}`;
+      zoneEl.innerHTML = `<span class="ztag" style="${N === 3 ? `transform:rotate(${-rot}deg)` : ''}">Comidas (${zone.length})</span>${chips}`;
       box.appendChild(zoneEl);
 
       tableEl.appendChild(box);
+      if (N === 3) fitTurn3(box, rot);
+      if (N === 4 && p === 2) box.style.marginBottom = '-120px';   // Bot 2 baja
+      if (N === 4 && p === 0) box.style.marginTop = '-120px';      // Vos sube
     }
 
     // Texto de estado, en el centro de la cruz
@@ -739,7 +777,7 @@
     } else if (S.turn !== 0) {
       text = `Turno de ${NAMES[S.turn]}…`;
     } else if (S.chain) {
-      text = 'Seguís con la misma carta: movela sobre una naranja.';
+      text = 'Podés seguir comiendo con la misma carta (naranja), o tocar Listo para terminar el turno.';
     } else if (sel) {
       const kind = legal.find(m => m.q === sel.q && m.x === sel.x);
       text = kind && kind.t === 'stack'
@@ -762,12 +800,18 @@
     let btn = '';
     if (S.roundOver && !S.gameOver) btn = '<button id="nextRound" class="primary">Siguiente ronda</button>';
     else if (canPass) btn = '<button id="passBtn">Salir de la ronda</button>';
+    else if (S.chain && S.turn === 0) btn = '<button id="chainEnd" class="primary">Listo</button>';
+
+    if (S.lastNote && S.lastNote !== S.loggedNote) { S.loggedNote = S.lastNote; logLine(S.lastNote); }
+    document.getElementById('log').innerHTML = S.log.map(x => `<div class="logLine">${x}</div>`).join('');
 
     const center = document.createElement('div');
     center.className = 'centerBox';
-    center.style.gridRow = 2;
+    center.style.gridRow = N === 3 ? 1 : 2;
     center.style.gridColumn = 2;
-    center.innerHTML = `${tag}<span class="msgText">${text}</span>${btn}`;
+    center.style.position = 'relative';
+    center.style.zIndex = '2';   // el turno siempre visible sobre los recuadros que se cuelan
+    center.innerHTML = `${tag}${btn}`;
     tableEl.appendChild(center);
 
     document.getElementById('totals').innerHTML = S.totals.map((t, p) =>
@@ -785,13 +829,10 @@
     if (!e.target) return;
     if (e.target.id === 'nextRound') nextRound();
     if (e.target.id === 'passBtn') humanPass();
+    if (e.target.id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);
-  document.getElementById('rows').addEventListener('change', newGame);
-  document.getElementById('bots').addEventListener('change', () => {
-    document.getElementById('rounds').value = +document.getElementById('bots').value + 1;
-    newGame();
-  });
+  document.getElementById('bots').addEventListener('change', newGame);
 
   newGame();
 </script>

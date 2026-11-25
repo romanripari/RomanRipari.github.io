@@ -79,8 +79,8 @@
   .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#fff; }
 
   /* Columna de poderes a la derecha del propio tablero (solo modo animales) */
-  .boardRow { display:flex; align-items:center; gap:8px; }
-  .powCol { display:flex; flex-direction:column; gap:8px; flex:0 0 auto; }
+  .sideRight { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:10px; justify-self:start; }
+  .powCol { display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; }
   .pw { width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
   .pw svg { width:100%; height:100%; }
   .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
@@ -1172,18 +1172,7 @@
       }
 
       wrap.appendChild(grid);
-      if (p === 0 && ANIMAL) {
-        // Mis poderes van a la derecha de mi tablero
-        const row = document.createElement('div');
-        row.className = 'boardRow';
-        wrap.style.flex = '1 1 0';
-        wrap.style.minWidth = '0';
-        row.appendChild(wrap);
-        row.appendChild(powerColumn());
-        box.appendChild(row);
-      } else {
-        box.appendChild(wrap);
-      }
+      box.appendChild(wrap);
 
       // Zona de cartas comidas: tira horizontal debajo del tablero (no gira)
       const zone = S.zone[p];
@@ -1204,15 +1193,25 @@
 
     // Indicación de lados para tu zona: afuera de tu cuadrado, a la altura del medio, hacia donde van las pilas
     const sidePos = seats.pos[0];
-    [[1, 'end', '◀ impares'], [3, 'start', '▶ pares']].forEach(([col, justify, txt]) => {
-      const l = document.createElement('div');
-      l.className = 'sideLbl';
-      l.style.gridRow = sidePos[0];
-      l.style.gridColumn = col;
-      l.style.justifySelf = justify;
-      l.textContent = txt;
-      tableEl.appendChild(l);
-    });
+    const impL = document.createElement('div');
+    impL.className = 'sideLbl';
+    impL.style.gridRow = sidePos[0];
+    impL.style.gridColumn = 1;
+    impL.style.justifySelf = 'end';
+    impL.textContent = '◀ impares';
+    tableEl.appendChild(impL);
+    // Columna derecha, fuera de mi cuadrado: los poderes en fila, y abajo "▶ pares"
+    const rightCol = document.createElement('div');
+    rightCol.className = 'sideRight';
+    rightCol.style.gridRow = sidePos[0];
+    rightCol.style.gridColumn = 3;
+    if (ANIMAL) rightCol.appendChild(powerColumn());
+    const parL = document.createElement('div');
+    parL.className = 'sideLbl';
+    parL.style.alignSelf = 'flex-start';
+    parL.textContent = '▶ pares';
+    rightCol.appendChild(parL);
+    tableEl.appendChild(rightCol);
 
     // Texto de estado, en el centro de la cruz
     // Salir solo si no hay ninguna comida, movimiento ni poder utilizable

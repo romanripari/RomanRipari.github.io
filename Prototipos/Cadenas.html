@@ -83,7 +83,7 @@
   .aIcon { flex:none; width:38cqw; height:38cqw; display:flex; align-items:center; justify-content:center; }
   .aIcon svg { width:100%; height:100%; }
   .aName { font-size:11.5cqw; font-weight:700; line-height:1.05; }
-  .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#fff; }
+  .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#000; }
 
   /* Columna de poderes a la derecha del propio tablero (solo modo animales) */
   .sideRight { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:10px; justify-self:start; }
@@ -1147,7 +1147,13 @@
         const col = i % COLS;
         d.className = 'cell ' + (c ? '' : 'empty');
         if (i === 0) d.classList.add('start');
-        if (c) d.title = ANIMAL ? `${c.v} ${ANIMAL_NAMES[c.v]}` : `${c.v}`;
+        if (c) {
+          // Tooltip: la carta visible, y si hay pila, las de abajo (de arriba hacia abajo)
+          const nm = v => ANIMAL ? `${v} ${ANIMAL_NAMES[v]}` : `${v}`;
+          let tip = nm(c.v);
+          if (arr.length > 1) tip += '\nAbajo:\n' + arr.slice(0, -1).reverse().map(x => nm(x.v)).join('\n');
+          d.title = tip;
+        }
         if (c) {
           if (ANIMAL) {
             d.classList.add('animal');
@@ -1169,8 +1175,9 @@
             const under = document.createElement('div');
             under.className = 'under';
             const n = arr.length - 1;
+            // Tamaño fijo, igual que cuando hay una sola carta tapada; si hay muchas, van una debajo de otra
             const stackFs = ANIMAL ? '16cqw' : 'clamp(0.6rem,1.6vw,0.8rem)';
-            under.style.fontSize = `calc(${stackFs} / ${n})`;
+            under.style.fontSize = stackFs;
             if (ANIMAL) {
               uw.style.cssText = 'left:2cqw;top:4cqw;right:auto;bottom:auto;';
             } else {

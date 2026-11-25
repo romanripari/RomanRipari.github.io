@@ -91,6 +91,7 @@
   .pw { width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
   .pw svg { width:100%; height:100%; }
   .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
+  .pw:disabled { opacity:.4; cursor:default; }
 
   /* Zona de cartas comidas: tira horizontal debajo del tablero */
   .zone { display:flex; align-items:center; gap:3px; margin-top:8px; padding:4px 6px; border:1px dashed var(--line); border-radius:6px; min-height:30px; overflow-x:auto; }
@@ -877,16 +878,20 @@
   }
 
   // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
+  // Tooltips breves de cada poder
+  const POWER_TIP = { 3: 'Se mueve un espacio', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
+
+  // Los iconos quedan visibles siempre que el poder exista; fuera de tu turno aparecen apagados.
   function powerColumn() {
     const col = document.createElement('div');
     col.className = 'powCol';
     const can = S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy;
-    const btns = [];
-    if (can && antMoves(0).length) btns.push(['pwAnt', 3, ANT]);
-    if (can && S.zone[0].some(c => c.v === 4)) btns.push(['pwPush', 4, PUSH]);
-    if (can && S.zone[0].some(c => c.v === 2)) btns.push(['pwHongo', 2, BOOST]);
-    col.innerHTML = btns.map(([id, v, on]) =>
-      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${ANIMAL_NAMES[v]}">${ICONS[v]}</button>`
+    const items = [];
+    if (antMoves(0).length) items.push(['pwAnt', 3, ANT]);
+    if (S.zone[0].some(c => c.v === 4)) items.push(['pwPush', 4, PUSH]);
+    if (S.zone[0].some(c => c.v === 2)) items.push(['pwHongo', 2, BOOST]);
+    col.innerHTML = items.map(([id, v, on]) =>
+      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}</button>`
     ).join('');
     return col;
   }
@@ -1131,6 +1136,7 @@
         const col = i % COLS;
         d.className = 'cell ' + (c ? '' : 'empty');
         if (i === 0) d.classList.add('start');
+        if (c) d.title = ANIMAL ? `${c.v} ${ANIMAL_NAMES[c.v]}` : `${c.v}`;
         if (c) {
           if (ANIMAL) {
             d.classList.add('animal');

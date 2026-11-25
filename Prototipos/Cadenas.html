@@ -7,7 +7,7 @@
 <style>
   :root { --bg:#f4f1ea; --ink:#2a2a2a; --muted:#7a766d; --line:#d6d0c4; --accent:#3b6e8f; --mine:#d9644a; --green:#2e9e48; --magenta:#d600d6; --orange:#f08c00; --red:#c0392b;
     /* Colores de los jugadores: vos, bot 1, bot 2, bot 3 */
-    --c-vos:#d9644a; --c-azul:#3b6e8f; --c-verde:#5a9e5a; --c-lila:#CF9FFF; }
+    --c-vos:#c97866; --c-azul:#7e9caf; --c-verde:#8cb38c; --c-lila:#c4aadf; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); display:flex; justify-content:center; padding:20px 12px; }
   .wrap { width:100%; max-width:1040px; }
@@ -81,7 +81,7 @@
   .aNum { font-size:26cqw; font-weight:800; line-height:1; color:#fff; text-shadow:0 0 3px rgba(0,0,0,.6); }
   .aBox { width:80cqw; padding:4cqw 3cqw; background:#fbf7ee; border-radius:4cqw; color:#1d1d1b; display:flex; flex-direction:column; align-items:center; gap:2cqw; }
   .aIcon { flex:none; width:38cqw; height:38cqw; display:flex; align-items:center; justify-content:center; }
-  .aIcon svg { width:100%; height:100%; }
+  .aIcon svg, .aIcon img, .pw img { width:100%; height:100%; object-fit:contain; display:block; }
   .aName { font-size:11.5cqw; font-weight:700; line-height:1.05; }
   .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#000; }
 
@@ -92,6 +92,7 @@
   .pwCount { position:absolute; left:2px; bottom:0; font-size:0.7rem; font-weight:800; line-height:1; color:#222; background:#fff; border-radius:3px; padding:1px 3px; box-shadow:0 0 0 1px #555; }
   .pw svg { width:100%; height:100%; }
   .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
+  .pw.ready { box-shadow:0 0 0 3px var(--magenta); }
   .pw:disabled { opacity:.4; cursor:default; }
 
   /* Zona de cartas comidas: tira horizontal debajo del tablero */
@@ -164,6 +165,7 @@
         <ul class="powerList">
           <li><b>Hongo (2):</b> en tu zona de comidas, al hacer una comida podés gastarlo para ampliar en 1 el rango de comida de ese movimiento. Sale del juego y deja de contar en tu zona.</li>
           <li><b>Hormiga (3):</b> mientras esté visible, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno.</li>
+          <li><b>Halcón (8):</b> mientras esté visible, salta una o más cartas o pilas en línea ortogonal y cae en el primer espacio vacío. Reemplaza comer en tu turno.</li>
           <li><b>Escarabajo (4):</b> en tu zona de comidas, gastalo para empujar una pila de tu tablero hasta 3 huecos en línea recta. No puede saltar ni empujar otras cartas. Reemplaza comer en tu turno.</li>
         </ul>
       </div>
@@ -204,7 +206,7 @@
         <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno: no comés ese turno. Arrastra todo lo que tenga debajo.</li>
         <li><b>Bots:</b> usan los poderes cuando les da más comidas.</li>
         <li><b>Poder del escarabajo:</b> usa un escarabajo de tu zona de comidas (botón "Usar escarabajo"). Empuja una pila de tu tablero, sea de quien sea, a un hueco contiguo en línea recta (1, 2 o 3 espacios). No se puede empujar, saltar ni poner encima de otra carta. Reemplaza comer en tu turno.</li>
-        <li>Si hay alguna comida legal, tenés que comer (podés usar antes un poder de hormiga o escarabajo). Si no tenés ninguna comida, podés usar poderes, hacer el desarme de pilas, o salir de la ronda si no podés mover nada.</li>
+        <li>Si hay alguna comida legal, tenés que comer (podés usar antes un poder de hormiga, halcón o escarabajo). Si no tenés ninguna comida, podés usar un poder, o salir de la ronda si no podés hacer nada.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
         <li><b>Si comés una carta propia visible:</b> toda su pila (con lo que tenga debajo) pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna). Al final del turno. No te resta puntos.</li>
         <li><b>Si comés una carta ajena visible:</b> toda su pila va a tu zona de cartas comidas (la tira debajo de tu cuadrado). Ahí te resta 1 por cada carta de la pila.</li>
@@ -216,10 +218,7 @@
     <details>
       <summary>Mover</summary>
       <ul>
-        <li>Podés mover SOLO la carta de arriba de una pila de dos o más cartas, a un espacio vacío adyacente de tu cuadrado (▫). Lo que quedó debajo se queda donde está. Reemplaza comer en tu turno.</li>
-        <li>Si no tenés ninguna comida, podés hacer el desarme aunque no genere comidas, siempre que haya un hueco vecino vacío. Los bots solo lo hacen si después hay una comida que involucre a esa carta.</li>
-        <li>El turno termina con el movimiento.</li>
-        <li>Los bots comen siempre lo máximo que pueden. Si no pueden comer, mueven la carta de arriba que les dé más comidas seguidas; a igualdad, una al azar.</li>
+        <li>Los bots comen siempre lo máximo que pueden.</li>
       </ul>
     </details>
     <details>
@@ -261,7 +260,8 @@
   for (const n in COME) for (const p of COME[n]) (LO_COMEN[p] ??= []).push(+n);
   let ANIMAL = false;
   // Puntaje único: suma de los números de las cartas comidas, menos 1 por cada carta visible en tu tablero.
-  const ICONS = {
+  // Íconos anteriores en SVG (ya no se usan; quedan de respaldo)
+  const ICONS_SVG = {
     1: `<svg viewBox="0 0 100 100"><path d="M28 92 Q24 50 12 22 Q40 46 42 92Z" fill="#4a9b3c"/><path d="M50 92 Q48 40 50 8 Q62 44 58 92Z" fill="#6cbf4a"/><path d="M72 92 Q74 52 88 26 Q76 58 78 92Z" fill="#3c8a33"/></svg>`,
     2: `<svg viewBox="0 0 100 100"><rect x="41" y="48" width="18" height="42" rx="7" fill="#efe3c2" stroke="#8a7650" stroke-width="2"/><path d="M8 52 Q50 -6 92 52 Z" fill="#d9523c" stroke="#7a2d20" stroke-width="2"/><circle cx="30" cy="36" r="5" fill="#fbf7ee"/><circle cx="62" cy="30" r="4" fill="#fbf7ee"/><circle cx="72" cy="44" r="3" fill="#fbf7ee"/></svg>`,
     3: `<svg viewBox="0 0 100 100"><g stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"><path d="M42 56 L30 42 M42 58 L28 62 M42 60 L30 78"/><path d="M56 56 L68 40 M56 58 L70 62 M56 60 L68 78"/></g><circle cx="20" cy="50" r="9" fill="#222"/><circle cx="45" cy="50" r="9" fill="#222"/><ellipse cx="72" cy="50" rx="14" ry="11" fill="#222"/></svg>`,
@@ -271,6 +271,12 @@
     7: `<svg viewBox="0 0 100 100"><polygon points="26,64 8,76 18,80 32,70" fill="#8a5a2b"/><ellipse cx="46" cy="60" rx="24" ry="17" fill="#f4c430" stroke="#b08a10" stroke-width="2"/><ellipse cx="38" cy="60" rx="14" ry="9" fill="#8a5a2b"/><circle cx="68" cy="34" r="14" fill="#f4c430" stroke="#b08a10" stroke-width="2"/><path d="M80 34 L93 38 L80 42Z" fill="#333"/><path d="M60 24 L74 24 L72 30 L60 30Z" fill="#222"/><circle cx="69" cy="33" r="3" fill="#222"/><path d="M42 80 L44 88 M52 78 L54 88" stroke="#333" stroke-width="2"/></svg>`,
     8: `<svg viewBox="0 0 100 100"><polygon points="32,44 6,62 14,74 34,66" fill="#5a3a1e"/><polygon points="66,44 92,62 84,74 64,66" fill="#5a3a1e"/><ellipse cx="50" cy="60" rx="20" ry="22" fill="#7a4a2a" stroke="#3d2412" stroke-width="2"/><ellipse cx="50" cy="68" rx="11" ry="12" fill="#e8d2b0"/><circle cx="56" cy="30" r="13" fill="#7a4a2a" stroke="#3d2412" stroke-width="2"/><path d="M66 26 Q80 28 76 40 Q72 34 66 36Z" fill="#444"/><circle cx="60" cy="27" r="3.5" fill="#f2c94c"/><circle cx="60" cy="27" r="1.6" fill="#222"/></svg>`
   };
+  // Íconos PNG: la carpeta "Cartas" tiene que estar al lado de Cadenas.html (Prototipos\Cartas\)
+  const ICON_FILE = { 1: '01_pasto.png', 2: '02_hongo.png', 3: '03_hormiga.png', 4: '04_escarabajo.png',
+                      5: '05_araña.png', 6: '06_lagartija.png', 7: '07_pajaro.png', 8: '08_halcon.png' };
+  const ICONS = {};
+  for (const k in ICON_FILE) ICONS[k] = `<img src="Cartas/${ICON_FILE[k]}" alt="${ANIMAL_NAMES[k]}">`;
+
   // Pasan por paridad: par → vecino de la derecha, impar → vecino de la izquierda. Sin mitades ni espejos.
 
   // Disposición en la cruz según la cantidad de jugadores.
@@ -431,32 +437,16 @@
     return n;
   }
 
-  // Mover: solo la carta de arriba de una pila de 2+, a un espacio vacío, si después hay una comida que la involucre.
-  // free = true (humano): puede mover sin que la carta genere comida.
-  function stackMoves(p, free = false) {
-    const moves = [];
-    for (let i = 0; i < cellCount(); i++) {
-      if (S.quads[p][i].length < 2) continue;
-      nbrs(i).forEach(j => {
-        if (S.quads[p][j].length !== 0) return;
-        if (free || eatsInvolving(p, i, j) > 0) moves.push({ t: 'stack', q: p, x: i, y: j });
-      });
-    }
-    return moves;
-  }
 
   // Lo que puede hacer el jugador ahora.
   function legalFor(p) {
     if (S.chain) return legalMoves(p).filter(m => m.x === S.chain.x && m.q === S.chain.q);
     const eats = legalMoves(p);
     if (S.antUsed) return eats;   // ya moviste una hormiga en este turno: ahora tenés que comer
-    const ants = (ANIMAL && p === 0) ? antMoves(p) : [];   // poder de la hormiga: solo el humano
-    if (MOVE_ALWAYS) return eats.concat(stackMoves(p), ants);
+    const ants = (ANIMAL && p === 0) ? antMoves(p).concat(hawkMoves(p)) : [];   // poderes de hormiga y halcón: solo el humano
     if (eats.length) return eats.concat(ants);
-    // Sin comidas. Humano: desarme de pilas y hormigas libres (sin exigir comida).
-    // Bots: desarme solo si genera comida; la hormiga la deciden con bestAnt.
-    if (p === 0) return stackMoves(0, true).concat(ants);
-    return stackMoves(p);
+    // Sin comidas: solo los poderes del humano. Los bots usan sus poderes desde bestAnt y bestPush.
+    return ants;
   }
 
   // Poder de la hormiga (modo animales): una hormiga visible en tu cuadrado mueve su pila un casillero
@@ -479,12 +469,34 @@
     return moves;
   }
 
+  // Poder del halcón (8): salta una o más cartas/pilas en línea ortogonal y cae en el primer espacio vacío.
+  function hawkMoves(p) {
+    const moves = [];
+    for (let i = 0; i < cellCount(); i++) {
+      const a = S.quads[p][i];
+      if (!a.length || a[a.length - 1].v !== 8) continue;   // 8 = Halcón
+      const r0 = Math.floor(i / COLS), c0 = i % COLS;
+      [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dr, dc]) => {
+        let jumped = false;
+        for (let r = r0 + dr, c = c0 + dc; r >= 0 && r < ROWS && c >= 0 && c < COLS; r += dr, c += dc) {
+          const y = r * COLS + c;
+          if (S.quads[p][y].length !== 0) { jumped = true; continue; }
+          if (jumped) { moves.push({ t: 'ant', q: p, x: i, y }); break; }
+        }
+      });
+    }
+    return moves;
+  }
+
+  // Movimientos de un poder de movimiento (3 = hormiga, 8 = halcón)
+  function powerMovesOf(v, p) { return v === 8 ? hawkMoves(p) : antMoves(p); }
+
   function doAnt(p, m) {
     S.started = true; S.acted = true;
     const pile = S.quads[m.q][m.x].splice(0);
     S.quads[m.q][m.y].push(...pile);
     S.selected = null; S.chain = null; S.chainMove = false;
-    S.lastNote = `${NAMES[p]} usó la hormiga: movió su pila de ${labelOf(p, m.x)} a ${labelOf(p, m.y)}.`;
+    S.lastNote = `${NAMES[p]} movió su pila de ${labelOf(p, m.x)} a ${labelOf(p, m.y)}.`;
   }
 
   // Cuántas comidas tendría el jugador después de mover la hormiga (sin dejar cambios).
@@ -574,7 +586,7 @@
   function bestAnt(p) {
     if (!ANIMAL) return null;
     let best = null;
-    antMoves(p).forEach(m => {
+    antMoves(p).concat(hawkMoves(p)).forEach(m => {
       const g = antGain(p, m);
       if (g > 0 && (!best || g > best.g)) best = { m, g };
     });
@@ -602,14 +614,6 @@
     return { pos: { q: m.q, x: m.y } };
   }
 
-  // Mueve solo la carta de arriba a un espacio vacío. Termina el turno.
-  function doStack(p, m) {
-    S.started = true; S.acted = true;
-    const card = S.quads[m.q][m.x].pop();
-    S.quads[m.q][m.y].push(card);
-    S.selected = null; S.chain = null; S.chainMove = false;
-    S.lastNote = `${NAMES[p]} movió el ${card.v} ${chipHtml(card.v, card.c)} a ${labelOf(p, m.y)}.`;
-  }
 
   // Encadenar: si la misma carta puede volver a comer, sigue en el turno.
   function afterEat(p, res) {
@@ -677,6 +681,7 @@
     PUSH = 0;
     ANT = 0; ANTSEL = null;
     S.chain = null; S.chainMove = false;   // al cambiar de turno no puede quedar una cadena colgada
+    S.selected = null;                     // ni una selección del turno anterior (p. ej. de un bot)
     if (endCheck()) { endRound(); return; }
     S.turn = nextActive(p);
     render();
@@ -798,18 +803,6 @@
       return;
     }
 
-    // Sin comidas: mueve la carta de arriba que más comidas le dé; a igualdad, una al azar.
-    const scored = L.map(m => ({ m, s: moveScore(p, m) }));
-    const top = Math.max(...scored.map(x => x.s));
-    const best = pickRandom(scored.filter(x => x.s === top).map(x => x.m));
-    S.lastNote = '';
-    S.selected = { q: best.q, x: best.x };
-    render();
-    later(() => {
-      doStack(p, best);
-      render();
-      passNext(p);
-    });
   }
 
   function endRound() {
@@ -876,8 +869,9 @@
     render();
   }
 
-  function toggleAnt() {
-    ANT = ANT ? 0 : 1;
+  // v = 3 (hormiga) u 8 (halcón); toca de nuevo para cancelar
+  function toggleAnt(v) {
+    ANT = ANT === v ? 0 : v;
     PUSH = 0; S.pushSel = null;
     ANTSEL = null;
     S.selected = null;
@@ -886,7 +880,7 @@
 
   // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
   // Tooltips breves de cada poder
-  const POWER_TIP = { 3: 'Se desliza en línea hasta el próximo tope', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
+  const POWER_TIP = { 3: 'Se desliza en línea hasta el próximo tope', 8: 'Salta una o más cartas hasta un espacio vacío', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
 
   // Los iconos quedan visibles siempre que el poder exista; fuera de tu turno aparecen apagados.
   function powerColumn() {
@@ -895,14 +889,27 @@
     const can = S.turn === 0 && !S.roundOver && !S.gameOver && !S.chain && !S.busy;
     // Cantidad: hormigas que pueden moverse, y escarabajos / hongos en la zona (se gastan al usarse)
     const antN = new Set(antMoves(0).map(m => m.x)).size;
+    const hawkN = new Set(hawkMoves(0).map(m => m.x)).size;
     const pushN = S.zone[0].filter(c => c.v === 4).length;
     const hongoN = S.zone[0].filter(c => c.v === 2).length;
+    // Listo para usar: se resalta el ícono de afuera (solo en tu turno)
+    const pushReady = S.zone[0].some(c => c.v === 4) && S.quads[0].some((a, x) => a.length > 0 && pushTargets(0, x).length > 0);
+    let hongoReady = false;
+    if (S.zone[0].some(c => c.v === 2)) {
+      const prev = BOOST;
+      BOOST = 0; const nb = legalFor(0).filter(m => m.t === 'eat').length;
+      BOOST = 1; const nB = legalFor(0).filter(m => m.t === 'eat').length;
+      BOOST = prev;
+      hongoReady = nB > nb;   // el hongo sirve si da comidas que no había
+    }
+    const ready = { 3: can && antN > 0, 8: can && hawkN > 0, 4: can && pushReady, 2: can && hongoReady };
     const items = [];
-    if (antN) items.push(['pwAnt', 3, ANT, antN]);
+    if (antN) items.push(['pwAnt', 3, ANT === 3, antN]);
+    if (hawkN) items.push(['pwHawk', 8, ANT === 8, hawkN]);
     if (pushN) items.push(['pwPush', 4, PUSH, pushN]);
     if (hongoN) items.push(['pwHongo', 2, BOOST, hongoN]);
     col.innerHTML = items.map(([id, v, on, n]) =>
-      `<button id="${id}" class="pw${on ? ' on' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}${n > 1 ? `<span class="pwCount">${n}</span>` : ''}</button>`
+      `<button id="${id}" class="pw${on ? ' on' : ''}${ready[v] ? ' ready' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}${n > 1 ? `<span class="pwCount">${n}</span>` : ''}</button>`
     ).join('');
     return col;
   }
@@ -914,7 +921,7 @@
 
     if (ANT) {
       if (q !== 0) return;
-      const srcs = antMoves(0);
+      const srcs = powerMovesOf(ANT, 0);
       if (ANTSEL === null) {
         if (srcs.some(m => m.x === i)) { ANTSEL = i; render(); }
         return;
@@ -963,10 +970,6 @@
           // La hormiga reemplaza comer: termina el turno
           doAnt(0, ok);
           S.antUsed = true;
-          passNext(0);
-        } else {
-          doStack(0, ok);
-          render();
           passNext(0);
         }
         return;
@@ -1063,6 +1066,25 @@
     if (n) n.classList.add('numHL');
   }
 
+  // Flechas de la carta elegida: cada comida posible y las que siguen en su cadena. No cambia el tablero.
+  function chainArrows(p, x) {
+    const arrows = [];
+    const walk = pos => {
+      legalMoves(p).filter(m => m.x === pos).forEach(m => {
+        arrows.push({ from: m.x, to: m.y });
+        const mover = S.quads[p][m.x].splice(0);
+        const target = S.quads[p][m.y].splice(0);
+        S.quads[p][m.y].push(...mover);
+        walk(m.y);
+        const back = S.quads[p][m.y].splice(0);
+        S.quads[p][m.x].push(...back);
+        S.quads[p][m.y].push(...target);
+      });
+    };
+    walk(x);
+    return arrows;
+  }
+
   // Hormiga / escarabajo: rodea el dibujo (en modo números, cae al número)
   function hiIcon(d) {
     const n = d.querySelector('.aIcon');
@@ -1095,9 +1117,13 @@
     const legal = S.turn === 0 && !S.roundOver && !S.gameOver && !PUSH ? legalFor(0) : [];
     const pushT = (PUSH && S.pushSel !== null) ? pushTargets(0, S.pushSel) : [];
     const eatsH = legal.filter(m => m.t === 'eat');
-    const stacksH = legal.filter(m => m.t === 'stack');
     const sel = S.chain ? { q: S.chain.q, x: S.chain.x } : S.selected;
     const seats = seatsFor(N);
+    // Resaltado: comer / desarmar = número; usar un poder = ícono. Con un poder elegido, solo se resaltan sus cartas.
+    const canTurnH = S.turn === 0 && !S.busy && !S.roundOver && !S.gameOver && !S.chain;
+    // Flechas solo cuando elegiste una carta magenta para comer (y sus cadenas posibles)
+    const selEat = (sel && S.turn === 0 && legal.some(m => m.t === 'eat' && m.q === sel.q && m.x === sel.x))
+      ? chainArrows(sel.q, sel.x) : [];
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
     tableEl.style.gridTemplateRows = N === 3 ? 'auto auto' : 'auto auto auto';
@@ -1146,7 +1172,7 @@
         const d = document.createElement('div');
         const col = i % COLS;
         d.className = 'cell ' + (c ? '' : 'empty');
-        if (i === 0) d.classList.add('start');
+        if (i === 0 && c) d.classList.add('start');   // a1 solo se marca cuando tiene carta
         if (c) {
           // Tooltip: la carta visible, y si hay pila, las de abajo (de arriba hacia abajo)
           const nm = v => ANIMAL ? `${v} ${ANIMAL_NAMES[v]}` : `${v}`;
@@ -1200,12 +1226,16 @@
           mk.textContent = passMark(i, c);
           d.appendChild(mk);
         }
-        if (!sel && legal.some(m => m.q === p && m.x === i)) {
-          hiNum(d);
-          dirArrows(d, i, rot, legal.filter(m => m.q === p && m.x === i && m.t === 'eat').map(m => m.y));
+        if (!sel && !ANT && !PUSH && canTurnH && p === 0) {
+          if (legal.some(m => m.q === p && m.x === i && m.t !== 'ant')) hiNum(d);   // comer o desarmar
+          if (legal.some(m => m.q === p && m.x === i && m.t === 'ant')) hiIcon(d);  // hormiga / halcón
+        }
+        if (p === 0 && selEat.length) {
+          const tg = [...new Set(selEat.filter(a => a.from === i).map(a => a.to))];
+          if (tg.length) dirArrows(d, i, rot, tg);
         }
         if (ANT && p === 0 && !S.roundOver && !S.gameOver) {
-          const srcs = antMoves(0);
+          const srcs = powerMovesOf(ANT, 0);
           if (ANTSEL === i) d.classList.add('selected');
           else if (ANTSEL !== null && srcs.some(m => m.x === ANTSEL && m.y === i)) {
             d.classList.add('target');
@@ -1276,20 +1306,26 @@
     impL.style.gridRow = sidePos[0];
     impL.style.gridColumn = 1;
     impL.style.justifySelf = 'end';
-    impL.textContent = '◀ impares';
+    impL.textContent = '↖impares';
     tableEl.appendChild(impL);
     // Columna derecha, fuera de mi cuadrado: los poderes en fila, y abajo "▶ pares"
     const rightCol = document.createElement('div');
     rightCol.className = 'sideRight';
     rightCol.style.gridRow = sidePos[0];
     rightCol.style.gridColumn = 3;
-    if (ANIMAL) rightCol.appendChild(powerColumn());
     const parL = document.createElement('div');
     parL.className = 'sideLbl';
     parL.style.alignSelf = 'flex-start';
-    parL.textContent = '▶ pares';
+    parL.textContent = 'pares↗';
     rightCol.appendChild(parL);
+    const tPoderes = document.createElement('div');
+    tPoderes.className = 'sideLbl';
+    tPoderes.style.alignSelf = 'flex-start';
+    tPoderes.textContent = 'Poderes:';
+    rightCol.appendChild(tPoderes);
+    if (ANIMAL) rightCol.appendChild(powerColumn());
     tableEl.appendChild(rightCol);
+
 
     // Texto de estado, en el centro de la cruz
     // Salir solo al empezar el turno: después de comer o mover, el turno sigue hasta terminar (o con Listo)
@@ -1315,17 +1351,13 @@
       text = 'Podés seguir comiendo con la misma carta (naranja), o tocar Listo para terminar el turno.';
     } else if (sel) {
       const kind = legal.find(m => m.q === sel.q && m.x === sel.x);
-      text = kind && kind.t === 'stack'
-        ? 'Movela (solo la de arriba) a un espacio vacío (▫).'
-        : kind && kind.t === 'ant'
-          ? 'Hormiga: deslizá su pila en línea a un espacio vacío (▫), hasta el próximo tope. Reemplaza comer en este turno.'
+      text = kind && kind.t === 'ant'
+          ? 'Poder de movimiento: elegí el espacio vacío (▫) al que va su pila. Reemplaza comer en este turno.'
           : 'Comela moviéndola un espacio sobre una carta naranja. Tocá la misma para cancelar.';
     } else if (legal.length === 0) {
       text = 'No tenés movimientos válidos.';
     } else if (eatsH.length === 0) {
-      text = 'No tenés comidas. Podés mover la carta de arriba de una pila (en magenta) a un espacio vacío, o salir de la ronda.';
-    } else if (stacksH.length > 0) {
-      text = 'Elegí una carta magenta para comer, o mové la de arriba de una pila (opcional).';
+      text = 'No tenés comidas. Podés usar un poder, o salir de la ronda.';
     } else {
       text = 'Tu turno: elegí una carta magenta para comer.';
     }
@@ -1372,7 +1404,8 @@
     if (id === 'passBtn') humanPass();
     if (id === 'pwHongo') { BOOST = BOOST ? 0 : 1; render(); }
     if (id === 'pwPush') togglePush();
-    if (id === 'pwAnt') toggleAnt();
+    if (id === 'pwAnt') toggleAnt(3);
+    if (id === 'pwHawk') toggleAnt(8);
     if (id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);

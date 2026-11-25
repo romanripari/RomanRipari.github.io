@@ -148,6 +148,7 @@
       </select>
     </label>
     <button class="primary" id="newGame">Nueva partida</button>
+    <button id="scoreMode">Modalidad 1</button>
     <span class="muted" id="scoreText"></span>
   </div>
 
@@ -182,7 +183,11 @@
   <section class="rules">
     <details open>
       <summary>Objetivo</summary>
-      <p>Al final de la ronda, sumás los números de tus cartas comidas (también las que estaban abajo de cada pila) y restás 1 por cada carta visible en tu tablero, sea de quien sea. Gana el que MÁS puntos tiene.</p>
+      <p>Al final de la ronda se calcula el puntaje según la modalidad elegida (botón arriba). La modalidad no se puede cambiar durante la partida. Gana el que MÁS puntos tiene.</p>
+      <ul>
+        <li><b>Modalidad 1:</b> suma los números de tus cartas comidas (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
+        <li><b>Modalidad 2:</b> suma 2 puntos por cada carta comida (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
+      </ul>
     </details>
     <details>
       <summary>Preparación</summary>
@@ -228,7 +233,7 @@
       <summary>Fin de ronda</summary>
       <ul>
         <li>La ronda termina cuando ya salieron todos los jugadores, o cuando a un jugador le queda una sola carta propia visible en su cuadrado.</li>
-        <li>Puntaje de la ronda: suma de los números comidos, menos 1 por cada carta visible en tu tablero (ver Objetivo).</li>
+        <li>Puntaje de la ronda: según la modalidad elegida (ver Objetivo).</li>
         <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que más puntos suma. En empate, gana el que tenga menos cartas en su zona de comidas.</li>
         <li>Íconos: <span class="ic ic-vis"><i></i></span> cartas visibles en tu tablero (restan 1 cada una).</li>
       </ul>
@@ -380,6 +385,7 @@
 
   // Suma de los números comidos, menos 1 por cada carta visible en el propio tablero. Gana el que más tiene.
   function roundPts(p) {
+    if (SCORE_MODE === 2) return 2 * S.zone[p].length - visibleCount(p);
     return zoneSum(p) - visibleCount(p);
   }
 
@@ -1049,10 +1055,18 @@
     if (S.log.length > 120) S.log.length = 120;
   }
 
-  const SCORE_TEXT = 'Puntos: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.';
+  // Modalidad 1: suma de los números comidos - 1 por carta visible. Modalidad 2: +2 por carta comida - 1 por carta visible.
+  let SCORE_MODE = 1;
+  const SCORE_TEXT = {
+    1: 'Modalidad 1: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.',
+    2: 'Modalidad 2: suma 2 puntos por cada carta comida (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.'
+  };
 
   function updateScoreUI() {
-    document.getElementById('scoreText').textContent = SCORE_TEXT;
+    document.getElementById('scoreText').textContent = SCORE_TEXT[SCORE_MODE];
+    document.getElementById('scoreMode').textContent = `Modalidad ${SCORE_MODE}`;
+    // La modalidad no se puede cambiar durante la partida; se libera al terminar.
+    document.getElementById('scoreMode').disabled = S.started && !S.gameOver;
   }
 
   // Resalta solo el número de la carta (no el borde de la casilla)
@@ -1122,6 +1136,10 @@
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
     tableEl.style.gridTemplateRows = N === 3 ? 'auto auto' : 'auto auto auto';
+    // Con 3 jugadores, las tres columnas tienen el mismo ancho que tu tablero (los rotados quedan del mismo tamaño)
+    tableEl.style.gridTemplateColumns = N === 3 ? '240px 240px 240px' : '';
+    // Con las columnas fijas, centra el conjunto dentro de su espacio (como en 4 jugadores)
+    tableEl.style.justifyContent = N === 3 ? 'center' : '';
 
     for (let p = 0; p < N; p++) {
       const rot = seats.rot[p];
@@ -1137,7 +1155,7 @@
         `<div class="qhead"><span class="dot" style="background:${COLORS[p]}"></span>` +
         `<span class="qname">${NAMES[p]}</span>${badge}<span class="qtot">${roundPts(p)} pts</span></div>` +
         `<div class="score">` +
-          `<span>Comidas <b>+${zoneSum(p)}</b></span>` +
+          `<span>Comidas <b>+${SCORE_MODE === 2 ? 2 * S.zone[p].length : zoneSum(p)}</b></span>` +
           `<span>Visibles <b>-${visibleCount(p)}</b></span>` +
         `</div>`;
 
@@ -1403,6 +1421,10 @@
     if (id === 'chainEnd') { S.chain = null; S.chainMove = false; S.selected = null; passNext(0); }
   });
   document.getElementById('newGame').addEventListener('click', newGame);
+  document.getElementById('scoreMode').addEventListener('click', () => {
+    SCORE_MODE = SCORE_MODE === 1 ? 2 : 1;
+    render();
+  });
   document.getElementById('bots').addEventListener('change', newGame);
 
   newGame();

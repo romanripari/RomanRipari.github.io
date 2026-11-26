@@ -792,7 +792,7 @@
       return;
     }
 
-    if (!L.length) { S.chain = null; runTurn(); return; }
+    if (!L.length) { S.chain = null; passTurn(p, `${NAMES[p]} no tenía movimientos y salió de la ronda.`); return; }
 
     if (eats.length) {
       let best = null, bestScore = -Infinity;

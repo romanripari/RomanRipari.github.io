@@ -467,11 +467,13 @@
       if (!a.length || a[a.length - 1].v !== 3) continue;   // 3 = Hormiga
       const r0 = Math.floor(i / COLS), c0 = i % COLS;
       [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dr, dc]) => {
+        let last = -1;   // último espacio vacío antes del próximo tope (otra carta o el borde)
         for (let r = r0 + dr, c = c0 + dc; r >= 0 && r < ROWS && c >= 0 && c < COLS; r += dr, c += dc) {
           const y = r * COLS + c;
           if (S.quads[p][y].length !== 0) break;   // tope: otra carta
-          moves.push({ t: 'ant', q: p, x: i, y });
+          last = y;
         }
+        if (last >= 0) moves.push({ t: 'ant', q: p, x: i, y: last });   // solo se puede frenar en el espacio junto al tope
       });
     }
     return moves;

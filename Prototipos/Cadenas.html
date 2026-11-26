@@ -673,7 +673,7 @@
 
   function endCheck() {
     if (activeCount() === 0) return true;                 // ya salieron todos
-    return S.quads.some((_, p) => ownVisible(p) <= 1);    // a alguien le queda una sola propia visible
+    return S.quads.some((_, p) => visibleCount(p) <= 1);  // a alguien le queda una sola carta visible en su tablero (propia o ajena)
   }
 
   function nextActive(p) {

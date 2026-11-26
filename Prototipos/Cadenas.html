@@ -91,6 +91,9 @@
   .pw { position:relative; width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
   .pwCount { position:absolute; left:2px; bottom:0; font-size:0.7rem; font-weight:800; line-height:1; color:#222; background:#fff; border-radius:3px; padding:1px 3px; box-shadow:0 0 0 1px #555; }
   .pw svg { width:100%; height:100%; }
+  .pw { width:58px; height:auto; flex-direction:column; gap:2px; padding:3px 2px; }
+  .pw img { width:32px; height:32px; }
+  .pwName { font-size:0.62rem; font-weight:700; line-height:1.05; color:#222; white-space:nowrap; }
   .pw.on { border-color:var(--magenta); box-shadow:0 0 0 2px var(--magenta); }
   .pw.ready { box-shadow:0 0 0 3px var(--magenta); }
   .pw:disabled { opacity:.4; cursor:default; }
@@ -707,6 +710,7 @@
       passTurn(t, t === 0 ? 'No tenés comidas ni movimientos: salís de la ronda.' : `${NAMES[t]} no tenía movimientos y salió de la ronda.`);
       return;
     }
+    S.busy = t !== 0;   // antes del render: si el turno es tuyo, ya no queda "ocupado" (si no, no aparece Salir)
     render();
     if (t !== 0) {
       S.busy = true;
@@ -816,6 +820,7 @@
     logLine(`<b>Fin de la ronda ${S.round + 1}.</b> ${pts.map((v, p) => `${NAMES[p]} ${v}`).join(', ')}`);
     pts.forEach((v, p) => { S.totals[p] += v; });
     S.roundOver = true; S.busy = false; S.selected = null;
+    if (S.round + 1 >= ROUNDS) S.gameOver = true;   // al cerrar la última ronda, el resultado aparece directo
     S.chain = null; S.chainMove = false; S.queue = [];
     render();
   }
@@ -885,6 +890,7 @@
 
   // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
   // Tooltips breves de cada poder
+  const POWER_WORD = { 3: 'Se Mueve', 8: 'Vuela', 4: 'Empuja', 2: 'Amplía' };
   const POWER_TIP = { 3: 'Se desliza en línea hasta el próximo tope', 8: 'Salta una o más cartas hasta un espacio vacío', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
 
   // Los iconos quedan visibles siempre que el poder exista; fuera de tu turno aparecen apagados.
@@ -914,7 +920,7 @@
     if (pushN) items.push(['pwPush', 4, PUSH, pushN]);
     if (hongoN) items.push(['pwHongo', 2, BOOST, hongoN]);
     col.innerHTML = items.map(([id, v, on, n]) =>
-      `<button id="${id}" class="pw${on ? ' on' : ''}${ready[v] ? ' ready' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}${n > 1 ? `<span class="pwCount">${n}</span>` : ''}</button>`
+      `<button id="${id}" class="pw${on ? ' on' : ''}${ready[v] ? ' ready' : ''}" title="${POWER_TIP[v]}"${can ? '' : ' disabled'}>${ICONS[v]}<span class="pwName">${POWER_WORD[v]}</span>${n > 1 ? `<span class="pwCount">${n}</span>` : ''}</button>`
     ).join('');
     return col;
   }
@@ -1356,7 +1362,11 @@
         tied = tied.filter(i => S.zone[i].length === minZ);
         why = ` Desempate por cartas en la zona de comidas: ${minZ}.`;
       }
-      text = `PARTIDA FINALIZADA. Gana ${tied.map(i => NAMES[i]).join(' y ')} con ${max} pts.${why}`;
+      const won = tied.includes(0);
+      const who = tied.map(i => NAMES[i]).join(' y ');
+      text = won
+        ? `GANASTE. ${tied.length > 1 ? `Empate con ${tied.filter(i => i !== 0).map(i => NAMES[i]).join(' y ')}` : `Ganaste con ${max} pts`}.${why}`
+        : `PERDISTE. Ganó ${who} con ${max} pts.${why}`;
     } else if (S.roundOver) {
       text = `Ronda ${S.round + 1} terminada.`;
     } else if (S.turn !== 0) {

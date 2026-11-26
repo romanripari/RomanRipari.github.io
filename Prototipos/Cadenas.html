@@ -153,7 +153,7 @@
       </select>
     </label>
     <button class="primary" id="newGame">Nueva partida</button>
-    <button id="scoreMode">Modalidad 1</button>
+    <button id="scoreMode">Modo Cantidades</button>
     <span class="muted" id="scoreText"></span>
   </div>
 
@@ -190,8 +190,8 @@
       <summary>Objetivo</summary>
       <p>Al final de la ronda se calcula el puntaje según la modalidad elegida (botón arriba). La modalidad no se puede cambiar durante la partida. Gana el que MÁS puntos tiene.</p>
       <ul>
-        <li><b>Modalidad 1:</b> suma los números de tus cartas comidas (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
-        <li><b>Modalidad 2:</b> suma 2 puntos por cada carta comida (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
+        <li><b>Modo Suma:</b> suma los números de tus cartas comidas (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
+        <li><b>Modo Cantidades:</b> suma 2 puntos por cada carta comida (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
       </ul>
     </details>
     <details>
@@ -1066,15 +1066,15 @@
   }
 
   // Modalidad 1: suma de los números comidos - 1 por carta visible. Modalidad 2: +2 por carta comida - 1 por carta visible.
-  let SCORE_MODE = 1;
+  let SCORE_MODE = 2;
   const SCORE_TEXT = {
-    1: 'Modalidad 1: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.',
-    2: 'Modalidad 2: suma 2 puntos por cada carta comida (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.'
+    1: 'Modo Suma: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.',
+    2: 'Modo Cantidades: suma 2 puntos por cada carta comida (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.'
   };
 
   function updateScoreUI() {
     document.getElementById('scoreText').textContent = SCORE_TEXT[SCORE_MODE];
-    document.getElementById('scoreMode').textContent = `Modalidad ${SCORE_MODE}`;
+    document.getElementById('scoreMode').textContent = SCORE_MODE === 1 ? 'Modo Suma' : 'Modo Cantidades';
     // La modalidad no se puede cambiar durante la partida; se libera al terminar.
     document.getElementById('scoreMode').disabled = S.started && !S.gameOver;
   }

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Cadena Trófica - Solitario</title>
+<style>
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#222;margin:0;padding:16px}
+.wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;max-width:1000px;margin:auto}
+.board{display:grid;grid-template-columns:repeat(4,96px);grid-template-rows:repeat(4,124px);gap:8px}
+.cell{position:relative;border-radius:8px;border:2px solid #c9c3b6;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cell.hole{background:#ece8dd;border-style:dashed}
+.cell.coord{box-shadow:0 0 0 3px #222}
+.cell.tgt{box-shadow:0 0 0 4px orange}
+.cell.sel{box-shadow:0 0 0 4px magenta}
+.card{width:84px;height:112px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-shadow:0 0 3px #0008}
+.card img{width:40px;height:40px;background:#fbf7ee;border-radius:6px}
+.num{font-size:22px}
+.nm{font-size:11px}
+.panel{min-width:260px}
+.pill{display:inline-block;padding:4px 10px;border-radius:12px;margin:2px;color:#fff;font-weight:700}
+button{font-size:14px;padding:6px 12px;margin:4px 4px 4px 0;border-radius:6px;border:1px solid #999;background:#fff;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+.msg{min-height:40px;margin:8px 0;font-size:14px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.nat{width:70px;height:96px;border-radius:8px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;cursor:pointer;border:3px solid transparent}
+.nat.ok{border-color:orange}
+</style></head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="row"><b>Ronda <span id="rnd"></span> de 3</b> &nbsp; <span id="tot"></span></div>
+    <div class="board" id="board"></div>
+    <div class="msg" id="msg"></div>
+    <div class="row">
+      <button id="btnChain">Terminar turno</button>
+      <button id="btnHongo">Gastar hongo</button>
+      <button id="btnPush">Usar escarabajo</button>
+      <button id="btnNext">Siguiente ronda</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Coordenada revelada</h3>
+    <div id="pairs"></div>
+    <h3>Naturaleza (salen 2)</h3>
+    <div id="shown" class="row"></div>
+    <h3>Tus Presas (ajenas)</h3>
+    <div id="presas" class="row"></div>
+    <h3>Tu zona aparte (propias comidas)</h3>
+    <div id="aside" class="row"></div>
+    <h3>Puntaje ronda</h3>
+    <div id="score"></div>
+  </div>
+</div>
+<script>
+const COME={1:[],2:[1],3:[1,2],4:[2,3],5:[3,4],6:[4,5],7:[5,6],8:[6,7]};
+const NAMES={1:'Pasto',2:'Hongo',3:'Hormiga',4:'Escarabajo',5:'Araña',6:'Lagartija',7:'Benteveo',8:'Halcón'};
+const FILE={1:'01_pasto.png',2:'02_hongo.png',3:'03_hormiga.png',4:'04_escarabajo.png',5:'05_araña.png',6:'06_lagartija.png',7:'07_pajaro.png',8:'08_halcon.png'};
+const COL=['#c97866','#7e9caf','#8cb38c','#c4aadf'];
+const lo=v=>COME[v].length?Math.min(...COME[v]):v;
+const canEat=(a,b,boost)=>b.v<a.v && b.v>=lo(a.v)-boost;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const NB=i=>{const r=Math.floor(i/4),c=i%4,o=[];if(r>0)o.push(i-4);if(r<3)o.push(i+4);if(c>0)o.push(i-1);if(c<3)o.push(i+1);return o};
+const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+let S=null, ROUND=0, TOTAL=0;
+
+function makePairs(){
+  const lo=shuffle([1,2,3,4]), hi=shuffle([5,6,7,8]);
+  S.pairs=lo.map((r,i)=>[r,hi[i]]); S.pairIdx=0;
+}
+const coordIdx=()=>{const [r,c]=S.pairs[S.pairIdx]; return (r-1)*4+(c-5)};
+
+function newRound(){
+  ROUND++;
+  const own=[];for(let k=0;k<2;k++)for(let v=1;v<=8;v++)own.push({v,c:0});
+  const nat=[];
+  for(let v=1;v<=8;v++)nat.push({v,c:1});            // color 1: las 8 que no son coordenadas
+  for(let k=0;k<2;k++)for(let c=2;c<=3;c++)for(let v=1;v<=8;v++)nat.push({v,c});
+  S={board:shuffle(own),presas:[],aside:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
+     sel:null,chain:null,pending:false,pushMode:false,boost:0,over:false,done:false};
+  makePairs();
+  S.shown=[S.nat.pop(),S.nat.pop()];
+  msg('Turno tuyo. Tocá una carta para ver sus movimientos.');
+  check(); render();
+}
+
+function eatsFrom(x){
+  const out=[], a=S.board[x]; if(!a) return out;
+  NB(x).forEach(y=>{const b=S.board[y]; if(b&&canEat(a,b,S.boost)) out.push({t:'eat',x,y})});
+  return out;
+}
+function slideFrom(x){ // hormiga 3: se desliza y frena en el último espacio vacío antes del tope
+  const out=[]; if(!S.board[x]||S.board[x].v!==3) return out;
+  const r0=Math.floor(x/4),c0=x%4;
+  dirs.forEach(([dr,dc])=>{let last=-1;for(let r=r0+dr,c=c0+dc;r>=0&&r<4&&c>=0&&c<4;r+=dr,c+=dc){const y=r*4+c;if(S.board[y])break;last=y}if(last>=0)out.push({t:'slide',x,y:last})});
+  return out;
+}
+function jumpFrom(x){ // halcón 8
+  const out=[]; if(!S.board[x]||S.board[x].v!==8) return out;
+  const r0=Math.floor(x/4),c0=x%4;
+  dirs.forEach(([dr,dc])=>{let jumped=false;for(let r=r0+dr,c=c0+dc;r>=0&&r<4&&c>=0&&c<4;r+=dr,c+=dc){const y=r*4+c;if(S.board[y]){jumped=true;continue}if(jumped){out.push({t:'jump',x,y});break}}});
+  return out;
+}
+function pushTargets(x){
+  const out=[], r0=Math.floor(x/4),c0=x%4;
+  dirs.forEach(([dr,dc])=>{for(let k=1;k<=3;k++){const r=r0+dr*k,c=c0+dc*k;if(r<0||r>3||c<0||c>3)break;const y=r*4+c;if(S.board[y])break;out.push({t:'push',x,y})}});
+  return out;
+}
+function targetsOf(x){
+  if(S.chain!==null) return x===S.chain?eatsFrom(x):[];
+  return [...eatsFrom(x),...slideFrom(x),...jumpFrom(x)];
+}
+function allMoves(){
+  const m=[];for(let x=0;x<16;x++){m.push(...eatsFrom(x),...slideFrom(x),...jumpFrom(x))}
+  if(S.presas.some(c=>c.v===4))for(let x=0;x<16;x++)if(S.board[x])m.push(...pushTargets(x));
+  return m;
+}
+
+function act(m){
+  if(S.over||S.pending) return;
+  if(m.t==='eat'){
+    const mover=S.board[m.x], target=S.board[m.y];
+    S.board[m.x]=null; S.board[m.y]=mover;
+    if(S.boost){S.boost=0}
+    if(target.c===0){S.aside.push(target); const ci=coordIdx(); if(S.board[ci]===null){S.pending=true; msg('Comiste una propia: elegí una carta de Naturaleza para la coordenada revelada.')} else msg('Comiste una propia, pero la coordenada revelada está ocupada: no se rellena.');}
+    else {S.presas.push(target); msg(`Comiste un ${target.v} ajeno: va a tus Presas.`)}
+    S.sel=m.y; S.chain=m.y;
+    if(!S.pending){
+      if(eatsFrom(m.y).length) { msg(msg_text()+' Podés seguir comiendo con la misma carta o terminar el turno.'); }
+      else endTurn();
+    }
+    render(); return;
+  }
+  if(m.t==='slide'||m.t==='jump'){
+    S.board[m.y]=S.board[m.x]; S.board[m.x]=null;
+    msg(`Usaste el poder de ${NAMES[S.board[m.y].v]}. Turno terminado.`); endTurn(); return;
+  }
+  if(m.t==='push'){
+    const i=S.presas.findIndex(c=>c.v===4); S.presas.splice(i,1);
+    S.board[m.y]=S.board[m.x]; S.board[m.x]=null; S.pushMode=false;
+    msg('Empujaste una carta con el escarabajo. Turno terminado.'); endTurn(); return;
+  }
+}
+const msg_text=()=>document.getElementById('msg').textContent.replace(/ Podés.*$/,'');
+function msg(t){document.getElementById('msg').textContent=t}
+
+function placeNat(i){
+  if(!S.pending) return;
+  const card=S.shown.splice(i,1)[0];
+  S.board[coordIdx()]=card; S.pending=false;
+  // las 2 cartas de Naturaleza: la que queda vuelve al fondo al terminar el turno
+  msg('Colocaste la carta de Naturaleza en la coordenada.');
+  if(S.chain!==null && eatsFrom(S.chain).length){ msg('Podés seguir comiendo con la misma carta o terminar el turno.'); }
+  else endTurn();
+  render();
+}
+
+function endTurn(){
+  S.shown.forEach(c=>S.nat.unshift(c)); S.shown=[];
+  S.sel=null; S.chain=null; S.pushMode=false; S.boost=0; S.pending=false;
+  S.pairIdx++; if(S.pairIdx>=4) makePairs();
+  if(!S.over){ S.shown=[S.nat.pop(),S.nat.pop()]; }
+  check(); render();
+}
+
+function ownVisible(){return S.board.filter(c=>c&&c.c===0).length}
+function roundScore(){return 2*S.presas.length - ownVisible()}
+function check(){
+  if(S.over) return;
+  if(ownVisible()<=1 || allMoves().length===0){
+    S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score;
+    msg(`Fin de la ronda ${ROUND}. Puntaje: ${S.score}.`);
+  }
+}
+
+function clickCell(i){
+  if(S.over||S.pending) return;
+  if(S.pushMode){
+    if(S.sel!==null && pushTargets(S.sel).some(m=>m.y===i)) return act({t:'push',x:S.sel,y:i});
+    if(S.board[i]){S.sel=i;}
+    render(); return;
+  }
+  if(S.sel!==null){
+    const mv=targetsOf(S.sel).find(m=>m.y===i);
+    if(mv) return act(mv);
+    if(S.sel===i){S.sel=null;render();return}
+  }
+  if(S.board[i] && (S.chain===null || S.chain===i)){ S.sel=i; if(S.chain!==null){} }
+  render();
+}
+
+function render(){
+  document.getElementById('rnd').textContent=ROUND;
+  document.getElementById('tot').textContent=`Total: ${TOTAL}`;
+  const b=document.getElementById('board'); b.innerHTML='';
+  const ci=coordIdx(), tg=S.sel!==null?targetsOf(S.sel).map(m=>m.y):(S.pushMode&&S.sel!==null?pushTargets(S.sel).map(m=>m.y):[]);
+  for(let i=0;i<16;i++){
+    const d=document.createElement('div'); d.className='cell'+(S.board[i]?'':' hole')+(i===ci&&!S.over?' coord':'')+(tg.includes(i)?' tgt':'')+(S.sel===i?' sel':'');
+    d.onclick=()=>clickCell(i);
+    const c=S.board[i];
+    if(c){const k=document.createElement('div');k.className='card';k.style.background=COL[c.c];
+      k.innerHTML=`<div class="num">${c.v}</div>${c.v&&FILE[c.v]?`<img src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.appendChild(k)}
+    b.appendChild(d);
+  }
+  const pr=document.getElementById('pairs'); pr.innerHTML='';
+  S.pairs.forEach(([r,c],i)=>{const s=document.createElement('span');s.className='pill';s.style.background=i===S.pairIdx?'#222':'#999';s.textContent=`${r}-${c} (${'ABCD'[c-5]}${r})`;pr.appendChild(s)});
+  const sh=document.getElementById('shown'); sh.innerHTML='';
+  S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div><div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
+  const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
+  const as=document.getElementById('aside'); as.innerHTML=''; S.aside.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[0];s.textContent=`${c.v} ${NAMES[c.v]}`;as.appendChild(s)});
+  document.getElementById('score').textContent=S.over?`Ronda: ${S.score} pts (2 × ${S.presas.length} ajenas − ${ownVisible()} propias visibles)`:'';
+  document.getElementById('btnChain').disabled=!(S.chain!==null&&!S.pending);
+  document.getElementById('btnHongo').disabled=!(S.presas.some(c=>c.v===2)&&!S.boost&&!S.over&&S.chain===null);
+  document.getElementById('btnPush').disabled=!(S.presas.some(c=>c.v===4)&&S.chain===null&&!S.over&&!S.pending);
+  document.getElementById('btnNext').disabled=!S.over||ROUND>=3;
+  if(S.over&&ROUND>=3){document.getElementById('btnNext').disabled=true;}
+}
+
+document.getElementById('btnChain').onclick=()=>{ if(S.chain!==null&&!S.pending) endTurn(); };
+document.getElementById('btnHongo').onclick=()=>{
+  const i=S.presas.findIndex(c=>c.v===2); if(i<0)return; S.presas.splice(i,1); S.boost=1; msg('Hongo gastado: el próximo movimiento de comer tiene rango +1.'); render();
+};
+document.getElementById('btnPush').onclick=()=>{ S.pushMode=!S.pushMode; S.sel=null; msg(S.pushMode?'Escarabajo: elegí una carta de tu tablero y después el hueco.':'Cancelado.'); render(); };
+document.getElementById('btnNext').onclick=()=>{ if(S.over&&ROUND<3){ newRound(); } };
+// al terminar la ronda 3, se suma el último puntaje
+const origRender=render;
+newRound();
+</script>
+</body></html>

@@ -67,8 +67,14 @@ function makePairs(){
   S.pairs=lo.map((r,i)=>[r,hi[i]]); S.pairIdx=0;
 }
 const coordIdx=()=>{const [r,c]=S.pairs[S.pairIdx]; return (r-1)*4+(c-5)};
-// mueve la carta de arriba de x a y; lo que estaba abajo en x queda visible
-function moveTop(x,y){const c=S.board[x]; S.board[x]=S.under[x].pop()||null; S.board[y]=c;}
+// mueve toda la pila de x a y (la de arriba queda arriba); lo que ya estaba en y queda debajo
+function moveTop(x,y){
+  const pile=[...S.under[x],S.board[x]];
+  S.under[x]=[]; S.board[x]=null;
+  const top=pile.pop();
+  S.under[y]=[...S.under[y],...pile];
+  S.board[y]=top;
+}
 
 function newRound(){
   ROUND++;

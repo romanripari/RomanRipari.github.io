@@ -6,6 +6,7 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#2
 .board{display:grid;grid-template-columns:repeat(4,96px);grid-template-rows:repeat(4,124px);gap:8px}
 .cell{position:relative;border-radius:8px;border:2px solid #c9c3b6;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .cell.hole{background:#ece8dd;border-style:dashed}
+.under{position:absolute;bottom:3px;left:3px;right:3px;text-align:center;font-size:11px;font-weight:700;color:#fff;background:#000a;border-radius:4px}
 .cell.coord{box-shadow:0 0 0 5px #f5c400}
 .cell.can{box-shadow:0 0 0 3px #7c3aed}
 .cell.tgt{box-shadow:0 0 0 4px orange}
@@ -43,8 +44,6 @@ button:disabled{opacity:.4;cursor:default}
     <div id="shown" class="row"></div>
     <h3>Tus Presas (ajenas)</h3>
     <div id="presas" class="row"></div>
-    <h3>Tu zona aparte (propias comidas)</h3>
-    <div id="aside" class="row"></div>
     <h3>Puntaje ronda</h3>
     <div id="score"></div>
   </div>
@@ -66,6 +65,8 @@ function makePairs(){
   S.pairs=lo.map((r,i)=>[r,hi[i]]); S.pairIdx=0;
 }
 const coordIdx=()=>{const [r,c]=S.pairs[S.pairIdx]; return (r-1)*4+(c-5)};
+// mueve la carta de arriba de x a y; lo que estaba abajo en x queda visible
+function moveTop(x,y){const c=S.board[x]; S.board[x]=S.under[x].pop()||null; S.board[y]=c;}
 
 function newRound(){
   ROUND++;
@@ -73,7 +74,7 @@ function newRound(){
   const nat=[];
   for(let v=1;v<=8;v++)nat.push({v,c:1});            // color 1: las 8 que no son coordenadas
   for(let k=0;k<2;k++)for(let c=2;c<=3;c++)for(let v=1;v<=8;v++)nat.push({v,c});
-  S={board:shuffle(own),presas:[],aside:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
+  S={board:shuffle(own),under:Array.from({length:16},()=>[]),presas:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
      sel:null,chain:null,pending:false,pushMode:false,boost:0,over:false,done:false};
   makePairs();
   S.shown=[S.nat.pop(),S.nat.pop()];
@@ -116,13 +117,12 @@ function allMoves(){
 function act(m){
   if(S.over||S.pending) return;
   if(m.t==='eat'){
-    const mover=S.board[m.x], target=S.board[m.y];
-    S.board[m.x]=null; S.board[m.y]=mover;
+    const target=S.board[m.y];
+    moveTop(m.x,m.y);
     if(S.boost){S.boost=0}
     if(target.c===0){
-      S.aside.push(target);
-      if(S.board[coordIdx()]===null){ S.pending=true; S.chain=null; S.sel=null; msg('Comiste una propia: elegí AHORA una carta de Naturaleza (de las 2) para la coordenada marcada.'); render(); return; }
-      msg('Comiste una propia, pero la coordenada marcada está ocupada: no se rellena.'); endTurn(); return;
+      S.pending=true; S.chain=null; S.sel=null;
+      msg('Comiste una propia: sale del juego. Elegí AHORA una carta de Naturaleza (de las 2) para la coordenada marcada.'); render(); return;
     }
     S.presas.push(target); S.sel=m.y;
     if(eatsFrom(m.y).length){ S.chain=m.y; msg(`Comiste un ${target.v} ajeno: va a tus Presas. Podés seguir comiendo con esa carta o terminar el turno.`); }
@@ -130,12 +130,12 @@ function act(m){
     render(); return;
   }
   if(m.t==='slide'||m.t==='jump'){
-    S.board[m.y]=S.board[m.x]; S.board[m.x]=null;
+    moveTop(m.x,m.y);
     msg(`Usaste el poder de ${NAMES[S.board[m.y].v]}. Turno terminado.`); endTurn(); return;
   }
   if(m.t==='push'){
     const i=S.presas.findIndex(c=>c.v===4); S.presas.splice(i,1);
-    S.board[m.y]=S.board[m.x]; S.board[m.x]=null; S.pushMode=false;
+    moveTop(m.x,m.y); S.pushMode=false;
     msg('Empujaste una carta con el escarabajo. Turno terminado.'); endTurn(); return;
   }
 }
@@ -145,7 +145,9 @@ function msg(t){document.getElementById('msg').textContent=t}
 function placeNat(i){
   if(!S.pending) return;
   const card=S.shown.splice(i,1)[0];
-  S.board[coordIdx()]=card; S.pending=false;
+  const ci=coordIdx();
+  if(S.board[ci]) S.under[ci].push(S.board[ci]); // la nueva queda arriba y forma pila
+  S.board[ci]=card; S.pending=false;
   // las 2 cartas de Naturaleza: la que queda vuelve al fondo al terminar el turno
   msg('Colocaste la carta de Naturaleza en la coordenada. Sigue el turno con la siguiente coordenada.');
   endTurn();
@@ -196,6 +198,7 @@ function render(){
     const c=S.board[i];
     if(c){const k=document.createElement('div');k.className='card';k.style.background=COL[c.c];
       k.innerHTML=`<div class="num">${c.v}</div>${c.v&&FILE[c.v]?`<img src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.appendChild(k)}
+    if(S.under[i].length){const u=document.createElement('div');u.className='under';u.textContent='abajo: '+S.under[i].map(x=>x.v).reverse().join(' ');d.appendChild(u)}
     b.appendChild(d);
   }
   const pr=document.getElementById('pairs'); pr.innerHTML='';
@@ -203,7 +206,6 @@ function render(){
   const sh=document.getElementById('shown'); sh.innerHTML='';
   S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div><div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
   const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
-  const as=document.getElementById('aside'); as.innerHTML=''; S.aside.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[0];s.textContent=`${c.v} ${NAMES[c.v]}`;as.appendChild(s)});
   document.getElementById('score').textContent=S.over?`Ronda: ${S.score} pts (2 × ${S.presas.length} ajenas − ${ownVisible()} propias visibles)`:'';
   document.getElementById('btnChain').disabled=!(S.chain!==null&&!S.pending);
   document.getElementById('btnHongo').disabled=!(S.presas.some(c=>c.v===2)&&!S.boost&&!S.over&&S.chain===null);

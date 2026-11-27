@@ -2,7 +2,8 @@
 <html lang="es"><head><meta charset="utf-8"><title>Cadena Trófica - Solitario</title>
 <style>
 body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#222;margin:0;padding:16px}
-.wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;max-width:1000px;margin:auto}
+.wrap{display:flex;gap:24px;flex-wrap:nowrap;align-items:flex-start;max-width:1000px;margin:auto}
+.wrap>div:first-child{width:420px;flex:none}
 .board{display:grid;grid-template-columns:repeat(4,96px);grid-template-rows:repeat(4,124px);gap:8px}
 .cell{position:relative;border-radius:8px;border:2px solid #c9c3b6;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .cell.hole{background:#ece8dd;border-style:dashed}
@@ -16,13 +17,13 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#2
 .card img{width:40px;height:40px;background:#fbf7ee;border-radius:6px}
 .num{font-size:22px}
 .nm{font-size:11px}
-.panel{min-width:260px}
+.panel{width:300px;flex:none}
 .pill{display:inline-block;padding:4px 10px;border-radius:12px;margin:2px;color:#fff;font-weight:700}
 button{font-size:14px;padding:6px 12px;margin:4px 4px 4px 0;border-radius:6px;border:1px solid #999;background:#fff;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
 .msg{min-height:40px;margin:8px 0;font-size:14px}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.nat{width:70px;height:96px;border-radius:8px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;cursor:pointer;border:3px solid transparent}
+.nat{cursor:pointer;border:3px solid transparent}
 .nat.ok{border-color:orange}
 </style></head>
 <body>
@@ -41,9 +42,9 @@ button:disabled{opacity:.4;cursor:default}
   <div class="panel">
     <h3>Coordenada revelada</h3>
     <div id="pairs"></div>
-    <h3>Naturaleza (salen 2)</h3>
+    <h3>Naturaleza</h3>
     <div id="shown" class="row"></div>
-    <h3>Tus Presas (ajenas)</h3>
+    <h3>Tus Presas</h3>
     <div id="presas" class="row"></div>
     <h3>Puntaje ronda</h3>
     <div id="score"></div>
@@ -76,7 +77,7 @@ function newRound(){
   for(let v=1;v<=8;v++)nat.push({v,c:1});            // color 1: las 8 que no son coordenadas
   for(let k=0;k<2;k++)for(let c=2;c<=3;c++)for(let v=1;v<=8;v++)nat.push({v,c});
   S={board:shuffle(own),under:Array.from({length:16},()=>[]),presas:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
-     sel:null,chain:null,pending:false,pushMode:false,boost:0,over:false,done:false};
+     sel:null,chain:null,pending:false,placed:false,pushMode:false,boost:0,over:false,done:false};
   makePairs();
   S.shown=[S.nat.pop(),S.nat.pop()];
   msg('Turno tuyo. Tocá una carta para ver sus movimientos.');
@@ -148,17 +149,21 @@ function placeNat(i){
   const card=S.shown.splice(i,1)[0];
   const ci=coordIdx();
   if(S.board[ci]) S.under[ci].push(S.board[ci]); // la nueva queda arriba y forma pila
-  S.board[ci]=card; S.pending=false;
+  S.board[ci]=card; S.pending=false; S.placed=true;
   // las 2 cartas de Naturaleza: la que queda vuelve al fondo al terminar el turno
   msg('Colocaste la carta de Naturaleza en la coordenada. Sigue el turno con la siguiente coordenada.');
   endTurn();
 }
 
 function endTurn(){
-  S.shown.forEach(c=>S.nat.unshift(c)); S.shown=[];
   S.sel=null; S.chain=null; S.pushMode=false; S.boost=0; S.pending=false;
-  S.pairIdx++; if(S.pairIdx>=4) makePairs();
-  if(!S.over){ S.shown=[S.nat.pop(),S.nat.pop()]; }
+  // la coordenada solo avanza (y salen 2 nuevas de Naturaleza) si se colocó una carta en este turno
+  if(S.placed){
+    S.shown.forEach(c=>S.nat.unshift(c)); S.shown=[];
+    S.placed=false;
+    S.pairIdx++; if(S.pairIdx>=4) makePairs();
+    if(!S.over){ S.shown=[S.nat.pop(),S.nat.pop()]; }
+  }
   check(); render();
 }
 
@@ -208,7 +213,7 @@ function render(){
   const pr=document.getElementById('pairs'); pr.innerHTML='';
   S.pairs.forEach(([r,c],i)=>{const s=document.createElement('span');s.className='pill';s.style.background=i===S.pairIdx?'#ff5f1f':'#999';s.textContent=`${r}-${c} (${'ABCD'[c-5]}${r})`;pr.appendChild(s)});
   const sh=document.getElementById('shown'); sh.innerHTML='';
-  S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div><div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
+  S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='card nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div>${FILE[c.v]?`<img src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
   const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
   document.getElementById('score').textContent=S.over?`Ronda: ${S.score} pts (2 × ${S.presas.length} ajenas − ${ownVisible()} propias visibles)`:'';
   document.getElementById('btnChain').disabled=!(S.chain!==null&&!S.pending);

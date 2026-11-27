@@ -124,10 +124,11 @@ function allMoves(){
 
 function act(m){
   if(S.over||S.pending) return;
+  if(m.t!=='eat') S.boost=0; // hongo activado y se mueve otra cosa: no se gasta
   if(m.t==='eat'){
     const target=S.board[m.y];
     moveTop(m.x,m.y);
-    if(S.boost){S.boost=0}
+    if(S.boost){ const hi=S.presas.findIndex(c=>c.v===2); if(hi>=0) S.presas.splice(hi,1); S.boost=0; }
     if(target.c===0){
       S.pending=true; S.chain=null; S.sel=null;
       msg('Comiste una propia: sale del juego. Elegí AHORA una carta de Naturaleza (de las 2) para la coordenada marcada.'); render(); return;
@@ -187,8 +188,10 @@ function clickCell(i){
   if(S.over||S.pending) return;
   if(S.pushMode){
     if(S.sel!==null && pushTargets(S.sel).some(m=>m.y===i)) return act({t:'push',x:S.sel,y:i});
-    if(S.board[i]){S.sel=i;}
-    render(); return;
+    if(S.board[i] && S.sel!==i){ S.sel=i; render(); return; }
+    if(S.sel===i){ S.sel=null; render(); return; }
+    // otro movimiento: el escarabajo no se usa y queda disponible
+    S.pushMode=false; msg('Escarabajo no usado: sigue disponible.');
   }
   if(S.sel!==null){
     const mv=targetsOf(S.sel).find(m=>m.y===i);
@@ -223,15 +226,19 @@ function render(){
   const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
   document.getElementById('score').textContent=S.over?`Ronda: ${S.score} pts (2 × ${S.presas.length} ajenas − ${ownVisible()} propias visibles)`:'';
   document.getElementById('btnChain').disabled=!(S.chain!==null&&!S.pending);
-  document.getElementById('btnHongo').disabled=!(S.presas.some(c=>c.v===2)&&!S.boost&&!S.over&&S.chain===null);
-  document.getElementById('btnPush').disabled=!(S.presas.some(c=>c.v===4)&&S.chain===null&&!S.over&&!S.pending);
+  document.getElementById('btnHongo').disabled=!((S.presas.some(c=>c.v===2)||S.boost)&&!S.over&&S.chain===null);
+  document.getElementById('btnHongo').textContent=S.boost?'No usar hongo':'Gastar hongo';
+  document.getElementById('btnPush').disabled=!((S.presas.some(c=>c.v===4)||S.pushMode)&&S.chain===null&&!S.over&&!S.pending);
+  document.getElementById('btnPush').textContent=S.pushMode?'No usar escarabajo':'Usar escarabajo';
   document.getElementById('btnNext').disabled=!S.over||ROUND>=3;
   if(S.over&&ROUND>=3){document.getElementById('btnNext').disabled=true;}
 }
 
 document.getElementById('btnChain').onclick=()=>{ if(S.chain!==null&&!S.pending) endTurn(); };
 document.getElementById('btnHongo').onclick=()=>{
-  const i=S.presas.findIndex(c=>c.v===2); if(i<0)return; S.presas.splice(i,1); S.boost=1; msg('Hongo gastado: el próximo movimiento de comer tiene rango +1.'); render();
+  if(S.boost){ S.boost=0; msg('Hongo no usado: sigue disponible.'); render(); return; }
+  if(!S.presas.some(c=>c.v===2)) return;
+  S.boost=1; msg('Hongo activado: el próximo movimiento de comer tiene rango +1. Si movés otra cosa, no se gasta.'); render();
 };
 document.getElementById('btnPush').onclick=()=>{ S.pushMode=!S.pushMode; S.sel=null; msg(S.pushMode?'Escarabajo: elegí una carta de tu tablero y después el hueco.':'Cancelado.'); render(); };
 document.getElementById('btnNext').onclick=()=>{ if(S.over&&ROUND<3){ newRound(); } };

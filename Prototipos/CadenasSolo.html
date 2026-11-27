@@ -6,7 +6,8 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#2
 .board{display:grid;grid-template-columns:repeat(4,96px);grid-template-rows:repeat(4,124px);gap:8px}
 .cell{position:relative;border-radius:8px;border:2px solid #c9c3b6;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .cell.hole{background:#ece8dd;border-style:dashed}
-.cell.coord{box-shadow:0 0 0 3px #222}
+.cell.coord{box-shadow:0 0 0 5px #f5c400}
+.cell.can{box-shadow:0 0 0 3px #7c3aed}
 .cell.tgt{box-shadow:0 0 0 4px orange}
 .cell.sel{box-shadow:0 0 0 4px magenta}
 .card{width:84px;height:112px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-shadow:0 0 3px #0008}
@@ -118,13 +119,14 @@ function act(m){
     const mover=S.board[m.x], target=S.board[m.y];
     S.board[m.x]=null; S.board[m.y]=mover;
     if(S.boost){S.boost=0}
-    if(target.c===0){S.aside.push(target); const ci=coordIdx(); if(S.board[ci]===null){S.pending=true; msg('Comiste una propia: elegí una carta de Naturaleza para la coordenada revelada.')} else msg('Comiste una propia, pero la coordenada revelada está ocupada: no se rellena.');}
-    else {S.presas.push(target); msg(`Comiste un ${target.v} ajeno: va a tus Presas.`)}
-    S.sel=m.y; S.chain=m.y;
-    if(!S.pending){
-      if(eatsFrom(m.y).length) { msg(msg_text()+' Podés seguir comiendo con la misma carta o terminar el turno.'); }
-      else endTurn();
+    if(target.c===0){
+      S.aside.push(target);
+      if(S.board[coordIdx()]===null){ S.pending=true; S.chain=null; S.sel=null; msg('Comiste una propia: elegí AHORA una carta de Naturaleza (de las 2) para la coordenada marcada.'); render(); return; }
+      msg('Comiste una propia, pero la coordenada marcada está ocupada: no se rellena.'); endTurn(); return;
     }
+    S.presas.push(target); S.sel=m.y;
+    if(eatsFrom(m.y).length){ S.chain=m.y; msg(`Comiste un ${target.v} ajeno: va a tus Presas. Podés seguir comiendo con esa carta o terminar el turno.`); }
+    else { S.chain=null; msg(`Comiste un ${target.v} ajeno: va a tus Presas.`); endTurn(); return; }
     render(); return;
   }
   if(m.t==='slide'||m.t==='jump'){
@@ -145,10 +147,8 @@ function placeNat(i){
   const card=S.shown.splice(i,1)[0];
   S.board[coordIdx()]=card; S.pending=false;
   // las 2 cartas de Naturaleza: la que queda vuelve al fondo al terminar el turno
-  msg('Colocaste la carta de Naturaleza en la coordenada.');
-  if(S.chain!==null && eatsFrom(S.chain).length){ msg('Podés seguir comiendo con la misma carta o terminar el turno.'); }
-  else endTurn();
-  render();
+  msg('Colocaste la carta de Naturaleza en la coordenada. Sigue el turno con la siguiente coordenada.');
+  endTurn();
 }
 
 function endTurn(){
@@ -181,7 +181,7 @@ function clickCell(i){
     if(mv) return act(mv);
     if(S.sel===i){S.sel=null;render();return}
   }
-  if(S.board[i] && (S.chain===null || S.chain===i)){ S.sel=i; if(S.chain!==null){} }
+  if(S.board[i] && (S.chain===null || S.chain===i)){ S.sel=i; const n=targetsOf(i).length; msg(n?`Carta ${S.board[i].v} ${NAMES[S.board[i].v]}: ${n} movimiento(s) posible(s) marcados en naranja.`:'Esa carta no tiene movimientos.'); }
   render();
 }
 
@@ -191,7 +191,7 @@ function render(){
   const b=document.getElementById('board'); b.innerHTML='';
   const ci=coordIdx(), tg=S.sel!==null?targetsOf(S.sel).map(m=>m.y):(S.pushMode&&S.sel!==null?pushTargets(S.sel).map(m=>m.y):[]);
   for(let i=0;i<16;i++){
-    const d=document.createElement('div'); d.className='cell'+(S.board[i]?'':' hole')+(i===ci&&!S.over?' coord':'')+(tg.includes(i)?' tgt':'')+(S.sel===i?' sel':'');
+    const d=document.createElement('div'); d.className='cell'+(S.board[i]?'':' hole')+(i===ci&&!S.over?' coord':'')+(tg.includes(i)?' tgt':'')+(!S.over&&!S.pending&&S.sel===null&&targetsOf(i).length?' can':'')+(S.sel===i?' sel':'');
     d.onclick=()=>clickCell(i);
     const c=S.board[i];
     if(c){const k=document.createElement('div');k.className='card';k.style.background=COL[c.c];

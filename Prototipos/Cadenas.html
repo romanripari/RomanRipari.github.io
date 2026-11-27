@@ -85,7 +85,7 @@
   .aName { font-size:11.5cqw; font-weight:700; line-height:1.05; }
   .aData { font-size:13cqw; font-weight:700; line-height:1.1; color:#000; }
 
-  /* Columna de poderes a la derecha del propio tablero (solo modo animales) */
+  /* Columna de poderes a la derecha del propio Terreno (solo modo animales) */
   .sideRight { display:flex; flex-direction:column; justify-content:center; align-items:flex-start; gap:10px; justify-self:start; }
   .powCol { display:flex; flex-direction:row; flex-wrap:wrap; gap:8px; }
   .pw { position:relative; width:46px; height:46px; padding:4px; border-radius:8px; background:#fff; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; }
@@ -148,6 +148,7 @@
   <div class="controls">
     <label>Bots
       <select id="bots">
+        <option value="1">1 bot (2 jugadores)</option>
         <option value="2">2 bots (3 jugadores)</option>
         <option value="3" selected>3 bots (4 jugadores)</option>
       </select>
@@ -166,10 +167,10 @@
       <div class="box powers">
         <h2>Poderes (modo animales)</h2>
         <ul class="powerList">
-          <li><b>Hongo (2):</b> en tu zona de comidas, al hacer una comida podés gastarlo para ampliar en 1 el rango de comida de ese movimiento. Sale del juego y deja de contar en tu zona.</li>
+          <li><b>Hongo (2):</b> en tus Presas, al hacer una comida podés gastarlo para ampliar en 1 el rango de comida de ese movimiento. Sale del juego y deja de contar en tus Presas.</li>
           <li><b>Hormiga (3):</b> mientras esté visible, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno.</li>
           <li><b>Halcón (8):</b> mientras esté visible, salta una o más cartas o pilas en línea ortogonal y cae en el primer espacio vacío. Reemplaza comer en tu turno.</li>
-          <li><b>Escarabajo (4):</b> en tu zona de comidas, gastalo para empujar una pila de tu tablero hasta 3 huecos en línea recta. No puede saltar ni empujar otras cartas. Reemplaza comer en tu turno.</li>
+          <li><b>Escarabajo (4):</b> en tus Presas, gastalo para empujar una pila de tu Terreno hasta 3 huecos en línea recta. No puede saltar ni empujar otras cartas. Reemplaza comer en tu turno.</li>
         </ul>
       </div>
       <div class="box">
@@ -190,8 +191,8 @@
       <summary>Objetivo</summary>
       <p>Al final de la ronda se calcula el puntaje según la modalidad elegida (botón arriba). La modalidad no se puede cambiar durante la partida. Gana el que MÁS puntos tiene.</p>
       <ul>
-        <li><b>Modo Suma:</b> suma los números de tus cartas comidas (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
-        <li><b>Modo Cantidades:</b> suma 2 puntos por cada carta comida (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu tablero, sea de quien sea.</li>
+        <li><b>Modo Suma:</b> suma los números de tus cartas comidas (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu Terreno, sea de quien sea.</li>
+        <li><b>Modo Cantidades:</b> suma 2 puntos por cada carta comida (también las que estaban abajo de cada pila) y resta 1 por cada carta visible en tu Terreno, sea de quien sea.</li>
       </ul>
     </details>
     <details>
@@ -200,7 +201,7 @@
         <li>Cada jugador tiene un cuadrado de 4 columnas (a-d) y 4 filas (16 cartas). Sus cartas son de su color, numeradas del 1 al total de casillas, sin huecos.</li>
         <li>La casilla a1 (arriba a la izquierda antes de girar el cuadrado) va marcada levemente.</li>
         <li>Los cuadrados se ubican en cruz: vos abajo, y los demás a tu izquierda, arriba y a tu derecha. Con 3 jugadores, los otros dos cuadrados quedan arriba a la izquierda y a la derecha, formando un triángulo.</li>
-        <li>Debajo de cada cuadrado hay una tira: tu zona de cartas comidas.</li>
+        <li>Debajo de cada cuadrado hay una tira: tus Presas.</li>
       </ul>
     </details>
     <details>
@@ -209,14 +210,14 @@
         <li>Para comer, elegís una carta visible de tu cuadrado (en magenta), sea tuya o ajena, y la movés UN espacio ortogonal sobre una carta más chica (en naranja). Solo se puede comer dentro de tu propio cuadrado.</li>
         <li>Una carta puede comer a una carta más chica, pero como máximo 4 números menos que ella. Por ejemplo, el 16 come del 12 al 15.</li>
         <li><b>Modo animales:</b> cada número es un organismo (1 Pasto, 2 Hongo, 3 Hormiga, 4 Escarabajo, 5 Araña, 6 Lagartija, 7 Benteveo, 8 Halcón), con 2 cartas de cada uno. Cada carta come solo a los números que indica su renglón "Come a", y no se usa la regla de distancia.</li>
-        <li><b>Hongo en tu zona de comidas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de contar en tu zona de comidas. No es una acción: es solo la ampliación.</li>
+        <li><b>Hongo en tus Presas:</b> al hacer una comida, podés gastarlo (botón "Gastar hongo") para ampliar en 1 el rango de comida de ese movimiento. La carta sale del juego y deja de contar en tus Presas. No es una acción: es solo la ampliación.</li>
         <li><b>Poder de la hormiga:</b> mientras una hormiga esté visible en un cuadrado, se desliza con su pila en línea ortogonal por espacios vacíos, hasta el próximo tope (otra carta o el borde). Reemplaza comer en tu turno: no comés ese turno. Arrastra todo lo que tenga debajo.</li>
         <li><b>Bots:</b> usan los poderes cuando les da más comidas.</li>
-        <li><b>Poder del escarabajo:</b> usa un escarabajo de tu zona de comidas (botón "Usar escarabajo"). Empuja una pila de tu tablero, sea de quien sea, a un hueco contiguo en línea recta (1, 2 o 3 espacios). No se puede empujar, saltar ni poner encima de otra carta. Reemplaza comer en tu turno.</li>
+        <li><b>Poder del escarabajo:</b> usa un escarabajo de tus Presas (botón "Usar escarabajo"). Empuja una pila de tu Terreno, sea de quien sea, a un hueco contiguo en línea recta (1, 2 o 3 espacios). No se puede empujar, saltar ni poner encima de otra carta. Reemplaza comer en tu turno.</li>
         <li>Si hay alguna comida legal, tenés que comer (podés usar antes un poder de hormiga, halcón o escarabajo). Si no tenés ninguna comida, podés usar un poder, o salir de la ronda si no podés hacer nada.</li>
         <li>La pila que come se mueve ENTERA a la casilla comida, y su casilla de origen queda vacía.</li>
         <li><b>Si comés una carta propia visible:</b> toda su pila (con lo que tenga debajo) pasa al vecino de ese lado de tu cuadrado, en la MISMA posición (fila y columna). Al final del turno. No te resta puntos.</li>
-        <li><b>Si comés una carta ajena visible:</b> toda su pila va a tu zona de cartas comidas (la tira debajo de tu cuadrado). Ahí te resta 1 por cada carta de la pila.</li>
+        <li><b>Si comés una carta ajena visible:</b> toda su pila va a tus Presas (la tira debajo de tu cuadrado). Ahí te resta 1 por cada carta de la pila.</li>
         <li><b>Encadenar:</b> si después de comer, la misma carta puede volver a comer, sigue comiendo en el mismo turno.</li>
         <li>Una pila propia cuya carta visible tiene número PAR pasa al vecino de la derecha; si es IMPAR, al de la izquierda. Se pone en la misma casilla, con todo lo que tenga abajo, y tapa lo que hubiera.</li>
         <li>Las cartas tapadas se ven como números en la esquina inferior izquierda de la carta, separados por comas.</li>
@@ -231,7 +232,7 @@
     <details>
       <summary>Salir de la ronda</summary>
       <ul>
-        <li>Si no tenés comidas ni movimientos válidos, salís de la ronda. Ya no jugás ni recibís cartas (las que te llegarían se van del juego). Tu tablero y tu zona de cartas comidas quedan como están y cuentan para el puntaje.</li>
+        <li>Si no tenés comidas ni movimientos válidos, salís de la ronda. Ya no jugás ni recibís cartas (las que te llegarían se van del juego). Tu Terreno y tus Presas quedan como están y cuentan para el puntaje.</li>
       </ul>
     </details>
     <details>
@@ -239,8 +240,8 @@
       <ul>
         <li>La ronda termina cuando ya salieron todos los jugadores, o cuando a un jugador le queda una sola carta propia visible en su cuadrado.</li>
         <li>Puntaje de la ronda: según la modalidad elegida (ver Objetivo).</li>
-        <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que más puntos suma. En empate, gana el que tenga menos cartas en su zona de comidas.</li>
-        <li>Íconos: <span class="ic ic-vis"><i></i></span> cartas visibles en tu tablero (restan 1 cada una).</li>
+        <li>Se juegan 3 rondas. Cada ronda se rearma desde cero. Gana el que más puntos suma. En empate, gana el que tenga menos cartas en sus Presas.</li>
+        <li>Íconos: <span class="ic ic-vis"><i></i></span> cartas visibles en tu Terreno (restan 1 cada una).</li>
       </ul>
     </details>
   </section>
@@ -266,7 +267,7 @@
   const LO_COMEN = {};
   for (const n in COME) for (const p of COME[n]) (LO_COMEN[p] ??= []).push(+n);
   let ANIMAL = false;
-  // Puntaje único: suma de los números de las cartas comidas, menos 1 por cada carta visible en tu tablero.
+  // Puntaje único: suma de los números de las cartas comidas, menos 1 por cada carta visible en tu Terreno.
   // Íconos anteriores en SVG (ya no se usan; quedan de respaldo)
   const ICONS_SVG = {
     1: `<svg viewBox="0 0 100 100"><path d="M28 92 Q24 50 12 22 Q40 46 42 92Z" fill="#4a9b3c"/><path d="M50 92 Q48 40 50 8 Q62 44 58 92Z" fill="#6cbf4a"/><path d="M72 92 Q74 52 88 26 Q76 58 78 92Z" fill="#3c8a33"/></svg>`,
@@ -289,6 +290,7 @@
   // Disposición en la cruz según la cantidad de jugadores.
   // Jugador 0 siempre abajo. Con 4: izquierda, arriba, derecha. Con 3: izquierda y derecha.
   function seatsFor(n) {
+    if (n === 2) return { pos: [[3, 2], [1, 2]], rot: [0, 180] };   // 2 jugadores: vos abajo, rival arriba (igual que Bot 2 en 4)
     if (n === 3) return { pos: [[2, 2], [1, 1], [1, 3]], rot: [0, 120, 240] };
     return { pos: [[3, 2], [2, 1], [1, 2], [2, 3]], rot: [0, 90, 180, -90] };
   }
@@ -388,7 +390,7 @@
   function zoneOwn(p) { return S.zone[p].filter(c => c.c === p).length; }
   function zoneFor(p) { return S.zone[p].filter(c => c.c !== p).length; }
 
-  // Suma de los números comidos, menos 1 por cada carta visible en el propio tablero. Gana el que más tiene.
+  // Suma de los números comidos, menos 1 por cada carta visible en el propio Terreno. Gana el que más tiene.
   function roundPts(p) {
     if (SCORE_MODE === 2) return 2 * S.zone[p].length - visibleCount(p);
     return zoneSum(p) - visibleCount(p);
@@ -404,7 +406,7 @@
   }
 
   // Come a una carta más chica, como máximo 4 números menos que ella
-  // BOOST = 1 cuando el humano gasta un hongo de su zona: amplía en 1 el rango de comida de este movimiento.
+  // BOOST = 1 cuando el humano gasta un hongo de sus Presas: amplía en 1 el rango de comida de este movimiento.
   let BOOST = 0;
   function canEat(a, b) {
     if (ANIMAL) {
@@ -613,13 +615,21 @@
     S.quads[m.q][m.y].push(...mover);
     S.selected = null;
     const top = pile[pile.length - 1];
-    if (top.c === p) {
+    if (N === 2 && p === 0 && top.c === p) {
+      // 2 jugadores: mezclo todo lo que comí de mi color y le doy una carta al rival (al azar).
+      // Lo demás de mi color y las cartas ajenas se quedan en mis Presas.
+      const own = pile.filter(c => c.c === p);
+      const given = own.splice(Math.floor(Math.random() * own.length), 1)[0];
+      S.zone[p].push(...pile.filter(c => c.c !== p), ...own);
+      S.queue.push({ pile: [given], idx: m.y, to: 1 });
+      logLine(`${NAMES[p]} comió ${pile.length} carta(s) de su color, mezcló y le pasa una a ${NAMES[1]}`);
+    } else if (top.c === p) {
       const to = (top.v % 2 === 0) ? (p - 1 + N) % N : (p + 1) % N;
       S.queue.push({ pile, idx: m.y, to });
       logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo pasa a ${NAMES[to]}`);
     } else {
       S.zone[p].push(...pile);
-      logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo guarda en su zona de comidas`);
+      logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo guarda en sus Presas`);
     }
     return { pos: { q: m.q, x: m.y } };
   }
@@ -657,7 +667,7 @@
     later(() => advance(p));
   }
 
-  // Salir de la ronda: no jugás más, pero tu tablero y tu zona cuentan.
+  // Salir de la ronda: no jugás más, pero tu Terreno y tus Presas cuentan.
   function passTurn(p, msg) {
     S.out[p] = true;
     S.selected = null;
@@ -841,10 +851,10 @@
     const i = S.zone[p].findIndex(c => c.v === 2);
     if (i >= 0) S.zone[p].splice(i, 1);
     BOOST = 0;
-    logLine(`${NAMES[p]} gastó un hongo de su zona: amplió en 1 el rango de comida.`);
+    logLine(`${NAMES[p]} gastó un hongo de sus Presas: amplió en 1 el rango de comida.`);
   }
 
-  // Escarabajo (modo animales): gasta un escarabajo de tu zona de comidas para empujar una pila de tu tablero
+  // Escarabajo (modo animales): gasta un escarabajo de tus Presas para empujar una pila de tu Terreno
   // a un hueco contiguo en línea recta (1, 2 o 3 espacios). Sin saltar ni empujar otras cartas. No ocupa turno.
   let PUSH = 0;
   // Hormiga (modo del humano): elegís la hormiga y después el espacio vacío a donde moverla
@@ -890,7 +900,7 @@
     render();
   }
 
-  // Columna de poderes a la derecha del propio tablero: solo aparecen los que se pueden usar ahora.
+  // Columna de poderes a la derecha del propio Terreno: solo aparecen los que se pueden usar ahora.
   // Tooltips breves de cada poder
   const POWER_WORD = { 3: 'Se Mueve', 8: 'Vuela', 4: 'Empuja', 2: 'Amplía' };
   const POWER_TIP = { 3: 'Se desliza en línea hasta el próximo tope', 8: 'Salta una o más cartas hasta un espacio vacío', 4: 'Empuja cualquier Carta o Pila', 2: 'Amplía en 1 el rango para comer' };
@@ -999,7 +1009,7 @@
   // Solo se puede salir si no hay comidas
   function humanPass() {
     if (S.turn !== 0 || S.busy || S.roundOver || S.gameOver || S.chain || PUSH || ANT || S.acted) return;
-    passTurn(0, 'Saliste de la ronda. Tu tablero y tu zona de cartas comidas quedan como están y ya no recibís cartas.');
+    passTurn(0, 'Saliste de la ronda. Tu Terreno y tus Presas quedan como están y ya no recibís cartas.');
   }
 
   // ← vecino de la izquierda, → vecino de la derecha, ✕ va a tu zona de comidas, ▫ espacio vacío
@@ -1068,8 +1078,8 @@
   // Modalidad 1: suma de los números comidos - 1 por carta visible. Modalidad 2: +2 por carta comida - 1 por carta visible.
   let SCORE_MODE = 2;
   const SCORE_TEXT = {
-    1: 'Modo Suma: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.',
-    2: 'Modo Cantidades: suma 2 puntos por cada carta comida (también las de abajo de cada pila) y resta 1 por cada carta visible en tu tablero. Gana el que MÁS tiene.'
+    1: 'Modo Suma: suma los números de tus cartas comidas (también las de abajo de cada pila) y resta 1 por cada carta visible en tu Terreno. Gana el que MÁS tiene.',
+    2: 'Modo Cantidades: suma 2 puntos por cada carta comida (también las de abajo de cada pila) y resta 1 por cada carta visible en tu Terreno. Gana el que MÁS tiene.'
   };
 
   function updateScoreUI() {
@@ -1146,7 +1156,7 @@
     const tableEl = document.getElementById('table');
     tableEl.innerHTML = '';
     tableEl.style.gridTemplateRows = N === 3 ? 'auto auto' : 'auto auto auto';
-    // Con 3 jugadores, las tres columnas tienen el mismo ancho que tu tablero (los rotados quedan del mismo tamaño)
+    // Con 3 jugadores, las tres columnas tienen el mismo ancho que tu Terreno (los rotados quedan del mismo tamaño)
     tableEl.style.gridTemplateColumns = N === 3 ? '240px 240px 240px' : '';
     // Con las columnas fijas, centra el conjunto dentro de su espacio (como en 4 jugadores)
     tableEl.style.justifyContent = N === 3 ? 'center' : '';
@@ -1312,7 +1322,7 @@
       ).join('');
       const zoneEl = document.createElement('div');
       zoneEl.className = 'zone';
-      const strip = `<span class="ztag">Comidas (${zone.length})</span>${chips}`;
+      const strip = `<span class="ztag">Presas (${zone.length})</span>${chips}`;
       zoneEl.innerHTML = strip;
       box.appendChild(zoneEl);
 
@@ -1355,14 +1365,14 @@
 
     let text;
     if (S.gameOver) {
-      // Gana el de menos puntos (en modo puntos positivos, el de más); en empate, el que tenga menos cartas en su zona de comidas
+      // Gana el de menos puntos (en modo puntos positivos, el de más); en empate, el que tenga menos cartas en sus Presas
       const max = Math.max(...S.totals);
       let tied = S.totals.map((t, i) => (t === max ? i : -1)).filter(i => i >= 0);
       let why = '';
       if (tied.length > 1) {
         const minZ = Math.min(...tied.map(i => S.zone[i].length));
         tied = tied.filter(i => S.zone[i].length === minZ);
-        why = ` Desempate por cartas en la zona de comidas: ${minZ}.`;
+        why = ` Desempate por cartas en Presas: ${minZ}.`;
       }
       const won = tied.includes(0);
       const who = tied.map(i => NAMES[i]).join(' y ');
@@ -1428,7 +1438,7 @@
     const b = e.target.closest('button');
     const id = b ? b.id : '';
     if (id === 'nextRound') nextRound();
-    if (id === 'passBtn' && confirm('¿Salir de la ronda? Dejás de jugar en esta ronda, pero tu tablero y tu zona cuentan.')) humanPass();
+    if (id === 'passBtn' && confirm('¿Salir de la ronda? Dejás de jugar en esta ronda, pero tu Terreno y tus Presas cuentan.')) humanPass();
     if (id === 'pwHongo') { BOOST = BOOST ? 0 : 1; render(); }
     if (id === 'pwPush') togglePush();
     if (id === 'pwAnt') toggleAnt(3);

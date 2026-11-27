@@ -615,15 +615,7 @@
     S.quads[m.q][m.y].push(...mover);
     S.selected = null;
     const top = pile[pile.length - 1];
-    if (N === 2 && p === 0 && top.c === p) {
-      // 2 jugadores: mezclo todo lo que comí de mi color y le doy una carta al rival (al azar).
-      // Lo demás de mi color y las cartas ajenas se quedan en mis Presas.
-      const own = pile.filter(c => c.c === p);
-      const given = own.splice(Math.floor(Math.random() * own.length), 1)[0];
-      S.zone[p].push(...pile.filter(c => c.c !== p), ...own);
-      S.queue.push({ pile: [given], idx: m.y, to: 1 });
-      logLine(`${NAMES[p]} comió ${pile.length} carta(s) de su color, mezcló y le pasa una a ${NAMES[1]}`);
-    } else if (top.c === p) {
+    if (top.c === p) {
       const to = (top.v % 2 === 0) ? (p - 1 + N) % N : (p + 1) % N;
       S.queue.push({ pile, idx: m.y, to });
       logLine(`${NAMES[p]} comió el ${top.v} ${chipHtml(top.v, top.c)} en ${labelOf(p, m.y)} y lo pasa a ${NAMES[to]}`);

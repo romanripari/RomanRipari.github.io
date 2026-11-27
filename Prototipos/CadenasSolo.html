@@ -49,6 +49,8 @@ button:disabled{opacity:.4;cursor:default}
     <div id="presas" class="row"></div>
     <h3>Puntaje ronda</h3>
     <div id="score"></div>
+    <h3>Contrincante (cartas no elegidas)</h3>
+    <div id="rival" class="row"></div>
   </div>
 </div>
 <script>
@@ -61,7 +63,7 @@ const canEat=(a,b,boost)=>b.v<a.v && b.v>=lo(a.v)-boost;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const NB=i=>{const r=Math.floor(i/4),c=i%4,o=[];if(r>0)o.push(i-4);if(r<3)o.push(i+4);if(c>0)o.push(i-1);if(c<3)o.push(i+1);return o};
 const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
-let S=null, ROUND=0, TOTAL=0;
+let S=null, ROUND=0, TOTAL=0, RIV=0;
 
 function makePairs(){
   const lo=shuffle([1,2,3,4]), hi=shuffle([5,6,7,8]);
@@ -83,7 +85,7 @@ function newRound(){
   const nat=[];
   for(let v=1;v<=8;v++)nat.push({v,c:1});            // color 1: las 8 que no son coordenadas
   for(let k=0;k<2;k++)for(let c=2;c<=3;c++)for(let v=1;v<=8;v++)nat.push({v,c});
-  S={board:shuffle(own),under:Array.from({length:16},()=>[]),presas:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
+  S={board:shuffle(own),under:Array.from({length:16},()=>[]),presas:[],rival:[],nat:shuffle(nat),shown:[],pairs:[],pairIdx:0,
      sel:null,chain:null,pending:false,placed:false,pushMode:false,boost:0,over:false,done:false};
   makePairs();
   S.shown=[S.nat.pop(),S.nat.pop()];
@@ -128,13 +130,16 @@ function act(m){
   if(m.t!=='eat') S.boost=0; // hongo activado y se mueve otra cosa: no se gasta
   if(m.t==='eat'){
     const target=S.board[m.y];
+    // si se come una ajena, las propias que estaban debajo también se comen (van a Presas)
+    const beneathOwn = target.c!==0 ? S.under[m.y].filter(c=>c.c===0) : [];
+    if(target.c!==0) S.under[m.y]=S.under[m.y].filter(c=>c.c!==0);
     moveTop(m.x,m.y);
     if(S.boost){ const hi=S.presas.findIndex(c=>c.v===2); if(hi>=0) S.presas.splice(hi,1); S.boost=0; }
     if(target.c===0){
       S.pending=true; S.chain=null; S.sel=null;
       msg('Comiste una propia: sale del juego. Elegí AHORA una carta de Naturaleza (de las 2) para la coordenada marcada.'); render(); return;
     }
-    S.presas.push(target); S.sel=m.y;
+    S.presas.push(target, ...beneathOwn); S.sel=m.y;
     if(eatsFrom(m.y).length){ S.chain=m.y; msg(`Comiste un ${target.v} ajeno: va a tus Presas. Podés seguir comiendo con esa carta o terminar el turno.`); }
     else { S.chain=null; msg(`Comiste un ${target.v} ajeno: va a tus Presas.`); endTurn(); return; }
     render(); return;
@@ -167,7 +172,7 @@ function endTurn(){
   S.sel=null; S.chain=null; S.pushMode=false; S.boost=0; S.pending=false;
   // la coordenada solo avanza (y salen 2 nuevas de Naturaleza) si se colocó una carta en este turno
   if(S.placed){
-    S.shown.forEach(c=>S.nat.unshift(c)); S.shown=[];
+    S.shown.forEach(c=>S.rival.push(c)); S.shown=[]; // la Naturaleza no elegida es del contrincante
     S.placed=false;
     S.pairIdx++; if(S.pairIdx>=4) makePairs();
     if(!S.over){ S.shown=[S.nat.pop(),S.nat.pop()]; }
@@ -176,7 +181,8 @@ function endTurn(){
 }
 
 function ownVisible(){return S.board.filter(c=>c&&c.c===0).length}
-function roundScore(){return 2*S.presas.length - ownVisible()}
+function roundScore(){return 2*S.presas.length}
+function rivalScore(){return S.rival.reduce((a,c)=>a+c.v,0)}
 // ¿queda alguna jugada: comer, poder de hormiga/halcón, o empujar con escarabajo? (cuenta el hongo si lo tenés en Presas)
 function canMoveNow(){
   const any=()=>{
@@ -191,8 +197,8 @@ function canMoveNow(){
 function check(){
   if(S.over) return;
   if(ownVisible()<=1 || !canMoveNow()){
-    S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score;
-    msg(`Fin de la ronda ${ROUND}. Puntaje: ${S.score}. Total: ${TOTAL}.`);
+    S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score; RIV+=rivalScore();
+    msg(`Fin de la ronda ${ROUND}. Puntaje: ${S.score}. Contrincante: ${rivalScore()}.`);
   }
 }
 
@@ -216,7 +222,7 @@ function clickCell(i){
 
 function render(){
   document.getElementById('rnd').textContent=ROUND;
-  document.getElementById('tot').textContent=`Total: ${TOTAL}`;
+  document.getElementById('tot').textContent=`Total: ${TOTAL} · Contrincante: ${RIV}`;
   const b=document.getElementById('board'); b.innerHTML='';
   const ci=coordIdx(), tg=S.sel!==null?targetsOf(S.sel).map(m=>m.y):(S.pushMode&&S.sel!==null?pushTargets(S.sel).map(m=>m.y):[]);
   for(let i=0;i<16;i++){
@@ -236,7 +242,8 @@ function render(){
   const sh=document.getElementById('shown'); sh.innerHTML='';
   S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='card nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div>${FILE[c.v]?`<img src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
   const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
-  document.getElementById('score').textContent=S.over?`Ronda: ${S.score} pts (2 × ${S.presas.length} ajenas − ${ownVisible()} propias visibles)`:'';
+  document.getElementById('score').innerHTML=`Punto de Ronda: 2 × ${S.presas.length} presas = <b>${roundScore()}</b><br>Puntos Contrincante: <b>${rivalScore()}</b>`;
+  const rv=document.getElementById('rival'); rv.innerHTML=''; S.rival.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;rv.appendChild(s)});
   document.getElementById('btnChain').disabled=!(S.chain!==null&&!S.pending);
   document.getElementById('btnHongo').disabled=!((S.presas.some(c=>c.v===2)||S.boost)&&!S.over&&S.chain===null);
   document.getElementById('btnHongo').textContent=S.boost?'No usar hongo':'Gastar hongo';
@@ -258,8 +265,8 @@ document.getElementById('btnNext').onclick=()=>{ if(S.over&&ROUND<3){ newRound()
 // cortar la ronda cuando veas que no sale nada útil
 document.getElementById('btnEnd').onclick=()=>{
   if(S.over||S.pending) return;
-  S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score;
-  msg(`Ronda ${ROUND} terminada a mano. Puntaje: ${S.score}. Total: ${TOTAL}.`); render();
+  S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score; RIV+=rivalScore();
+  msg(`Ronda ${ROUND} terminada a mano. Puntaje: ${S.score}. Contrincante: ${rivalScore()}.`); render();
 };
 // al terminar la ronda 3, se suma el último puntaje
 const origRender=render;

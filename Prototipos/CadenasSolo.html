@@ -36,6 +36,7 @@ button:disabled{opacity:.4;cursor:default}
       <button id="btnChain">Terminar turno</button>
       <button id="btnHongo">Gastar hongo</button>
       <button id="btnPush">Usar escarabajo</button>
+      <button id="btnEnd">Terminar ronda</button>
       <button id="btnNext">Siguiente ronda</button>
     </div>
   </div>
@@ -176,11 +177,22 @@ function endTurn(){
 
 function ownVisible(){return S.board.filter(c=>c&&c.c===0).length}
 function roundScore(){return 2*S.presas.length - ownVisible()}
+// ¿queda alguna jugada: comer, poder de hormiga/halcón, o empujar con escarabajo? (cuenta el hongo si lo tenés en Presas)
+function canMoveNow(){
+  const any=()=>{
+    for(let x=0;x<16;x++) if(eatsFrom(x).length||slideFrom(x).length||jumpFrom(x).length) return true;
+    if(S.presas.some(c=>c.v===4)) for(let x=0;x<16;x++) if(pushTargets(x).length) return true;
+    return false;
+  };
+  if(any()) return true;
+  if(S.presas.some(c=>c.v===2)&&!S.boost){ S.boost=1; const ok=any(); S.boost=0; if(ok) return true; }
+  return false;
+}
 function check(){
   if(S.over) return;
-  if(ownVisible()<=1 || allMoves().length===0){
+  if(ownVisible()<=1 || !canMoveNow()){
     S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score;
-    msg(`Fin de la ronda ${ROUND}. Puntaje: ${S.score}.`);
+    msg(`Fin de la ronda ${ROUND}. Puntaje: ${S.score}. Total: ${TOTAL}.`);
   }
 }
 
@@ -231,6 +243,7 @@ function render(){
   document.getElementById('btnPush').disabled=!((S.presas.some(c=>c.v===4)||S.pushMode)&&S.chain===null&&!S.over&&!S.pending);
   document.getElementById('btnPush').textContent=S.pushMode?'No usar escarabajo':'Usar escarabajo';
   document.getElementById('btnNext').disabled=!S.over||ROUND>=3;
+  document.getElementById('btnEnd').disabled=S.over||S.pending;
   if(S.over&&ROUND>=3){document.getElementById('btnNext').disabled=true;}
 }
 
@@ -242,6 +255,12 @@ document.getElementById('btnHongo').onclick=()=>{
 };
 document.getElementById('btnPush').onclick=()=>{ S.pushMode=!S.pushMode; S.sel=null; msg(S.pushMode?'Escarabajo: elegí una carta de tu tablero y después el hueco.':'Cancelado.'); render(); };
 document.getElementById('btnNext').onclick=()=>{ if(S.over&&ROUND<3){ newRound(); } };
+// cortar la ronda cuando veas que no sale nada útil
+document.getElementById('btnEnd').onclick=()=>{
+  if(S.over||S.pending) return;
+  S.over=true; S.done=true; S.score=roundScore(); TOTAL+=S.score;
+  msg(`Ronda ${ROUND} terminada a mano. Puntaje: ${S.score}. Total: ${TOTAL}.`); render();
+};
 // al terminar la ronda 3, se suma el último puntaje
 const origRender=render;
 newRound();

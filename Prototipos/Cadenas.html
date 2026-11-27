@@ -290,7 +290,7 @@
   // Disposición en la cruz según la cantidad de jugadores.
   // Jugador 0 siempre abajo. Con 4: izquierda, arriba, derecha. Con 3: izquierda y derecha.
   function seatsFor(n) {
-    if (n === 2) return { pos: [[3, 2], [1, 2]], rot: [0, 180] };   // 2 jugadores: vos abajo, rival arriba (igual que Bot 2 en 4)
+    if (n === 2) return { pos: [[2, 1], [2, 3]], rot: [0, 0] };   // 2 jugadores: los dos tableros uno al lado del otro
     if (n === 3) return { pos: [[2, 2], [1, 1], [1, 3]], rot: [0, 120, 240] };
     return { pos: [[3, 2], [2, 1], [1, 2], [2, 3]], rot: [0, 90, 180, -90] };
   }
@@ -1332,17 +1332,17 @@
     impL.style.gridColumn = 1;
     impL.style.justifySelf = 'end';
     impL.textContent = '↖impares';
-    tableEl.appendChild(impL);
+    if (N !== 2) tableEl.appendChild(impL);   // en 2 jugadores todo va al rival: sin pares/impares
     // Columna derecha, fuera de mi cuadrado: "pares" y "Poderes:", y los poderes en fila
     const rightCol = document.createElement('div');
     rightCol.className = 'sideRight';
-    rightCol.style.gridRow = sidePos[0];
-    rightCol.style.gridColumn = 3;
+    rightCol.style.gridRow = N === 2 ? 3 : sidePos[0];     // en 2 jugadores, los poderes van abajo al centro
+    rightCol.style.gridColumn = N === 2 ? 2 : 3;
     const parL = document.createElement('div');
     parL.className = 'sideLbl';
     parL.style.alignSelf = 'flex-start';
     parL.textContent = 'pares↗';
-    rightCol.appendChild(parL);
+    if (N !== 2) rightCol.appendChild(parL);
     const tPoderes = document.createElement('div');
     tPoderes.className = 'sideLbl';
     tPoderes.style.alignSelf = 'flex-start';

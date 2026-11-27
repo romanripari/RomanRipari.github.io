@@ -7,9 +7,10 @@ body{font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f4f1ea;color:#2
 .cell{position:relative;border-radius:8px;border:2px solid #c9c3b6;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .cell.hole{background:#ece8dd;border-style:dashed}
 .under{position:absolute;bottom:3px;left:3px;right:3px;text-align:center;font-size:11px;font-weight:700;color:#fff;background:#000a;border-radius:4px}
-.cell.coord{box-shadow:0 0 0 5px #f5c400}
-.cell.can{box-shadow:0 0 0 3px #7c3aed}
-.cell.tgt{box-shadow:0 0 0 4px orange}
+.cell.coord{background:#ff5f1f;border-color:#ff5f1f}
+.num.hl{background:#7c3aed;border-radius:8px;padding:0 6px}
+.ico.pw{box-shadow:0 0 0 3px #00e5ff;border-radius:6px}
+.cell.tgt{box-shadow:0 0 0 4px #39ff14}
 .cell.sel{box-shadow:0 0 0 4px magenta}
 .card{width:84px;height:112px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;text-shadow:0 0 3px #0008}
 .card img{width:40px;height:40px;background:#fbf7ee;border-radius:6px}
@@ -193,16 +194,19 @@ function render(){
   const b=document.getElementById('board'); b.innerHTML='';
   const ci=coordIdx(), tg=S.sel!==null?targetsOf(S.sel).map(m=>m.y):(S.pushMode&&S.sel!==null?pushTargets(S.sel).map(m=>m.y):[]);
   for(let i=0;i<16;i++){
-    const d=document.createElement('div'); d.className='cell'+(S.board[i]?'':' hole')+(i===ci&&!S.over?' coord':'')+(tg.includes(i)?' tgt':'')+(!S.over&&!S.pending&&S.sel===null&&targetsOf(i).length?' can':'')+(S.sel===i?' sel':'');
+    const live=!S.over&&!S.pending;
+    const eatOk=live&&targetsOf(i).some(m=>m.t==='eat');
+    const pwOk=live&&S.chain===null&&(slideFrom(i).length>0||jumpFrom(i).length>0||(S.pushMode&&pushTargets(i).length>0));
+    const d=document.createElement('div'); d.className='cell'+(S.board[i]?'':' hole')+(i===ci&&!S.over?' coord':'')+(tg.includes(i)?' tgt':'')+(S.sel===i?' sel':'');
     d.onclick=()=>clickCell(i);
     const c=S.board[i];
     if(c){const k=document.createElement('div');k.className='card';k.style.background=COL[c.c];
-      k.innerHTML=`<div class="num">${c.v}</div>${c.v&&FILE[c.v]?`<img src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.appendChild(k)}
+      k.innerHTML=`<div class="num${eatOk?' hl':''}">${c.v}</div>${c.v&&FILE[c.v]?`<img class="ico${pwOk?' pw':''}" src="Cartas/${FILE[c.v]}" alt="${NAMES[c.v]}">`:''}<div class="nm">${NAMES[c.v]}</div>`;d.appendChild(k)}
     if(S.under[i].length){const u=document.createElement('div');u.className='under';u.textContent='abajo: '+S.under[i].map(x=>x.v).reverse().join(' ');d.appendChild(u)}
     b.appendChild(d);
   }
   const pr=document.getElementById('pairs'); pr.innerHTML='';
-  S.pairs.forEach(([r,c],i)=>{const s=document.createElement('span');s.className='pill';s.style.background=i===S.pairIdx?'#222':'#999';s.textContent=`${r}-${c} (${'ABCD'[c-5]}${r})`;pr.appendChild(s)});
+  S.pairs.forEach(([r,c],i)=>{const s=document.createElement('span');s.className='pill';s.style.background=i===S.pairIdx?'#ff5f1f':'#999';s.textContent=`${r}-${c} (${'ABCD'[c-5]}${r})`;pr.appendChild(s)});
   const sh=document.getElementById('shown'); sh.innerHTML='';
   S.shown.forEach((c,i)=>{const d=document.createElement('div');d.className='nat'+(S.pending?' ok':'');d.style.background=COL[c.c];d.innerHTML=`<div class="num">${c.v}</div><div class="nm">${NAMES[c.v]}</div>`;d.onclick=()=>placeNat(i);sh.appendChild(d)});
   const pz=document.getElementById('presas'); pz.innerHTML=''; S.presas.forEach(c=>{const s=document.createElement('span');s.className='pill';s.style.background=COL[c.c];s.textContent=`${c.v} ${NAMES[c.v]}`;pz.appendChild(s)});
